@@ -1,0 +1,22 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+
+public interface TrazabilidadapoyoService {
+	
+	public Trazabilidadapoyo findByIdTrazabilidadApoyo(Integer iIdTrazabilidadApoyo);
+	
+	Trazabilidadapoyo guardar(Trazabilidadapoyo trazabilidadapoyo);
+	
+	void eliminar(Integer idTrazabilidadapoyo);
+	
+	Trazabilidadapoyo buscarUltimaDelegacionUsuario(Integer idDestinatario, Integer idDocumento);
+
+	Long numeroApoyos(Integer idtrazabilidaddocumento);
+
+	List<Trazabilidadapoyo> buscarPorOrigen(Integer idTrazabilidad);
+	
+	Long numeroApoyosPendientes(Integer idtrazabilidaddocumento);
+}

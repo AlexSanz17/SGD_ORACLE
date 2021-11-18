@@ -1,0 +1,25 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+
+public interface TrazabilidadapoyoDAO {
+	
+	public Trazabilidadapoyo findTrabilidadbyId(Integer idtrazabilidadApoyo);
+	
+	Trazabilidadapoyo guardar(Trazabilidadapoyo trazabilidadapoyo);
+	
+	Trazabilidadapoyo buscarPorId(Integer idTrazabilidadapoyo);
+	
+	void eliminar(Integer idTrazabilidadapoyo);
+
+	Trazabilidadapoyo buscarUltimaDelegacionUsuario(Integer idDestinatario, Integer idDocumento);
+
+	Long numeroApoyos(Integer idtrazabilidaddocumento);
+
+	List<Trazabilidadapoyo> buscarPorOrigen(Integer idTrazabilidad);
+
+	Long numeroApoyosEstado(Integer idtrazabilidaddocumento, String codEstado);
+}

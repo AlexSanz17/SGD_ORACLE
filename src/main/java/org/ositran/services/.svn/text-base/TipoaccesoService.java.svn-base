@@ -1,0 +1,14 @@
+package org.osinerg.services;
+
+import java.util.Map;
+
+import com.btg.osinergmin.siged.domain.Tipoacceso;
+
+public interface TipoaccesoService {
+
+   public Map<Integer,String> getMapTipoAcceso();
+
+   public Tipoacceso buscarObjPor(String sCodigo);
+
+   public Tipoacceso buscarObjPorID(Integer iIdTipoAcceso);
+}

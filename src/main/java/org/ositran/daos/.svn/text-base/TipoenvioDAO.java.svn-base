@@ -1,0 +1,15 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Tipoenvio;
+
+public interface TipoenvioDAO {
+
+   public Tipoenvio findbyNombre(String nombre);
+   
+   public List<Tipoenvio> findAll();
+   
+   public Tipoenvio findbyId(int Id);
+
+}

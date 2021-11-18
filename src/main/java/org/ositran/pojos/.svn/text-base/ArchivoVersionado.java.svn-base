@@ -1,0 +1,29 @@
+package org.osinerg.pojos;
+
+import java.io.Serializable;
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Archivo;
+
+public class ArchivoVersionado implements Serializable{
+
+	private static final long serialVersionUID=1L;
+	Archivo archivo;
+	List<VersionView> versiones;
+
+	public Archivo getArchivo(){
+		return archivo;
+	}
+
+	public void setArchivo(Archivo archivo){
+		this.archivo=archivo;
+	}
+
+	public List<VersionView> getVersiones(){
+		return versiones;
+	}
+
+	public void setVersiones(List<VersionView> versiones){
+		this.versiones=versiones;
+	}
+}

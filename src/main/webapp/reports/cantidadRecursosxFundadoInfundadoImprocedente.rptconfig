@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.17" id="1">
+    <list-property name="configVars">
+        <structure>
+            <property name="name">__isdisplay__fechaDesde_39_0</property>
+            <property name="value">'12/03/2009'</property>
+        </structure>
+        <structure>
+            <property name="name">__isnull_40_1</property>
+            <property name="value">fechaHasta_40</property>
+        </structure>
+        <structure>
+            <property name="name">fechaHasta_40_type_</property>
+            <property name="value">string</property>
+        </structure>
+        <structure>
+            <property name="name">__isnull_41_2</property>
+            <property name="value">mes_41</property>
+        </structure>
+        <structure>
+            <property name="name">mes_41_type_</property>
+            <property name="value">string</property>
+        </structure>
+        <structure>
+            <property name="name">__isnull_42_3</property>
+            <property name="value">anio_42</property>
+        </structure>
+        <structure>
+            <property name="name">anio_42_type_</property>
+            <property name="value">string</property>
+        </structure>
+        <structure>
+            <property name="name">__isnull_43_4</property>
+            <property name="value">tipoRecurso_43</property>
+        </structure>
+        <structure>
+            <property name="name">tipoRecurso_43_type_</property>
+            <property name="value">string</property>
+        </structure>
+        <structure>
+            <property name="name">fechaDesde_39_5</property>
+            <property name="value">'12/03/2009'</property>
+        </structure>
+        <structure>
+            <property name="name">fechaDesde_39_type_</property>
+            <property name="value">string</property>
+        </structure>
+    </list-property>
+</report>

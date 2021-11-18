@@ -1,0 +1,16 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Campo;
+
+/**
+ *
+ * @author Himizu
+ */
+public interface CampoService {
+public Campo guardarObj(Campo objCampo);
+}

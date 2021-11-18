@@ -1,0 +1,17 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Rol;
+
+public interface RolDAO {
+
+	public List<Rol> findAll();
+
+	public Rol findByIdRol(Integer iIdRol);
+
+	public Rol guardarObj(Rol objRol);
+   
+	public Rol encontrarPorNombre(String nombre);
+   
+}

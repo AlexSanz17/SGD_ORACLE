@@ -1,0 +1,33 @@
+@CHARSET "UTF-8";
+#camposBusquedaExpediente{height:113px; margin:0px auto}
+
+#camposBusquedaExpediente fieldset{border:1px solid #77ADDF; background-color:#D4E2F9; padding:5px}
+
+#camposBusquedaExpediente fieldset legend{font-weight:bold; font-size:1.1em}
+
+#camposIzquierda{float:left}
+
+#camposIzquierda label{display:inline-block; width:150px; height:22px}
+
+
+#resultadosBusquedaDocumento{height:150px}
+#resultadosBusquedaLegajo{height:100px}
+
+#camposDerecha{float:right; margin-top:100px}
+
+#resultadosBusquedaExpediente{height:151px}
+
+#camposBusquedaDocumento{height:129px; margin:0px auto}
+
+#camposBusquedaDocumento fieldset{border:1px solid #77ADDF; background-color:#D4E2F9; padding:5px}
+
+#camposBusquedaDocumento fieldset legend{font-weight:bold; font-size:1.1em}
+
+#camposDerechaDocumento{float:right; margin-top:50px}
+
+
+#camposBusquedaLegajo{height:115px; margin:0px auto}
+
+#camposBusquedaLegajo fieldset{border:1px solid #77ADDF; background-color:#D4E2F9; padding:5px}
+
+#camposBusquedaLegajo fieldset legend{font-weight:bold; font-size:1.1em}

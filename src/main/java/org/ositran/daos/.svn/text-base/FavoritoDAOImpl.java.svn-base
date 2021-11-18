@@ -1,0 +1,117 @@
+package org.osinerg.daos;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import org.apache.log4j.Logger;
+import org.osinerg.utils.StringUtil;
+import org.springframework.stereotype.Repository;
+
+import com.btg.osinergmin.siged.domain.Favorito;
+
+@Repository
+public class FavoritoDAOImpl implements FavoritoDAO {
+
+   private static Logger log = Logger.getLogger(FavoritoDAOImpl.class);
+   private EntityManager em;
+
+   /*
+    * Methods
+    */
+   @Override
+   public Favorito findObjectBy(Integer idPropietario, Integer idContacto, Character tipoContacto, Character estado) {
+      try {
+         return (Favorito) em.createNamedQuery("Favorito.findByPropietarioContactoTipocontactoEstado")
+                             .setParameter("propietario", idPropietario)
+                             .setParameter("contacto", idContacto)
+                             .setParameter("tipocontacto", tipoContacto)
+                             .setParameter("estado", estado)
+                             .getSingleResult();
+      } catch (NoResultException nre) {
+         log.warn("No se encontro registro con propietario [" + idPropietario + "] contacto [" + idContacto + "] tipoContacto [" + tipoContacto + "] estado [" + estado + "]");
+
+         return null;
+      } catch (NonUniqueResultException nure) {
+         log.warn("Se encontro mas de un registro con propietario [" + idPropietario + "] contacto [" + idContacto + "] tipoContacto [" + tipoContacto + "] estado [" + estado + "]");
+
+         return null;
+      }
+   }
+
+   @Override
+   public List<Favorito> findLstBy(Integer idPropietario, Character estado, String mode) {
+      List<Favorito> lstFavorito = new ArrayList<Favorito>();
+      try {
+         StringBuilder sbQuery = new StringBuilder();
+
+         sbQuery.append("SELECT * FROM ");
+         sbQuery.append("( ");
+         sbQuery.append("SELECT '' || u.idusuario AS id, u.nombres || ' ' || u.apellidos AS label ");
+         sbQuery.append("FROM favorito f, usuario u ");
+         sbQuery.append("WHERE f.idcontacto = u.idusuario AND f.tipocontacto = 'U' AND f.idpropietario = ? AND f.estado = ? ");
+
+         if (!StringUtil.isEmpty(mode) && "idconcopia".equalsIgnoreCase(mode)) {
+            sbQuery.append("UNION ALL ");
+            sbQuery.append("SELECT 'LISTA_' || l.idlista AS id, l.nombre AS label ");
+            sbQuery.append("FROM favorito f, lista l ");
+            sbQuery.append("WHERE f.idcontacto = l.idlista AND f.tipocontacto = 'L' AND f.idpropietario = ? AND f.estado = ? ");
+         }
+
+         sbQuery.append(") ");
+         sbQuery.append("ORDER BY LOWER(label) ASC ");
+
+         Query query = em.createNativeQuery(sbQuery.toString(), "favoritoResult")
+                         .setParameter(1, idPropietario)
+                         .setParameter(2, estado);
+
+         if (!StringUtil.isEmpty(mode) && "idconcopia".equalsIgnoreCase(mode)) {
+            query.setParameter(3, idPropietario)
+                 .setParameter(4, estado);
+         }
+
+         List<Object[]> result = query.getResultList();
+
+         for (Object[] o : result) {
+            int idx = 0;
+            String id = (String) o[idx++];
+            String label = (String) o[idx++];
+
+            lstFavorito.add(new Favorito(id, label));
+         }
+
+         return lstFavorito;
+      } catch (NoResultException e) {
+         log.warn("No se encontraron favoritos del propietario [" + idPropietario + "] estado [" + estado + "]");
+
+         return null;
+      }
+   }
+
+   @Override
+   public void saveFavorito(Favorito favorito) {
+      if (favorito.getIdFavorito() == null) {
+         em.persist(favorito);
+         em.flush();
+         em.refresh(favorito);
+      } else {
+         em.merge(favorito);
+         em.flush();
+      }
+   }
+
+   /*
+    * Getters & Setters
+    */
+   public EntityManager getEm() {
+      return em;
+   }
+
+   @PersistenceContext(unitName = "sigedPU")
+   public void setEm(EntityManager em) {
+      this.em = em;
+   }
+}

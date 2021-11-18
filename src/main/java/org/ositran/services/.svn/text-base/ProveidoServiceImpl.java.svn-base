@@ -1,0 +1,25 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import org.osinerg.daos.ProveidoDAO;
+
+import com.btg.osinergmin.siged.domain.Proveido;
+
+public class ProveidoServiceImpl implements ProveidoService {
+	
+	private ProveidoDAO proveidoDAO;
+
+	public List<Proveido> buscarPorCodigo(String codigoProveido){
+		return proveidoDAO.buscarPorCodigo(codigoProveido);
+	}
+	
+	public ProveidoDAO getProveidoDAO() {
+		return proveidoDAO;
+	}
+
+	public void setProveidoDAO(ProveidoDAO proveidoDAO) {
+		this.proveidoDAO = proveidoDAO;
+	}
+	
+}

@@ -1,0 +1,15 @@
+@import "../dojo/resources/dojo.css";
+@import "../dijit/themes/nihilo/nihilo.css";
+@import "../dojox/grid/resources/nihiloGrid.css";
+@import "../dijit/themes/soria/soria.css";
+@import "../dojox/grid/resources/soriaGrid.css";
+@import "../dijit/themes/tundra/tundra.css";
+@import "../dojox/grid/resources/tundraGrid.css";
+@import "../dojox/layout/resources/ExpandoPane.css";
+@import "../dojox/layout/resources/ToggleSplitter.css";
+
+html, body, #divContainerMain {
+   width: 100%; height: 100%;
+   border: 0; padding: 0; margin: 0;
+   overflow: hidden;
+}

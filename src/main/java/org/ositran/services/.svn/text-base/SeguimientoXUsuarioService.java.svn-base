@@ -1,0 +1,15 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.dojo.grid.ItemUF;
+
+import com.btg.osinergmin.siged.domain.SeguimientoXUsuario;
+
+public interface SeguimientoXUsuarioService {
+	SeguimientoXUsuario guardarSeguimiento(SeguimientoXUsuario seguimiento);
+	void eliminarSeguimiento(SeguimientoXUsuario seguimiento);
+	List<SeguimientoXUsuario> buscarSeguimiento(Integer idUsuario, Integer idDocumento);
+	List<ItemUF> getItemsSeguimientoXUsuario(Integer idUsuario);
+}

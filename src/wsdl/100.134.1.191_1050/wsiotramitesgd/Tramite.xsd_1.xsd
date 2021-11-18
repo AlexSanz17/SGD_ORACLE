@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8'?><!-- Published by JAX-WS RI (http://jax-ws.java.net). RI's version is JAX-WS RI 2.2.10 svn-revision#919b322c92f13ad085a933e8dd6dd35d4947364b. --><xs:schema xmlns:tns="http://ws.wsiotramite.segdi.gob.pe/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://ws.wsiotramite.segdi.gob.pe/">
+
+<xs:element name="cargoResponse" type="tns:cargoResponse"/>
+
+<xs:element name="cargoResponseResponse" type="tns:cargoResponseResponse"/>
+
+<xs:element name="consultarTramiteResponse" type="tns:consultarTramiteResponse"/>
+
+<xs:element name="consultarTramiteResponseResponse" type="tns:consultarTramiteResponseResponse"/>
+
+<xs:element name="recepcionarTramiteResponse" type="tns:recepcionarTramiteResponse"/>
+
+<xs:element name="recepcionarTramiteResponseResponse" type="tns:recepcionarTramiteResponseResponse"/>
+
+<xs:complexType name="consultarTramiteResponse">
+<xs:sequence>
+<xs:element name="request" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="consultarTramiteResponseResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:RespuestaConsultaTramite" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="RespuestaConsultaTramite">
+<xs:sequence>
+<xs:element name="vcodres" type="xs:string" minOccurs="0"/>
+<xs:element name="vdesres" type="xs:string" minOccurs="0"/>
+<xs:element name="vcuo" type="xs:string" minOccurs="0"/>
+<xs:element name="vcuoref" type="xs:string" minOccurs="0"/>
+<xs:element name="vnumregstd" type="xs:string" minOccurs="0"/>
+<xs:element name="vanioregstd" type="xs:string" minOccurs="0"/>
+<xs:element name="vuniorgstd" type="xs:string" minOccurs="0"/>
+<xs:element name="dfecregstd" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="vusuregstd" type="xs:string" minOccurs="0"/>
+<xs:element name="bcarstd" type="xs:base64Binary" minOccurs="0"/>
+<xs:element name="vobs" type="xs:string" minOccurs="0"/>
+<xs:element name="cflgest" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="recepcionarTramiteResponse">
+<xs:sequence>
+<xs:element name="recepcionRequest" type="tns:RecepcionTramite" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="RecepcionTramite">
+<xs:sequence>
+<xs:element name="vrucentrem" type="xs:string" minOccurs="0"/>
+<xs:element name="vrucentrec" type="xs:string" minOccurs="0"/>
+<xs:element name="vnomentemi" type="xs:string" minOccurs="0"/>
+<xs:element name="vuniorgrem" type="xs:string" minOccurs="0"/>
+<xs:element name="vcuo" type="xs:string" minOccurs="0"/>
+<xs:element name="vcuoref" type="xs:string" minOccurs="0"/>
+<xs:element name="ccodtipdoc" type="xs:string" minOccurs="0"/>
+<xs:element name="vnumdoc" type="xs:string" minOccurs="0"/>
+<xs:element name="dfecdoc" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="vuniorgdst" type="xs:string" minOccurs="0"/>
+<xs:element name="vnomdst" type="xs:string" minOccurs="0"/>
+<xs:element name="vnomcardst" type="xs:string" minOccurs="0"/>
+<xs:element name="vasu" type="xs:string" minOccurs="0"/>
+<xs:element name="snumanx" type="xs:int"/>
+<xs:element name="snumfol" type="xs:int"/>
+<xs:element name="vurldocanx" type="xs:string" minOccurs="0"/>
+<xs:element name="bpdfdoc" type="xs:base64Binary" minOccurs="0"/>
+<xs:element name="vnomdoc" type="xs:string" minOccurs="0"/>
+<xs:element name="lstanexos" type="tns:documentoAnexo" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+<xs:element name="ctipdociderem" type="xs:string" minOccurs="0"/>
+<xs:element name="vnumdociderem" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="documentoAnexo">
+<xs:sequence>
+<xs:element name="dfecreg" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="siddocanx" type="xs:int"/>
+<xs:element name="siddocext" type="xs:int"/>
+<xs:element name="vnomdoc" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="recepcionarTramiteResponseResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:RespuestaTramite" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="RespuestaTramite">
+<xs:sequence>
+<xs:element name="vcodres" type="xs:string" minOccurs="0"/>
+<xs:element name="vdesres" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cargoResponse">
+<xs:sequence>
+<xs:element name="cargoRequest" type="tns:CargoTramite"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="CargoTramite">
+<xs:sequence>
+<xs:element name="vcuo" type="xs:string" minOccurs="0"/>
+<xs:element name="vcuoref" type="xs:string" minOccurs="0"/>
+<xs:element name="vnumregstd" type="xs:string" minOccurs="0"/>
+<xs:element name="vanioregstd" type="xs:string" minOccurs="0"/>
+<xs:element name="dfecregstd" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="vuniorgstd" type="xs:string" minOccurs="0"/>
+<xs:element name="vusuregstd" type="xs:string" minOccurs="0"/>
+<xs:element name="bcarstd" type="xs:base64Binary" minOccurs="0"/>
+<xs:element name="vobs" type="xs:string" minOccurs="0"/>
+<xs:element name="cflgest" type="xs:string" minOccurs="0"/>
+<xs:element name="vdesanxstdrec" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cargoResponseResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:RespuestaCargoTramite" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="RespuestaCargoTramite">
+<xs:sequence>
+<xs:element name="vcodres" type="xs:string" minOccurs="0"/>
+<xs:element name="vdesres" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

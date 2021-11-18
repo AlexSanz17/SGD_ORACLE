@@ -1,0 +1,59 @@
+/*LICENCIA DE USO DEL SGD .TXT*/package org.ositran.daos;
+
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
+import com.btg.ositran.siged.domain.Sede;
+import com.btg.ositran.siged.domain.Usuario;
+
+@Repository
+public class SedeDAOImpl implements SedeDAO{
+
+	private EntityManager em;
+
+	// ////////////////////////////////
+	// Methods //
+	// ////////////////////////////////
+	@SuppressWarnings("unchecked")
+	public List<Sede> buscarTodo(){
+		return em.createNamedQuery("Sede.findAll").getResultList();
+	}
+
+	public Sede buscarPorId(Integer iIdSede){
+		return em.find(Sede.class,iIdSede);
+	}
+
+	public Sede guardarObj(Sede sede){
+		if(sede.getIdsede() == null){
+			em.persist(sede);
+         em.flush();
+			em.refresh(sede);
+		}
+		else{
+			sede=em.merge(sede);
+         em.flush();
+		}
+		return sede;
+	}
+
+	@PersistenceContext(unitName="sigedPU")
+	public void setEm(EntityManager em){
+		this.em=em;
+	}
+
+	@Override
+	public Sede getSedePorUuario(Usuario usuario){
+		if(usuario!=null){
+			int idUsuario=usuario.getIdusuario();
+			String sql="SELECT s FROM Sede s WHERE s.idsede=(SELECT uni.sede.idsede FROM Unidad uni WHERE uni.idunidad=(SELECT u.unidad.idunidad FROM Usuario u WHERE u.idusuario=:idUsuario))";
+			Query q=em.createQuery(sql);
+			q.setParameter("idUsuario",idUsuario);
+			return (Sede) q.getSingleResult();
+		}
+		return null;
+	}
+}

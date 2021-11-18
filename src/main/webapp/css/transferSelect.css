@@ -1,0 +1,8 @@
+.botones{width:50px; display:inline-block; float:left; margin-top:70px}
+
+.botones input[type="button"]{width:50px !important}
+
+.divIzquierda, .divDerecha{width:250px !important; float:left}
+
+.divIzquierda select, .divDerecha select{width:280px}
+.divReferencia select {width:340px !important; float:left}

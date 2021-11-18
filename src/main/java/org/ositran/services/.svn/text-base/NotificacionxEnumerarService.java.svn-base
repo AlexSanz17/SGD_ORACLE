@@ -1,0 +1,17 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Notificacion;
+import com.btg.osinergmin.siged.domain.NotificacionxEnumerar;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public interface NotificacionxEnumerarService {
+
+   
+   public List<NotificacionxEnumerar> buscarLastNotificacionesbyDocumento(Integer iIdDocumento, Integer iTipoNotificacion);
+
+  }

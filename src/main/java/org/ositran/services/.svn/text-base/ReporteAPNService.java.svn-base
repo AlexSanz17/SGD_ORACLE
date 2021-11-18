@@ -1,0 +1,29 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import org.osinerg.dojo.BusquedaAvanzada;
+
+import com.btg.osinergmin.siged.domain.FilaHojaRuta;
+import com.btg.osinergmin.siged.domain.FilaReporteAPN2;
+import com.btg.osinergmin.siged.domain.NodoExpReporteAPN3;
+import com.btg.osinergmin.siged.domain.ReporteAPN1;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+
+public interface ReporteAPNService {
+	
+	//TODO Borrar cuando se compruebe que la hoja de ruta esta bien
+	//Map<String, String> generarHojaRuta(Integer idDocumento);
+	List<FilaHojaRuta> generarHojaRuta(Integer idDocumento);
+	
+	List<FilaHojaRuta> generarHojaRutaExpediente(Integer idExpediente);
+	
+	Trazabilidaddocumento buscarUltimaTraza(Integer idDocumento);
+	
+	public List<ReporteAPN1> getListaReporteAPN1(String idAreaOrigen,String idTipoDocumento,String idPrioridad,String fechaDesde, String fechaHasta);
+
+	List<FilaReporteAPN2> getListaReporteAPN2(BusquedaAvanzada objFiltro);
+
+	List<NodoExpReporteAPN3> getListaReporteAPN3(BusquedaAvanzada objFiltro);
+	
+}

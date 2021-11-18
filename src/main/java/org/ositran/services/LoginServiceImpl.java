@@ -1,0 +1,146 @@
+package org.ositran.services;
+
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.ositran.daos.RolDAO;
+import org.ositran.daos.UsuarioDAO;
+import org.ositran.utils.Constantes;
+
+import com.btg.ositran.siged.domain.Perfil;
+import com.btg.ositran.siged.domain.Recurso;
+import com.btg.ositran.siged.domain.Rol;
+import com.btg.ositran.siged.domain.Usuario;
+
+
+public class LoginServiceImpl implements LoginService{
+	
+	private static final Log log=LogFactory.getLog(LoginServiceImpl.class);
+	
+	private UsuarioDAO usuarioDao;
+	private RolDAO rolDao;
+	private PerfilService perfilService;
+    private UsuarioService srvUsuario;
+    public static List<Recurso> recursosSession;
+    
+	@Override
+	public boolean loginSeguridad(String usuario,String rol,HttpServletRequest request){
+		Usuario usu=usuarioDao.findByUsuario(usuario);
+		if(usu!=null){
+         if (usu.getJefe() != null) {
+            log.info("Jefe del usuario logeado [" + usu.getJefe().getIdusuario() + "]");
+         }
+
+			HttpSession sesion=request.getSession();
+			sesion.setAttribute(Constantes.SESSION_USUARIO,usu);
+			Rol r=rolDao.encontrarPorNombre(rol);			
+			if(r!=null){
+				if(tieneRol(usu,r)){
+					usu.setRol(r);
+					//FIXME cuando ya no se usen perfiles, hay que cambiar esto
+					Map<String,Integer> recursos=perfilService.getMapRecursoXPerfil(r.getIdperfil().getIdperfil());
+					if(recursos!=null){
+						sesion.setAttribute(Constantes.SESSION_RECURSO,recursos);
+					}
+					else{
+						log.error("No se pudieron cargar los recursos para el Usuario: "+usuario+" con Rol: "+rol);
+						return false;
+					}
+				}
+				else{
+					log.error("El usuario "+usuario+" no posee el rol "+rol+". No se autoriza el acceso.");
+					return false;
+				}
+			}
+			else{
+				List<Rol> roles= null;//usu.getRoles();
+				List<Perfil> perfiles=new ArrayList<Perfil>();
+				for(Rol rrol : roles){
+					perfiles.add(rrol.getIdperfil());
+				}
+				Map<String,Integer> recursos=perfilService.getRecursosPorPerfiles(perfiles);
+				if(recursos!=null){
+					sesion.setAttribute(Constantes.SESSION_RECURSO,recursos);
+					sesion.setAttribute(Constantes.SESSION_RECURSO_SAS, recursosSession);
+
+               /*for (Recurso rec : recursosSession) {
+                  log.debug("posibles recursos sas ["+rec.getCodigo()+"]");
+               }*/
+
+					recursosSession=null;
+				}
+				else{
+					log.error("No se pudieron cargar los recursos para el Usuario: "+usuario+" con Rol: "+rol);
+					return false;
+				}
+			}
+
+         sesion.setAttribute(Constantes.SESSION_RECURSO, srvUsuario.resolveSomeResources(usu, (Map<String, Integer>) sesion.getAttribute(Constantes.SESSION_RECURSO)));
+
+			Date hoy=Calendar.getInstance().getTime();
+			Format f1=new SimpleDateFormat("dd/MM/yyyy");
+			Format f2=new SimpleDateFormat("HH:mm");
+			String rolSesion=Constantes.ROL_USUARIO_FINAL;
+			if(usu.getRol()!=null){
+				rolSesion=usu.getRol().getNombre();
+			}
+			log.info("El usuario " + usu.getNombres() + " " + usu.getApellidos() + " inicio sesion con rol "+rolSesion+" desde " + request.getRemoteAddr() + " con fecha " + f1.format(hoy) + " a las " + f2.format(hoy));
+			return true;
+		}
+		return false;
+	}
+	
+	
+	public void setUsuarioDao(UsuarioDAO usuarioDao){
+		this.usuarioDao=usuarioDao;
+	}
+	
+	public void setRolDao(RolDAO rolDao){
+		this.rolDao=rolDao;
+	}
+	
+	public void setPerfilService(PerfilService perfilService){
+		this.perfilService=perfilService;
+	}
+
+	@Override
+	public void asignarRol(Usuario usuario,String rol,HttpServletRequest request){
+		if(usuario!=null){
+			Rol r=rolDao.encontrarPorNombre(rol);
+			if(r!=null){
+				usuario.setRol(r);
+				HttpSession sesion=request.getSession();
+				sesion.removeAttribute(Constantes.SESSION_RECURSO);
+				Map<String,Integer> recursos=perfilService.getMapRecursoXPerfil(r.getIdperfil().getIdperfil());
+				if(recursos!=null){
+					sesion.setAttribute(Constantes.SESSION_RECURSO,recursos);
+				}
+				else{
+					log.error("No se pudieron cargar los recursos para el Usuario: "+usuario+" con Rol: "+rol);
+				}
+			}
+		}
+	}
+	
+	private boolean tieneRol(Usuario usuario,Rol rol){
+		return true;//usuario.getRoles().contains(rol);
+	}
+
+   public UsuarioService getSrvUsuario() {
+      return srvUsuario;
+   }
+
+   public void setSrvUsuario(UsuarioService srvUsuario) {
+      this.srvUsuario = srvUsuario;
+   }
+}

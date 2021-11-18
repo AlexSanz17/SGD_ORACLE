@@ -1,0 +1,5 @@
+.partsContainer{ background:#2e2e2e}
+
+.partsContainer .gridContainer{ background:#fff;  height:200px}
+
+.dojoxGrid-row-odd td{ background:#e8f2ff}

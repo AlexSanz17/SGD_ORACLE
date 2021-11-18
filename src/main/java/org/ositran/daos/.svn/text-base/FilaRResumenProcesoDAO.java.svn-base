@@ -1,0 +1,32 @@
+package org.osinerg.daos;
+/*DUMMY*/
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import com.btg.osinergmin.siged.domain.FilaRResumenProceso;
+
+public interface FilaRResumenProcesoDAO {
+
+	/* (non-Javadoc)
+	 * @see org.osinerg.daos.FilaRResumenProcesoDAO#setEm(javax.persistence.EntityManager)
+	 */
+	@PersistenceContext(unitName = "sigedPU")
+	public abstract void setEm(EntityManager em);
+
+	/* (non-Javadoc)
+	 * @see org.osinerg.daos.FilaRResumenProcesoDAO#reporteInicialResumen()
+	 */
+	public abstract List<FilaRResumenProceso> reporteInicialResumen();
+
+	/* (non-Javadoc)
+	 * @see org.osinerg.daos.FilaRResumenProcesoDAO#generarReporteResumen(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	/* (non-Javadoc)
+	 * @see org.osinerg.daos.FilaRResumenProcesoDAO#generarReporteResumen(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public abstract List<FilaRResumenProceso> generarReporteResumen(
+			String procesoClasif, String procesoElegido, String estado,
+			String fechaDesde, String fechaHasta);
+}

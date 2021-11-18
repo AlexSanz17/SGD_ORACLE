@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+#camposBusquedaExpediente{height:170px; margin:0px auto}
+
+#camposBusquedaExpediente fieldset{border:1px solid #77ADDF; background-color:#D4E2F9; padding:5px}
+
+#camposBusquedaExpediente fieldset legend{font-weight:bold; font-size:1.1em}
+
+#camposIzquierda{float:left}
+
+#camposIzquierda label{display:inline-block; width:150px; height:22px}
+
+#camposDerecha{float:right; margin-top:100px}
+
+#resultadosBusquedaExpediente{height:250px}

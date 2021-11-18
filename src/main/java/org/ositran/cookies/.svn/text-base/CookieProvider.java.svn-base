@@ -1,0 +1,7 @@
+package org.osinerg.cookies;
+
+import java.util.List;
+
+public interface CookieProvider {
+	List<CookieBean> getCookies();
+}

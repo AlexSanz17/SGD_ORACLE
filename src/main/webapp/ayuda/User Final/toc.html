@@ -1,0 +1,508 @@
+﻿<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+
+<head>
+	<title>Manual de Usuario Final- Table of Contents</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <meta name="generator" content="HelpNDoc">
+	<link type="text/css" rel="stylesheet" media="all" href="css/reset.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/silver-theme/jquery-ui-1.8.12.custom.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/base.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/hnd.css" />
+    <link type="text/css" rel="stylesheet" media="all" href="css/toc.css" />
+	<!--[if lte IE 8]>
+		<link type="text/css" rel="stylesheet" media="all" href="css/ielte8.css" />
+	<![endif]-->
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="js/jquery.treeview.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.8.12.custom.min.js"></script>
+	<script type="text/javascript" src="js/hndjsse.js"></script>
+	<script type="text/javascript">
+	
+		var bSearchDataLoaded = false;
+	
+		$(document).ready(function()
+		{
+			$("#tabs").tabs({selected: 0});
+			$("#toc").treeview({collapsed: true});
+			$("#keywords").treeview({collapsed: true});
+			// Load search data
+			$.getScript("js/searchdata.js",	function() {
+				bSearchDataLoaded = true;
+			});
+		});
+		
+		function SelectTocItem(sLinkHref)
+		{
+			$("#toc a").each(function()
+			{
+				if ($.inArray(sLinkHref + '.htm', this.href) > -1) $(this).css('font-weight', 'bold')
+				else $(this).css('font-weight', '');
+			});
+		}
+		
+		function HideKwPopup()
+		{
+			if($("#popupMenu")) $("#popupMenu").remove();
+		}
+		
+		function ShowKwPopup(oSender, aLinks)
+		{
+			HideKwPopup();
+			if (!aLinks || !aLinks.length || aLinks.length == 0) return false
+			else if (aLinks.length == 1) return true
+			else
+			{
+				var oParentDiv = document.createElement("DIV");
+				oParentDiv.id = "popupMenu";
+				var oLink = null;
+				for (var nCnt=0; nCnt<aLinks.length; nCnt++)
+				{
+					oLink = document.createElement("A");
+					oLink.innerHTML = aLinks[nCnt][0];
+					oLink.href = aLinks[nCnt][1];
+					oLink.target = "FrameMain";
+					oLink.onclick = HideKwPopup;
+					oParentDiv.appendChild(oLink);
+				}
+				document.body.appendChild(oParentDiv);
+				var pos = $(oSender).offset(); 
+				var height = $(oSender).height();
+				$(oParentDiv).css({
+					"left": (pos.left+20) + "px",
+					"top": (pos.top + height + 5) + "px"
+				});
+				$(oParentDiv).show();
+				return false;
+			}
+		}
+		
+		function PerformSearch()
+		{
+			sValue = $("#search_value").val();
+			$("#search_results").html('Searching...');
+			var oSearchEngine = new HndJsSe;
+			oSearchEngine.ParseInput(sValue);			
+			oSearchEngine.PerformSearch();
+			if (!oSearchEngine.aResults || !oSearchEngine.aResults.length)
+			{
+				$("#search_results").html('No results found.');
+			}
+			else
+			{
+				$("#search_results").html('');
+				var oUl = $("#search_results").append("<ul id='lr'></ul>").find("ul");
+				for (var nCnt = 0; nCnt < oSearchEngine.aResults.length; nCnt++)
+				{
+					oUl.append("<li><a href='" + aTl[oSearchEngine.aResults[nCnt]][0] + "?search=" + escape(sValue) + "' target='FrameMain'>" + unescape(aTl[oSearchEngine.aResults[nCnt]][1]) + "</a></li>");
+				}
+				$("#lr").treeview({collapsed: false});
+			}
+		}
+	</script>
+</head>
+
+<body>
+
+	<div id="tabs">
+		<ul>
+			<li><a href="#tab-toc">Contents</a></li>
+			<li><a href="#tab-keywords">Index</a></li>
+			<li><a href="#tab-search">Search</a></li>
+		</ul>
+		<div id="tab-toc">
+			<ul id="toc" class="filetree toctree">
+
+				<li>
+							<a
+							href="General.html"
+							class="folder"
+							target="FrameMain">
+								General</a>
+
+				<ul><li>
+							<a
+							href="Rechazar.html"
+							class="file"
+							target="FrameMain">
+								Rechazar</a>
+
+				</li><li>
+							<a
+							href="TrazabilidaddelExpediente.html"
+							class="file"
+							target="FrameMain">
+								Pesta&ntilde;a Expediente</a>
+
+				</li><li>
+							<a
+							href="Adjuntar.html"
+							class="file"
+							target="FrameMain">
+								Adjuntar Archivo</a>
+
+				</li><li>
+							<a
+							href="General1.html"
+							class="file"
+							target="FrameMain">
+								Enviar M&uacute;ltiple</a>
+
+				</li><li>
+							<a
+							href="General2.html"
+							class="file"
+							target="FrameMain">
+								Transferir</a>
+
+				</li><li>
+							<a
+							href="General4.html"
+							class="file"
+							target="FrameMain">
+								Reabrir</a>
+
+				</li><li>
+							<a
+							href="General5.html"
+							class="file"
+							target="FrameMain">
+								Responder sin Documento</a>
+
+				</li><li>
+							<a
+							href="General6.html"
+							class="file"
+							target="FrameMain">
+								Agregar Documento</a>
+
+				</li><li>
+							<a
+							href="General7.html"
+							class="file"
+							target="FrameMain">
+								Trazabilidad del Documento</a>
+
+				</li><li>
+							<a
+							href="General8.html"
+							class="file"
+							target="FrameMain">
+								Hoja de Ruta del Documento</a>
+
+				</li><li>
+							<a
+							href="General9.html"
+							class="file"
+							target="FrameMain">
+								Enumerar</a>
+
+				</li><li>
+							<a
+							href="General11.html"
+							class="file"
+							target="FrameMain">
+								Modificar</a>
+
+				</li><li>
+							<a
+							href="General12.html"
+							class="file"
+							target="FrameMain">
+								Transferir Masivamente</a>
+
+				</li><li>
+							<a
+							href="General3.html"
+							class="file"
+							target="FrameMain">
+								Sem&aacute;foros</a>
+
+				</li><li>
+							<a
+							href="General10.html"
+							class="file"
+							target="FrameMain">
+								Marcar para seguimiento</a>
+
+				</li><li>
+							<a
+							href="General13.html"
+							class="file"
+							target="FrameMain">
+								Imprimir Prove&iacute;do</a>
+
+				</li><li>
+							<a
+							href="General14.html"
+							class="file"
+							target="FrameMain">
+								Archivar Masivamente</a>
+
+				</li><li>
+							<a
+							href="General15.html"
+							class="file"
+							target="FrameMain">
+								Guardar Configuraci&oacute;n</a>
+
+				</li><li>
+							<a
+							href="General16.html"
+							class="file"
+							target="FrameMain">
+								Retirar del Seguimiento</a>
+
+				</li><li>
+							<a
+							href="General17.html"
+							class="file"
+							target="FrameMain">
+								Documentos agrupados</a>
+
+				</li><li>
+							<a
+							href="General18.html"
+							class="file"
+							target="FrameMain">
+								Hoja de Ruta del Expediente</a>
+
+				</li><li>
+							<a
+							href="General19.html"
+							class="file"
+							target="FrameMain">
+								Trazabilidad del Expediente</a>
+
+				</li><li>
+							<a
+							href="General20.html"
+							class="file"
+							target="FrameMain">
+								Documentos sin Agrupar</a>
+
+				</li><li>
+							<a
+							href="General21.html"
+							class="file"
+							target="FrameMain">
+								Otros-Archivar</a>
+
+				</li><li>
+							<a
+							href="General22.html"
+							class="file"
+							target="FrameMain">
+								Otros-Anular</a>
+
+				</li><li>
+							<a
+							href="General23.html"
+							class="file"
+							target="FrameMain">
+								Otros-Atender</a>
+
+				</li><li>
+							<a
+							href="General24.html"
+							class="file"
+							target="FrameMain">
+								Otros-Mensajer&iacute;a</a>
+
+				</li><li>
+							<a
+							href="General25.html"
+							class="file"
+							target="FrameMain">
+								Otros-Imprimir</a>
+
+				</li><li>
+							<a
+							href="General26.html"
+							class="file"
+							target="FrameMain">
+								Notificar</a>
+
+				</li><li>
+							<a
+							href="General27.html"
+							class="file"
+							target="FrameMain">
+								B&uacute;squeda Simple</a>
+
+				</li><li>
+							<a
+							href="General28.html"
+							class="file"
+							target="FrameMain">
+								B&uacute;squeda Avanzada</a>
+
+				</li><li>
+							<a
+							href="General29.html"
+							class="file"
+							target="FrameMain">
+								Modificar Expediente</a>
+
+				</li><li>
+							<a
+							href="General30.html"
+							class="file"
+							target="FrameMain">
+								Eliminar Archivo</a>
+
+				</li><li>
+							<a
+							href="General31.html"
+							class="file"
+							target="FrameMain">
+								Filtrar Bandeja</a>
+
+				</li><li>
+							<a
+							href="General32.html"
+							class="file"
+							target="FrameMain">
+								Reabrir Masivamente</a>
+
+				</li><li>
+							<a
+							href="General33.html"
+							class="file"
+							target="FrameMain">
+								Nuevo Documento</a>
+
+				</li></ul></li><li>
+							<a
+							href="ManualdeUsuarioFinal1.html"
+							class="folder"
+							target="FrameMain">
+								Documentos</a>
+
+				<ul><li>
+							<a
+							href="BandejadeDocumentos.html"
+							class="file"
+							target="FrameMain">
+								Mis Documentos</a>
+
+				</li><li>
+							<a
+							href="BandejadeDocumentos1.html"
+							class="file"
+							target="FrameMain">
+								Documentos Archivados y Atendidos</a>
+
+				</li><li>
+							<a
+							href="BandejadeDocumentos2.html"
+							class="file"
+							target="FrameMain">
+								Informativos Recibidos</a>
+
+				</li><li>
+							<a
+							href="BandejadeDocumentos3.html"
+							class="file"
+							target="FrameMain">
+								Documentos Enviados</a>
+
+				</li><li>
+							<a
+							href="Documentos.html"
+							class="file"
+							target="FrameMain">
+								Documentos Importantes</a>
+
+				</li><li>
+							<a
+							href="Documentos1.html"
+							class="file"
+							target="FrameMain">
+								Mensajer&iacute;a</a>
+
+				</li><li>
+							<a
+							href="Documentos2.html"
+							class="file"
+							target="FrameMain">
+								Reportes</a>
+
+				</li><li>
+							<a
+							href="Documentos3.html"
+							class="file"
+							target="FrameMain">
+								Consulta de Documentos Recepcionados</a>
+
+				</li><li>
+							<a
+							href="Newtopic.html"
+							class="file"
+							target="FrameMain">
+								Documentos Recibidos</a>
+
+				</li></ul></li><li>
+							<a
+							href="ManualdeUsuarioFinal2.html"
+							class="folder"
+							target="FrameMain">
+								Carpeta de B&uacute;squeda</a>
+
+				<ul><li>
+							<a
+							href="CarpetadeBsqueda.html"
+							class="file"
+							target="FrameMain">
+								Detalle de Carpeta de B&uacute;squeda</a>
+
+				</li></ul></li><li>
+							<a
+							href="ManualdeUsuarioFinal3.html"
+							class="folder"
+							target="FrameMain">
+								Bandejas Compartidas</a>
+
+				<ul><li>
+							<a
+							href="BandejasCompartidas.html"
+							class="file"
+							target="FrameMain">
+								Detalle de Bandejas Compartidas</a>
+
+				</li></ul></li><li>
+							<a
+							href="ManualdeUsuarioFinal4.html"
+							class="folder"
+							target="FrameMain">
+								Seguimiento</a>
+
+				<ul><li>
+							<a
+							href="Seguimiento.html"
+							class="file"
+							target="FrameMain">
+								Detalle Seguimiento</a>
+
+				</li></ul></li></ul>
+		</div>
+		<div id="tab-keywords">
+			<ul id="keywords" class="filetree indextree">
+
+				</ul>
+		</div>
+		<div id="tab-search">
+			<form onsubmit="PerformSearch(); return false;">
+				<label for="search_value">Search:</label>
+				<input id="search_value" name="search_value"></input>
+				<input type="submit" value="search"/>
+			</form>
+			<div id="search_results"></div>
+		</div>
+	</div>
+    
+</body>
+
+</html>
+

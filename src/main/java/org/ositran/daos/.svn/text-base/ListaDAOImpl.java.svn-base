@@ -1,0 +1,94 @@
+package org.osinerg.daos;
+
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+
+import com.btg.osinergmin.siged.domain.Lista;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+@Repository
+public class ListaDAOImpl implements ListaDAO {
+
+   private EntityManager em;
+
+   //////////////////////////////////
+   // Methods                      //
+   //////////////////////////////////
+   public Lista findObjById(Integer iIdLista) {
+      return em.find(Lista.class, iIdLista);
+   }
+
+   public Lista guardarObj(Lista objLista) {
+      if (objLista.getIdlista() == null) {
+         em.persist(objLista);
+         em.flush();
+         em.refresh(objLista);
+      } else {
+         em.merge(objLista);
+         em.flush();
+      }
+
+      return objLista;
+   }
+
+   public Lista saveLista(Lista objLista) {
+      em.persist(objLista);
+      em.flush();
+      em.refresh(objLista);
+
+      return objLista;
+   }
+
+   public Lista updateLista(Lista objLista) {
+      em.merge(objLista);
+      em.flush();
+
+      return objLista;
+   }
+
+   public List<Lista> findLstBy(Usuario objAdministrador, Character cEstado) {
+      return em.createNamedQuery("Lista.findByAdministrador&Estado")
+               .setParameter("administrador", objAdministrador)
+               .setParameter("estado", cEstado)
+               .getResultList();
+   }
+
+   public List<Lista> findLstBy(Character cEstado) {
+      return em.createNamedQuery("Lista.findByEstado")
+               .setParameter("estado", cEstado)
+               .getResultList();
+   }
+
+   public List<Lista> findLstBy(Integer iIdPropietario) {
+      return em.createNamedQuery("Lista.findByIdPropietario")
+               .setParameter("idpropietario", iIdPropietario)
+               .getResultList();
+   }
+
+   public List<Lista> findLstByEstadoExcludedByProceso(Character cEstado, Proceso objProceso) {
+      return em.createNamedQuery("Lista.findByEstadoExcludedByProceso")
+               .setParameter("estado", cEstado)
+               .setParameter("proceso", objProceso)
+               .getResultList();
+   }
+
+   public void deleteLista(Lista objLista) {
+      objLista = em.getReference(Lista.class, objLista.getIdlista());
+      em.remove(objLista);
+   }
+
+   //////////////////////////////////
+   // Getters and Setters          //
+   //////////////////////////////////
+   public EntityManager getEm() {
+      return em;
+   }
+
+   @PersistenceContext(unitName = "sigedPU")
+   public void setEm(EntityManager em) {
+      this.em = em;
+   }
+}

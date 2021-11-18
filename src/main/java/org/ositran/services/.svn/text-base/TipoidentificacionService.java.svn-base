@@ -1,0 +1,12 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Tipoidentificacion;
+
+public interface TipoidentificacionService {
+
+   public List<Tipoidentificacion> getTipoIdentificacionMap();
+
+   public Tipoidentificacion buscarObjPor(String sNombre);
+}

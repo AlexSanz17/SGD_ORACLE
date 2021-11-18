@@ -1,0 +1,92 @@
+package org.osinerg.daos;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import com.btg.osinergmin.siged.domain.FilaBandejaUF;
+import com.btg.osinergmin.siged.domain.SeguimientoXUsuario;
+
+public class SeguimientoXUsuarioDAOImpl implements SeguimientoXUsuarioDAO {
+
+	private EntityManager em;
+	
+	@Override
+	public SeguimientoXUsuario guardarSeguimiento(SeguimientoXUsuario seguimiento) {
+		List<SeguimientoXUsuario> lista = buscarSeguimientoXUsuario(seguimiento); 
+		if(!lista.isEmpty()){
+			return lista.get(0);
+		}
+		if(seguimiento.getIdSeguimientoUsuario() == null){
+			em.persist(seguimiento);
+			em.flush();
+			em.refresh(seguimiento);
+		}else{
+			em.merge(seguimiento);
+			em.flush();
+			em.refresh(seguimiento);
+		}
+		return seguimiento;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SeguimientoXUsuario> buscarSeguimientoXUsuario(SeguimientoXUsuario seguimiento){
+		String sql = "SELECT s FROM SeguimientoXUsuario s WHERE s.idDocumento = :idDocumento AND s.idUsuario = :idUsuario";
+		return em.createQuery(sql).setParameter("idDocumento", seguimiento.getIdDocumento())
+								  .setParameter("idUsuario", seguimiento.getIdUsuario())
+								  .getResultList();
+	}
+	
+	@Override
+	public void eliminarSeguimiento(SeguimientoXUsuario seguimiento) {
+		List<SeguimientoXUsuario> lista = buscarSeguimientoXUsuario(seguimiento);
+		if(lista != null && !lista.isEmpty()){
+			for(SeguimientoXUsuario sxu : lista){
+				em.remove(sxu);
+				em.flush();
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<FilaBandejaUF> buscarGridSeguimiento(Integer idUsuario){
+		String sql = "SELECT DISTINCT(s.idDocumento) FROM SeguimientoXUsuario s WHERE s.idUsuario = :idUsuario";
+		List<Integer> documentos = em.createQuery(sql).setParameter("idUsuario", idUsuario).getResultList();
+		List<FilaBandejaUF> lista = new ArrayList<FilaBandejaUF>();
+		if(documentos != null && !documentos.isEmpty()){
+			sql = "SELECT f FROM FilaBandejaUF f WHERE f.id IN(:documentos)";
+			lista = em.createQuery(sql).setParameter("documentos", documentos).getResultList();
+		}
+		return lista;
+	}
+	
+	public String buscarAreaRemitente(String idRemitente){
+				
+		if(idRemitente == null || idRemitente.equals("")){
+			return "";
+		}
+		try{
+			String sql = "SELECT u.nombre FROM Unidad u ";
+			sql += "WHERE u.idunidad = (SELECT s.idunidad FROM Usuario s WHERE s.idUsuario = "+idRemitente+")";
+			Query q = em.createNativeQuery(sql);
+			return (String) q.getSingleResult();
+		}catch(Exception e){
+			e.printStackTrace();
+			return "";
+		}
+	}
+	
+	public EntityManager getEm() {
+		return em;
+	}
+
+	@PersistenceContext(unitName = "sigedPU")
+	public void setEm(EntityManager em) {
+		this.em = em;
+	}
+
+}

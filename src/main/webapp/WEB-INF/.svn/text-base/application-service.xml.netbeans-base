@@ -1,0 +1,1206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+
+	<!-- Definicion de DAOs -->
+	<bean id="accionDAO" class="org.osinerg.daos.AccionDAOImpl" />
+	<bean id="anioDAO" class="org.osinerg.daos.AnioDAOImpl" />
+	<bean id="archivoDAO" class="org.osinerg.daos.ArchivoDAOImpl" />
+	<bean id="archivopendienteDAO" class="org.osinerg.daos.ArchivopendienteDAOImpl" />
+	<bean id="auditoriaDAO" class="org.osinerg.daos.AuditoriaDAOImpl" />
+	<bean id="supervisorDAO" class="org.osinerg.daos.SupervisorDAOImpl" />
+	<bean id="campoDAO" class="org.osinerg.daos.CampoDAOImpl" />
+	<bean id="cargoDAO" class="org.osinerg.daos.CargoDAOImpl" />
+	<bean id="carpetaDAO" class="org.osinerg.daos.CarpetaDAOImpl" />
+	<bean id="carpetabusquedaDAO" class="org.osinerg.daos.CarpetabusquedaDAOImpl" />
+	<bean id="clienteDAO" class="org.osinerg.daos.ClienteDAOImpl" />
+	<bean id="concesionarioDAO" class="org.osinerg.daos.ConcesionarioDAOImpl" />
+	<bean id="courierDAO" class="org.osinerg.daos.CourierDAOImpl" />
+	<bean id="departamentoDAO" class="org.osinerg.daos.DepartamentoDAOImpl" />
+	<bean id="diafestivoDAO" class="org.osinerg.daos.DiafestivoDAOImpl" />
+	<bean id="distritoDAO" class="org.osinerg.daos.DistritoDAOImpl" />
+	<bean id="documentoDAO" class="org.osinerg.daos.DocumentoDAOImpl">
+        <property name="mailService" ref="mailService" />
+        <property name="accionService" ref="accionService" />
+        <property name="trazabilidadcopiaService" ref="trazabilidadcopiaService" />
+        <property name="trazabilidadapoyoDAO" ref="trazabilidadapoyoDAO" />
+        <property name="usuarioDAO" ref="usuarioDAO" />
+    </bean>
+	<bean id="documentostorDAO" class="org.osinerg.daos.DocumentostorDAOImpl" />
+	<bean id="documentoxexpedienteDAO" class="org.osinerg.daos.DocumentoxexpedienteDAOImpl" />
+	<bean id="datosDAO" class="org.osinerg.daos.DatosDAOImpl" />
+        <!--<dean id="mensajeriaDAO" class="org.osinerg.daos.MensajeriaDAO"/>-->
+	<bean id="envioDAO" class="org.osinerg.daos.EnvioDAOImpl" />
+	<bean id="empresadestinoDAO" class="org.osinerg.daos.EmpresadestinoDAOImpl" />
+	<bean id="estadocargoDAO" class="org.osinerg.daos.EstadocargoDAOImpl" />
+	<bean id="expedienteDAO" class="org.osinerg.daos.ExpedienteDAOImpl" />
+	<bean id="expedientestorDAO" class="org.osinerg.daos.ExpedientestorDAOImpl" />
+   <bean id="favoritoDAO" class="org.osinerg.daos.FavoritoDAOImpl" />
+	<bean id="gridColumnaDao" class="org.osinerg.daos.GridColumnaDaoImpl" />
+	<bean id="gridXGridColumnaDao" class="org.osinerg.daos.GridXGridColumnaDAOImpl" />
+	<bean id="gridcolumnaxusuarioDAO" class="org.osinerg.daos.GridcolumnaxusuarioDAOImpl" />
+	<bean id="grupoprocesoDAO" class="org.osinerg.daos.GrupoprocesoDAOImpl" />
+	<bean id="itemDAO" class="org.osinerg.daos.ItemDAOImpl" />
+	<bean id="listaDAO" class="org.osinerg.daos.ListaDAOImpl" />
+	<bean id="mensajeriaDAO" class="org.osinerg.daos.MensajeriaDAOImpl" />
+	<bean id="mesDAO" class="org.osinerg.daos.MesDAOImpl" />
+	<bean id="moduloDAO" class="org.osinerg.daos.ModuloDAOImpl" />
+	<bean id="motivoDAO" class="org.osinerg.daos.MotivoDAOImpl" />
+	<bean id="notificacionDAO" class="org.osinerg.daos.NotificacionDAOImpl" />
+	<bean id="numeracionDAO" class="org.osinerg.daos.NumeracionDAOImpl" />
+	<bean id="parametroDAO" class="org.osinerg.daos.ParametroDAOImpl" />
+	<bean id="perfilDAO" class="org.osinerg.daos.PerfilDAOImpl" />
+	<bean id="plantillaDAO" class="org.osinerg.daos.PlantillaDAOImpl" />
+	<bean id="procesoDAO" class="org.osinerg.daos.ProcesoDAOImpl" />
+	<bean id="provinciaDAO" class="org.osinerg.daos.ProvinciaDAOImpl" />
+	<bean id="recursoDAO" class="org.osinerg.daos.RecursoDAOImpl" />
+	<bean id="regionDAO" class="org.osinerg.daos.RegionDAOImpl" />
+	<bean id="rolDAO" class="org.osinerg.daos.RolDAOImpl" />
+	<bean id="salaDAO" class="org.osinerg.daos.SalaDAOImpl" />
+	<bean id="sedeDAO" class="org.osinerg.daos.SedeDAOImpl" />
+	<bean id="submotivoDAO" class="org.osinerg.daos.SubmotivoDAOImpl" />
+	<bean id="suministroDAO" class="org.osinerg.daos.SuministroDAOImpl" />
+	<bean id="tipoaccesoDAO" class="org.osinerg.daos.TipoaccesoDAOImpl" />
+	<bean id="tipodocumentoDAO" class="org.osinerg.daos.TipodocumentoDAOImpl" />
+	<bean id="tipoidentificacionDAO" class="org.osinerg.daos.TipoidentificacionDAOImpl" />
+	<bean id="tipoprocesoDAO" class="org.osinerg.daos.TipoprocesoDAOImpl" />
+	<bean id="tipoenvioDAO" class="org.osinerg.daos.TipoenvioDAOImpl" />
+	<bean id="trazabilidaddocumentoDAO" class="org.osinerg.daos.TrazabilidaddocumentoDAOImpl" />
+	<bean id="trazabilidadexpedienteDAO" class="org.osinerg.daos.TrazabilidadexpedienteDAOImpl" />
+	<bean id="unidadpesoDAO" class="org.osinerg.daos.UnidadpesoDAOImpl" />
+	<bean id="unidadDAO" class="org.osinerg.daos.UnidadDAOImpl" />
+	<bean id="usuarioDAO" class="org.osinerg.daos.UsuarioDAOImpl" />
+	<bean id="usuariostorDAO" class="org.osinerg.daos.UsuariostorDAOImpl" />
+	<bean id="valorcampoDAO" class="org.osinerg.daos.ValorcampoDAOImpl" />
+	<bean id="etapaDAO" class="org.osinerg.daos.EtapaDAOImpl" />
+	<bean id="estadoDAO" class="org.osinerg.daos.EstadoDAOImpl" />
+	<bean id="procedimientoIncumplidosDAO" class="org.osinerg.daos.ProcedimientoIncumplidosDAOImpl" />
+	<bean id="expedientexprocincumplidoDAO" class="org.osinerg.daos.ExpedientexprocincumplidoDAOImpl" />
+	<bean id="actividadDAO" class="org.osinerg.daos.ActividadDAOImpl" />
+	<bean id="documentoEnviadoDAO" class="org.osinerg.daos.DocumentoEnviadoDAOImpl" />
+	<bean id="reemplazoDAO" class="org.osinerg.daos.ReemplazoDAOImpl" />
+	<bean id="unidadxprocedimientoDAO" class="org.osinerg.daos.UnidadxprocedimientoDAOImpl" />
+	<bean id="resueltoxdocumentoDAO" class="org.osinerg.daos.ResueltoxdocumentoDAOImpl" />
+	<bean id="procedimientoDAO" class="org.osinerg.daos.ProcedimientoDAOImpl" />
+	<bean id="tipoResultadoDAO" class="org.osinerg.daos.TiporesultadoDAOImpl" />
+	<bean id="resolucionJaruDAO" class="org.osinerg.daos.ResolucionjaruDAOImpl" />
+	<bean id="gridDAO" class="org.osinerg.daos.GridDAOImpl" />
+	<bean id="FilaRResumenProcesoDAO" class="org.osinerg.daos.FilaRResumenProcesoDAOImpl" />
+	<bean id="FilaRDetalleProcesoDAO" class="org.osinerg.daos.FilaRDetalleProcesoDAOImpl" />
+	<bean id="ExpedientesPendientesStorDAO" class="org.osinerg.daos.ExpedientesPendientesStorDAOImpl" />
+	<bean id="ExpedientesIngresadosStorDAO" class="org.osinerg.daos.ExpedientesIngresadosStorDAOImpl" />
+	<bean id="ExpedientesConcluidosStorDAO" class="org.osinerg.daos.ExpedientesConcluidosStorDAOImpl" />
+	<bean id="ReporteAPNDAO" class="org.osinerg.daos.ReporteAPNDAOImpl" />
+	<bean id="ExpedientesPendientesAYQDAO" class="org.osinerg.daos.ExpedientesPendientesAYQDAOImpl" />
+	<bean id="documentoxclienteDAO" class="org.osinerg.daos.DocumentoxclienteDAOImpl" />
+	<bean id="ambitoenvioDAO" class="org.osinerg.daos.AmbitoenvioDAOImpl" />
+	<bean id="vocalDAO" class="org.osinerg.daos.VocalDAOImpl" />
+	<bean id="trazabilidadcopiaDAO" class="org.osinerg.daos.TrazabilidadcopiaDAOImpl" />
+	<bean id="trazabilidadapoyoDAO" class="org.osinerg.daos.TrazabilidadapoyoDAOImpl" />
+	<bean id="notificacionxEnumerarDAO" class="org.osinerg.daos.NotificacionxEnumerarDAOImpl"/>
+	<bean id="reporteAPNDAO" class="org.osinerg.daos.ReporteAPNDAOImpl"/>
+	<bean id="proveidoDAO" class="org.osinerg.daos.ProveidoDAOImpl"/>
+	<bean id="consultaDAO" class="org.osinerg.daos.ConsultaDAOImpl"/>
+	<bean id="seguimientoXUsuarioDAO" class="org.osinerg.daos.SeguimientoXUsuarioDAOImpl"/>
+	<!-- Para el sistema de seguridad -->
+	<!--<bean id="daoUsuario" class="org.osinerg.daos.seguridad.DaoUsuarioImpl">
+		 <property name="entityManagerFactory" ref="entityManagerFactorySeguridad" /> 
+	</bean>
+	-->
+	<!-- Definicion de Services -->
+        <bean id="crudService" class="gob.osinergmin.siged.service.impl.CrudServiceImpl" />
+
+        <bean id="nuevoArchivoService" class="gob.osinergmin.siged.service.impl.ArchivoServiceImpl">
+            <property name="crud" ref="crudService"/>
+        </bean>
+
+        <bean id="nuevoRepositorioService" class="gob.osinergmin.siged.service.impl.RepositorioServiceImpl" >
+            <property name="archivoService" ref="nuevoArchivoService" />
+            <property name="alfrescoWebServiceClient" ref="alfrescoWebServiceClient" />
+            <property name="alfrescoWebscriptService"  ref="alfrescoWebscriptClient" />
+        </bean>
+
+	<bean id="procedimientoService" class="org.osinerg.services.ProcedimientoServiceImpl">
+		<property name="procedimientoDAO" ref="procedimientoDAO" />
+		<property name="unidadxprocedimientoDAO" ref="unidadxprocedimientoDAO" />
+	</bean>
+
+	<bean id="accionService" class="org.osinerg.services.AccionServiceImpl">
+		<constructor-arg ref="accionDAO" />
+	</bean>
+
+	<bean id="vocalService" class="org.osinerg.services.VocalServiceImpl">
+		<constructor-arg ref="vocalDAO" />
+	</bean>
+	
+	<bean id="estadoService" class="org.osinerg.services.EstadoServiceImpl">
+		<constructor-arg ref="estadoDAO" />
+	</bean>
+	
+	<bean id="resolucionjaruService" class="org.osinerg.services.ResolucionjaruServiceImpl">
+		<constructor-arg ref="resolucionJaruDAO" />
+	</bean>
+	
+	<bean id="archivoPendienteService" class="org.osinerg.services.ArchivopendienteServiceImpl">
+		<property name="archivopendienteDAO" ref="archivopendienteDAO" />
+		<property name="campoDAO" ref="campoDAO" />
+		<property name="plantillaDAO" ref="plantillaDAO" />
+		<property name="valorcampoDAO" ref="valorcampoDAO" />
+		<property name="daoauditoria" ref="auditoriaDAO" />
+	</bean>
+
+	<bean id="archivoService" class="org.osinerg.services.ArchivoServiceImpl">
+		<constructor-arg ref="archivoDAO" />
+		<constructor-arg ref="auditoriaDAO" />
+		<property name="srvRepositorio" ref="repositorioService" />
+		<property name="alfrescoWebServiceClient" ref="alfrescoWebServiceClient" />
+		<property name="alfrescoWebscriptClient" ref="alfrescoWebscriptClient" />
+	</bean>
+
+	<bean id="carpetabusquedaService" class="org.osinerg.services.CarpetabusquedaServiceImpl">
+		<constructor-arg ref="carpetabusquedaDAO" />
+		<property name="daoauditoria" ref="auditoriaDAO" />
+		<property name="documentoDAO" ref="documentoDAO" />
+	</bean>
+
+	<bean id="carpetaService" class="org.osinerg.services.CarpetaServiceImpl">
+		<property name="carpetaDAO" ref="carpetaDAO" />
+		<property name="documentoDAO" ref="documentoDAO" />
+	</bean>
+
+	<bean id="clienteService" class="org.osinerg.services.ClienteServiceImpl">
+		<constructor-arg ref="clienteDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+		<property name="distritoService" ref="distritoService" />
+	</bean>
+
+	<bean id="concesionarioService" class="org.osinerg.services.ConcesionarioServiceImpl">
+		<constructor-arg ref="concesionarioDAO" />
+	</bean>
+
+	<bean id="diafestivoService" class="org.osinerg.services.DiafestivoServiceImpl">
+		<constructor-arg ref="diafestivoDAO" />
+		<constructor-arg ref="departamentoDAO" />
+		<constructor-arg ref="documentoDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="distritoService" class="org.osinerg.services.DistritoServiceImpl">
+		<constructor-arg ref="distritoDAO" />
+	</bean>
+
+	<bean id="departamentoService" class="org.osinerg.services.DepartamentoServiceImpl">
+		<constructor-arg ref="departamentoDAO" />
+	</bean>
+
+	<bean id="documentoService" class="org.osinerg.services.DocumentoServiceImpl">
+		<property name="auditoriaDao" ref="auditoriaDAO" />
+		<property name="documentoDao" ref="documentoDAO" />
+		<property name="documentoEnviadoDao" ref="documentoEnviadoDAO" />
+		<property name="documentoStorDao" ref="documentostorDAO" />
+		<property name="parametroDao" ref="parametroDAO" />
+		<property name="procesoDao" ref="procesoDAO" />
+		<property name="rolDao" ref="rolDAO" />
+		<property name="sedeDao" ref="sedeDAO" />
+		<property name="submotivoDao" ref="submotivoDAO" />
+		<property name="suministroDao" ref="suministroDAO" />
+		<property name="tipoDocumentoDao" ref="tipodocumentoDAO" />
+		<property name="proveidoDAO" ref="proveidoDAO" />
+		<property name="expedienteDAO" ref="expedienteDAO" />
+		<property name="fechaLimite" ref="fechaLimite" />
+		<property name="accionService" ref="accionService" />
+		<property name="archivoService" ref="archivoService" />
+		<property name="auditoriaService" ref="auditoriaService" />
+		<property name="diaFestivoService" ref="diafestivoService" />
+		<property name="distritoService" ref="distritoService" />
+		<property name="documentoPorExpedienteService" ref="documentoxexpedienteService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="listaService" ref="listaService" />
+		<property name="notificacionService" ref="notificacionService" />
+		<property name="repositorioService" ref="repositorioService" />
+		<property name="trazabilidadDocumentoService" ref="trazabilidaddocumentoService" />
+		<property name="trazabilidadExpedienteService" ref="trazabilidadexpedienteService" />
+		<property name="usuarioService" ref="usuarioService" />
+		<property name="usuarioStorService" ref="usuariostorService" />
+		<property name="srvArchivoPendiente" ref="archivoPendienteService" />
+		<property name="trazabilidadcopiaService" ref="trazabilidadcopiaService" />
+		<property name="trazabilidadapoyoService" ref="trazabilidadapoyoService" />
+        <property name="mailService" ref="mailService"/>
+        <property name="alfrescoWebServiceClient" ref="alfrescoWebServiceClient"/>
+      <property name="intalioService" ref="intalioService" />
+      <property name="clienteService" ref="clienteService" />
+      <property name="documentoxclienteService" ref="documentoxclienteService" />
+      <property name="notificacionxEnumerarDAO" ref="notificacionxEnumerarDAO" />
+      <property name="numeracionService" ref="numeracionService" />
+      <property name="alfrescoWebscriptClient" ref="alfrescoWebscriptClient" />
+      <property name="estadoService" ref="estadoService" />
+      <property name="unidadService" ref="unidadService" />
+      <property name="parametroService" ref="parametroService" />
+      <property name="procesoService" ref="procesoService" />
+      <property name="gridColumnaXUsuarioService" ref="gridcolumnaxusuarioService" />
+	</bean>
+
+	<bean id="documentoxexpedienteService" class="org.osinerg.services.DocumentoxexpedienteServiceImpl">
+		<constructor-arg ref="documentoxexpedienteDAO" />
+	</bean>
+
+	<bean id="empresadestinoService" class="org.osinerg.services.EmpresadestinoServiceImpl">
+		<property name="dao" ref="empresadestinoDAO" />
+	</bean>
+
+	<bean id="courrierService" class="org.osinerg.services.CourierServiceImpl">
+		<property name="dao" ref="courierDAO" />
+	</bean>
+
+	<bean id="expedienteService" class="org.osinerg.services.ExpedienteServiceImpl">
+		<constructor-arg ref="expedienteDAO" />
+		<constructor-arg ref="concesionarioService" />
+		<constructor-arg ref="procesoService" />
+		<constructor-arg ref="clienteService" />
+		<property name="documentoService" ref="documentoService" />
+		<property name="daoES" ref="expedientestorDAO" />
+		<property name="repositorioService" ref="repositorioService" />
+		<property name="srvTipoDocumento" ref="tipodocumentoService" />
+		<property name="srvActividad" ref="actividadService" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+		<property name="trazabilidadDocumentoService" ref="trazabilidaddocumentoService" />
+		<property name="estadoDAO" ref="estadoDAO" />
+		<property name="etapaDAO" ref="etapaDAO" />
+      <property name="srvParametro" ref="parametroService" />
+	</bean>
+
+   <bean id="favoritoService" class="org.osinerg.services.FavoritoServiceImpl">
+		<constructor-arg ref="favoritoDAO" />
+	</bean>
+
+	<bean id="gridcolumnaxusuarioService" class="org.osinerg.services.GridcolumnaxusuarioServiceImpl">
+		<constructor-arg ref="gridcolumnaxusuarioDAO" />
+                <property name="datosDAO" ref="datosDAO" />
+                <!--<property name="mensajeriaDAO" ref="mensajeriaDAO"/>-->
+		<property name="srvArchivo" ref="archivoService" />
+		<property name="srvArchivoPendiente" ref="archivoPendienteService" />
+		<property name="srvCarpetaBusqueda" ref="carpetabusquedaService" />
+		<property name="documentoService" ref="documentoService" />
+		<property name="srvDocumentoEnviado" ref="documentoEnviadoService" />
+		<property name="srvExpediente" ref="expedienteService" />
+		<property name="srvMensajeria" ref="mensajeriaService" />
+		<property name="srvNotificacion" ref="notificacionService" />
+		<property name="srvProceso" ref="procesoService" />
+		<property name="srvReemplazo" ref="reemplazoService" />
+		<property name="cargoService" ref="cargoService" />
+		<property name="srvTrazabilidadDocumento" ref="trazabilidaddocumentoService" />
+		<property name="gridXGridColumnaDao" ref="gridXGridColumnaDao" />
+		<property name="parametroDAO" ref="parametroDAO" />
+		<property name="gridDao" ref="gridDAO" />
+		<property name="rolDao" ref="rolDAO" />
+		<property name="srvPlantilla" ref="plantillaService" />
+		<property name="srvLista" ref="listaService" />
+		<property name="srvItem" ref="itemService" />
+		<property name="seguimientoXUsuarioService" ref="seguimientoXUsuarioService" />
+		<property name="trazabilidadApoyoService" ref="trazabilidadapoyoService" />
+		<property name="srvParametro" ref="parametroService" />
+	</bean>
+	<bean id="itemService" class="org.osinerg.services.ItemServiceImpl">
+		<constructor-arg ref="itemDAO" />
+	</bean>
+	<bean id="grupoprocesoService" class="org.osinerg.services.GrupoprocesoServiceImpl">
+		<constructor-arg ref="grupoprocesoDAO" />
+	</bean>
+
+	<bean id="listaService" class="org.osinerg.services.ListaServiceImpl">
+		<constructor-arg ref="listaDAO" />
+		<property name="srvUsuario" ref="usuarioService" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="mensajeriaService" class="org.osinerg.services.MensajeriaServiceImpl">
+		<constructor-arg ref="mensajeriaDAO" />
+		<constructor-arg ref="usuarioDAO" />
+		<constructor-arg ref="documentoDAO" />
+		<property name="daoauditoria" ref="auditoriaDAO" />
+		<property name="srvDocumento" ref="documentoService" />
+		<property name="parametroDAO" ref="parametroDAO" />
+		<property name="trazabilidaddocumentoDAO" ref="trazabilidaddocumentoDAO" />
+		<property name="accionDAO" ref="accionDAO" />
+		<property name="trazabilidadcopiaDAO" ref="trazabilidadcopiaDAO" />
+		<property name="notificacionDAO" ref="notificacionDAO" />
+		<property name="clienteDAO" ref="clienteDAO" />
+	</bean>
+
+	<bean id="moduloService" class="org.osinerg.services.ModuloServiceImpl">
+		<constructor-arg ref="moduloDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="motivoService" class="org.osinerg.services.MotivoServiceImpl">
+		<constructor-arg ref="motivoDAO" />
+	</bean>
+
+	<bean id="numeracionService" class="org.osinerg.services.NumeracionServiceImpl">
+		<constructor-arg ref="numeracionDAO" />
+	</bean>
+
+	<bean id="subMotivoService" class="org.osinerg.services.SubMotivoServiceImpl">
+		<property name="submotivoDAO" ref="submotivoDAO" />
+	</bean>
+
+	<bean id="notificacionService" class="org.osinerg.services.NotificacionServiceImpl">
+		<constructor-arg ref="notificacionDAO" />
+		<property name="srvTrazDoc" ref="trazabilidaddocumentoService" />
+		<property name="trazabilidaddocumentoDAO" ref="trazabilidaddocumentoDAO" />		
+        <property name="documentoEnviadoDao" ref="documentoEnviadoDAO" />
+      	<property name="documentoService" ref="documentoService" />
+      	<property name="trazabilidadcopiaService" ref="trazabilidadcopiaService" />
+      	<property name="accionService" ref="accionService" />
+        <property name="mailService" ref="mailService" />
+        <property name="fechaLimite" ref="fechaLimite" />
+        <property name="trazabilidadapoyoService" ref="trazabilidadapoyoService" />
+        <property name="estadoService" ref="estadoService" />
+	</bean>
+	
+	<bean id="notificacionxEnumerarService" class="org.osinerg.services.NotificacionxEnumerarServiceImpl">
+		<constructor-arg ref="notificacionxEnumerarDAO" />
+		<property name="srvTrazDoc" ref="trazabilidaddocumentoService" />
+		<property name="trazabilidaddocumentoDAO" ref="trazabilidaddocumentoDAO" />
+      	<property name="documentoService" ref="documentoService" />
+      	<property name="trazabilidadcopiaService" ref="trazabilidadcopiaService" />
+      	<property name="accionService" ref="accionService" />
+        <property name="mailService" ref="mailService" />
+	</bean>
+
+	<bean id="perfilService" class="org.osinerg.services.PerfilServiceImpl">
+		<constructor-arg ref="perfilDAO" />
+		<property name="srvRecurso" ref="recursoService" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="plantillaService" class="org.osinerg.services.PlantillaServiceImpl">
+		<constructor-arg ref="plantillaDAO" />
+		<property name="valorCampoDao" ref="valorcampoDAO" />
+		<property name="auditoriaDao" ref="auditoriaDAO" />
+	</bean>
+
+	<bean id="provinciaService" class="org.osinerg.services.ProvinciaServiceImpl">
+		<constructor-arg ref="provinciaDAO" />
+	</bean>
+
+	<bean id="campoService" class="org.osinerg.services.CampoServiceImpl">
+		<constructor-arg ref="campoDAO" />
+	</bean>
+
+	<bean id="procesoService" class="org.osinerg.services.ProcesoServiceImpl">
+		<constructor-arg ref="procesoDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+		<property name="srvUsuario" ref="usuarioService" />
+		<property name="srvTipoProceso" ref="tipoprocesoService" />
+		<property name="parametroService" ref="parametroService" />
+		<property name="srvLista" ref="listaService" />
+	</bean>
+
+	<bean id="recursoService" class="org.osinerg.services.RecursoServiceImpl">
+		<constructor-arg ref="recursoDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="repositorioService" class="org.osinerg.services.RepositorioServiceWebservice">
+		<property name="archivoDAO" ref="archivoDAO" />
+		<property name="expedienteDAO" ref="expedienteDAO" />
+		<property name="documentoDAO" ref="documentoDAO" />
+		<property name="archivoService" ref="archivoService" />
+      <property name="seguridadService" ref="seguridadService" />
+      <property name="alfrescoWebServiceClient" ref="alfrescoWebServiceClient" />
+	</bean>
+
+	<bean id="rolService" class="org.osinerg.services.RolServiceImpl">
+		<constructor-arg ref="rolDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+		<property name="usuarioDao" ref="usuarioDAO" />
+	</bean>
+
+	<bean id="sedeService" class="org.osinerg.services.SedeServiceImpl">
+		<constructor-arg ref="sedeDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+	
+	<bean id="salaService" class="org.osinerg.services.SalaServiceImpl">
+		<constructor-arg ref="salaDAO" />
+	</bean>
+
+	<bean id="seguimientoService" class="org.osinerg.services.SeguimientoServiceImpl">
+		<constructor-arg ref="documentoDAO" />
+		<constructor-arg ref="parametroDAO" />
+		<constructor-arg ref="accionDAO" />
+	</bean>
+
+	<bean id="tipoaccesoService" class="org.osinerg.services.TipoaccesoServiceImpl">
+		<constructor-arg ref="tipoaccesoDAO" />
+	</bean>
+
+	<bean id="tipodocumentoService" class="org.osinerg.services.TipodocumentoServiceImpl">
+		<constructor-arg ref="tipodocumentoDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="tipoidentificacionService" class="org.osinerg.services.TipoidentificacionServiceImpl">
+		<constructor-arg ref="tipoidentificacionDAO" />
+	</bean>
+
+	<bean id="tipoenvioService" class="org.osinerg.services.TipoenvioServiceImpl">
+		<property name="dao" ref="tipoenvioDAO" />
+	</bean>
+
+	<bean id="datosService" class="org.osinerg.services.DatosServiceImpl">
+		<property name="dao" ref="datosDAO" />
+		<property name="daote" ref="tipoenvioDAO" />
+		<property name="daoed" ref="empresadestinoDAO" />
+		<property name="daomj" ref="mensajeriaDAO" />
+		<property name="daoae" ref="ambitoenvioDAO" />
+	</bean>
+
+	<bean id="envioService" class="org.osinerg.services.EnvioServiceImpl">
+		<property name="dao" ref="envioDAO" />
+		<property name="daomj" ref="mensajeriaDAO" />
+	</bean>
+
+	<bean id="cargoService" class="org.osinerg.services.CargoServiceImpl">
+		<property name="dao" ref="cargoDAO" />
+		<property name="daomj" ref="mensajeriaDAO" />
+		<property name="daoauditoria" ref="auditoriaDAO" />
+	</bean>
+
+	<bean id="tipoprocesoService" class="org.osinerg.services.TipoprocesoServiceImpl">
+		<constructor-arg ref="tipoprocesoDAO" />
+	</bean>
+
+	<bean id="trazabilidaddocumentoService" class="org.osinerg.services.TrazabilidaddocumentoServiceImpl">
+		<constructor-arg ref="trazabilidaddocumentoDAO" />
+		<property name="daoauditoria" ref="auditoriaDAO" />
+		<property name="fechaLimite" ref="fechaLimite" />
+		<property name="accionDao" ref="accionDAO" />
+		<property name="documentoDAO" ref="documentoDAO" />
+		<property name="parametroDAO" ref="parametroDAO" />
+		<property name="proveidoDAO" ref="proveidoDAO" />
+	</bean>
+
+	<bean id="trazabilidadexpedienteService" class="org.osinerg.services.TrazabilidadexpedienteServiceImpl">
+		<constructor-arg ref="trazabilidadexpedienteDAO" />
+		<property name="accionDao" ref="accionDAO" />
+		<property name="daoauditoria" ref="auditoriaDAO" />
+	</bean>
+
+	<bean id="unidadService" class="org.osinerg.services.UnidadServiceImpl">
+		<constructor-arg ref="unidadDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="uploadService" class="org.osinerg.services.UploadServiceImpl" />
+
+	<bean id="usuarioService" class="org.osinerg.services.UsuarioServiceImpl">
+		<constructor-arg ref="usuarioDAO" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+		<property name="srvProceso" ref="procesoService" />
+		<property name="rolDao" ref="rolDAO" />
+		<!-- <property name="daoUsuario" ref="daoUsuario" /> -->
+		<property name="unidadDao" ref="unidadDAO" />
+		<property name="perfilDao" ref="perfilDAO" />
+		<property name="sedeDao" ref="sedeDAO" />
+		<property name="usuarioStorDao" ref="usuariostorDAO" />
+		<property name="salaDao" ref="salaDAO" />
+                <property name="seguridadService" ref="seguridadService" />
+	</bean>
+
+	<bean id="usuariostorService" class="org.osinerg.services.UsuariostorServiceImpl">
+		<constructor-arg ref="usuariostorDAO" />
+	</bean>
+
+	<bean id="auditoriaService" class="org.osinerg.services.AuditoriaServiceImpl">
+		<property name="dao" ref="auditoriaDAO" />
+	</bean>
+
+	<bean id="supervisorService" class="org.osinerg.services.SupervisorServiceImpl">
+		<property name="supervisorDAO" ref="supervisorDAO" />
+	</bean>
+
+	<bean id="documentoEnviadoService" class="org.osinerg.services.DocumentoEnviadoServiceImpl">
+		<property name="dao" ref="documentoEnviadoDAO" />
+		<property name="daoauditoria" ref="auditoriaDAO" />
+	</bean>
+
+	<bean id="fechaLimite" class="org.osinerg.utils.FechaLimite">
+		<property name="parametroService" ref="parametroService" />
+		<property name="diafestivoService" ref="diafestivoService" />
+		<property name="unidadService" ref="unidadService"/>
+		<property name="usuarioService" ref="usuarioService" />
+	</bean>
+
+	<bean id="resueltoxdocumentoService" class="org.osinerg.services.ResueltoxdocumentoServiceImpl">
+		<property name="resueltoxdocumentoDAO" ref="resueltoxdocumentoDAO" />
+	</bean>
+
+	<bean id="etapaService" class="org.osinerg.services.EtapaServiceImpl">
+		<property name="etapaDAO" ref="etapaDAO" />
+	</bean>
+
+	<bean id="reemplazoService" class="org.osinerg.services.ReemplazoServiceImpl">
+		<property name="reemplazoDao" ref="reemplazoDAO" />
+		<property name="srvProceso" ref="procesoService" />
+		<property name="srvUsuario" ref="usuarioService" />
+	</bean>
+
+	<bean id="procedimientoIncumplidosService"
+		class="org.osinerg.services.ProcedimientoIncumplidosServiceImpl">
+		<property name="procedimientoIncumplidosDAO" ref="procedimientoIncumplidosDAO" />
+	</bean>
+
+	<bean id="actividadService" class="org.osinerg.services.ActividadServiceImpl">
+		<property name="actividadDAO" ref="actividadDAO" />
+	</bean>
+
+	<bean id="tipoResultadoService" class="org.osinerg.services.TiporesultadoServiceImpl">		
+		<constructor-arg ref="tipoResultadoDAO" />
+	</bean>
+
+	<bean id="expedientestorService" class="org.osinerg.services.ExpedientestorServiceImpl">
+		<property name="dao" ref="expedientestorDAO" />
+		<property name="estadoDAO" ref="estadoDAO" />
+		<property name="etapaDAO" ref="etapaDAO" />
+		<property name="distritoDAO" ref="distritoDAO" />
+	</bean>
+
+	<bean id="storManagerService" class="org.osinerg.services.StorManagerServiceImpl">
+		<property name="suministroDAO" ref="suministroDAO" />
+		<property name="expedienteDAO" ref="expedienteDAO" />
+		<property name="documentostorDAO" ref="documentostorDAO" />
+		<property name="submotivoDAO" ref="submotivoDAO" />
+		<property name="srvAchivo" ref="archivoService" />
+		<property name="accionDAO" ref="accionDAO" />
+		<property name="documentoDAO" ref="documentoDAO" />
+		<property name="tipodocumentoDAO" ref="tipodocumentoDAO" />
+		<property name="trazabilidaddocumentoDAO" ref="trazabilidaddocumentoDAO" />
+		<property name="trazabilidadexpedienteDAO" ref="trazabilidadexpedienteDAO" />
+		<property name="resolucionjaruDAO" ref="resolucionJaruDAO" />
+		<property name="expedientestorDAO" ref="expedientestorDAO" />
+	</bean>
+
+	<bean id="loginService" class="org.osinerg.services.LoginServiceImpl">
+		<property name="usuarioDao" ref="usuarioDAO" />
+		<property name="rolDao" ref="rolDAO" />
+		<property name="perfilService" ref="perfilService" />
+		<property name="srvUsuario" ref="usuarioService" />
+	</bean>
+
+	<bean id="parametroService" class="org.osinerg.services.ParametroServiceImpl">
+		<property name="dao" ref="parametroDAO" />
+	</bean>
+
+	<bean id="filaRResumenProcesoService" class="org.osinerg.services.FilaRResumenProcesoServiceImpl">
+		<constructor-arg ref="FilaRResumenProcesoDAO" />
+		<property name="gridXGridColumnaDao" ref="gridXGridColumnaDao" />
+	</bean>
+
+	<bean id="filaRDetalleProcesoService" class="org.osinerg.services.FilaRDetalleProcesoServiceImpl">
+		<constructor-arg ref="FilaRDetalleProcesoDAO" />
+		<property name="gridXGridColumnaDao" ref="gridXGridColumnaDao" />
+	</bean>
+
+	<bean id="reporteSigedSTORService" class="org.osinerg.services.ReporteSigedSTORServiceImpl">
+		<constructor-arg index="0" ref="ExpedientesPendientesStorDAO" />
+		<constructor-arg index="1" ref="ExpedientesIngresadosStorDAO" />
+		<constructor-arg index="2" ref="ExpedientesConcluidosStorDAO" />
+	</bean>
+	
+	<bean id="reporteAPNService" class="org.osinerg.services.ReporteAPNServiceImpl">
+		<constructor-arg index="0" ref="ReporteAPNDAO" />
+		<property name="reporteAPNDAO" ref="reporteAPNDAO" />
+		<property name="documentoService" ref="documentoService" />
+		<property name="trazabilidadService" ref="trazabilidaddocumentoService" />
+		<property name="trazabilidadApoyoService" ref="trazabilidadapoyoService" />
+	</bean>
+
+	<bean id="reporteSigedUsuariosService" class="org.osinerg.services.ReporteSigedUsuariosServiceImpl">
+		<constructor-arg index="0" ref="ExpedientesPendientesAYQDAO" />
+		<property name="suministroDAO" ref="suministroDAO" />
+	</bean>
+
+	<bean id="intalioService" class="org.osinerg.services.IntalioServiceImpl">
+		<property name="expedientedao" 		ref="expedienteDAO" />
+		<property name="expedienteService" 	ref="expedienteService" />
+		<property name="procesoDAO" 		ref="procesoDAO" />
+		<property name="repositorioService" ref="repositorioService" />
+		<property name="tipodocumentodao" 	ref="tipodocumentoDAO" />
+		<property name="documentodao" 		ref="documentoDAO" />
+		<property name="accionService" 		ref="accionService" />
+		<property name="clienteService" 	ref="clienteService" />
+		<property name="seguridadService" 	ref="seguridadService" />
+	</bean>
+	
+	<bean id="ambitoenvioService" class="org.osinerg.services.AmbitoenvioServiceImpl">
+		<property name="dao" ref="ambitoenvioDAO" />
+	</bean>
+	
+	<bean id="documentoxclienteService" class="org.osinerg.services.DocumentoxclienteServiceImpl">
+		<constructor-arg ref="documentoxclienteDAO" />
+	</bean>
+	
+	<bean id="controlDeCalidadService" class="org.osinerg.services.ControlDeCalidadServiceImpl">
+		<property name="accionDAO" ref="accionDAO" />
+      <property name="archivoService" ref="archivoService" />
+		<property name="documentoDao" ref="documentoDAO" />
+		<property name="documentoStorDao" ref="documentostorDAO" />
+		<property name="procesoDao" ref="procesoDAO" />
+		<property name="submotivoDao" ref="submotivoDAO" />
+		<property name="suministroDao" ref="suministroDAO" />
+		<property name="tipoDocumentoDao" ref="tipodocumentoDAO" />
+		<property name="clienteService" ref="clienteService" />
+		<property name="concesionarioService" ref="concesionarioService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="intalioService" ref="intalioService" />
+		<property name="repositorioService" ref="repositorioService" />
+		<property name="trazabilidadDocumentoService" ref="trazabilidaddocumentoService" />
+		<property name="trazabilidadExpedienteService" ref="trazabilidadexpedienteService" />
+		<property name="notificacionService" ref="notificacionService" />
+      <property name="trazabilidadCopiaService" ref="trazabilidadcopiaService" />
+	</bean>
+
+	<bean id="trazabilidadcopiaService" class="org.osinerg.services.TrazabilidadcopiaServiceImpl">
+		<property name="trazabilidadcopiaDAO" ref="trazabilidadcopiaDAO" />
+		<property name="fechaLimite" ref="fechaLimite" />
+	</bean>
+
+	<bean id="trazabilidadapoyoService" class="org.osinerg.services.TrazabilidadapoyoServiceImpl">
+		<property name="trazabilidadapoyoDAO" ref="trazabilidadapoyoDAO" />
+	</bean>
+
+	<bean id="gestionDocumentos" class="org.osinerg.services.GestionDocumentosImpl">
+		<property name="etapaService" ref="etapaService" />		
+		<property name="documentoService" ref="documentoService" />
+		<property name="accionService" ref="accionService" />
+		<property name="usuarioService" ref="usuarioService" />
+		<property name="trazabilidadDocumentoService" ref="trazabilidaddocumentoService" />
+		<property name="procesoService" ref="procesoService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="documentoEnviadoService" ref="documentoEnviadoService" />
+		<property name="notificacionService" ref="notificacionService" />
+		<property name="mailService" ref="mailService" />
+		<property name="fechaLimite" ref="fechaLimite" />
+	</bean>
+	
+	<bean id="proveidoService" class="org.osinerg.services.ProveidoServiceImpl">
+		<property name="proveidoDAO" ref="proveidoDAO" />
+	</bean>
+	<bean id="consultaService" class="org.osinerg.services.ConsultaServiceImpl">
+		<property name="consultaDAO" ref="consultaDAO" />
+		<property name="documentoService" ref="documentoService" />
+		<property name="notificacionService" ref="notificacionService" />
+	</bean>
+	<bean id="seguimientoXUsuarioService" class="org.osinerg.services.SeguimientoXUsuarioServiceImpl">
+		<property name="seguimientoXUsuarioDAO" ref="seguimientoXUsuarioDAO" />
+		<property name="trazabilidadapoyoDAO" ref="trazabilidadapoyoDAO" />
+	</bean>
+
+	<!-- Definicion de Actions -->
+	<bean id="archivarAction" scope="prototype" class="org.osinerg.actions.ArchivarAction">
+		<constructor-arg ref="documentoService" />
+		<constructor-arg ref="usuarioService" />
+		<constructor-arg ref="expedienteService" />
+      <property name="notificacionService" ref="notificacionService" />
+	</bean>
+
+	<bean id="archivoPendienteAction" scope="prototype" class="org.osinerg.actions.PlantillaAction">
+		<constructor-arg ref="archivoPendienteService" />
+		<constructor-arg ref="documentoService" />
+		<constructor-arg ref="plantillaService" />
+		<constructor-arg ref="repositorioService" />
+		<constructor-arg ref="usuarioService" />
+		<constructor-arg ref="archivoService" />
+		<constructor-arg ref="accionService" />
+		<constructor-arg ref="trazabilidaddocumentoService" />
+		<constructor-arg ref="tipodocumentoService" />
+		<property name="parametroService" ref="parametroService" />
+		<property name="srvNotificacion" ref="notificacionService" />
+                <property name="messageSource" ref="messageSource" />
+	</bean>
+
+	<bean id="carpetabusquedaAction" scope="prototype"
+		class="org.osinerg.actions.CarpetabusquedaAction">
+		<constructor-arg ref="carpetabusquedaService" />
+		<constructor-arg ref="procesoService" />
+		<property name="srvNotificacion" ref="notificacionService" />
+		<property name="srvCarpetaBusqueda" ref="carpetabusquedaService" />
+	</bean>
+
+	<bean id="clienteAction" scope="prototype" class="org.osinerg.actions.ClienteAction">
+		<constructor-arg ref="clienteService" />
+	</bean>
+
+	<bean id="documentoAction" scope="prototype" class="org.osinerg.actions.DocumentoAction">
+		<constructor-arg ref="documentoService" />
+		<constructor-arg ref="procesoService" />
+		<constructor-arg ref="clienteService" />
+		<constructor-arg ref="tipodocumentoService" />
+		<constructor-arg ref="tipoidentificacionService" />
+		<constructor-arg ref="usuarioService" />
+		<constructor-arg ref="expedientestorService" />
+		<property name="accionService" ref="accionService" />
+		<property name="archivoService" ref="archivoService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="etapaService" ref="etapaService" />		
+		<property name="plantillaService" ref="plantillaService" />
+		<property name="repositorioService" ref="repositorioService" />
+		<property name="trazabilidadDocumentoService" ref="trazabilidaddocumentoService" />
+		<property name="actividadService" ref="actividadService" />
+		<property name="notificacionService" ref="notificacionService" />
+		<property name="notificacionxEnumerarService" ref="notificacionxEnumerarService" />
+		<property name="trazabilidadExpedienteService" ref="trazabilidadexpedienteService" />
+		<property name="usuarioStorService" ref="usuariostorService" />
+		<property name="concesionarioService" ref="concesionarioService" />
+		<property name="parametroService" ref="parametroService" />
+		<property name="controlDeCalidadService" ref="controlDeCalidadService" />
+		<property name="intalioService" ref="intalioService" />
+		<property name="trazabilidadcopiaService" ref="trazabilidadcopiaService" />
+		<property name="trazabilidadapoyoService" ref="trazabilidadapoyoService" />
+        <property name="documentoenviadoService" ref="documentoEnviadoService" />
+        <property name="resolucionJaruService" ref="resolucionjaruService" />
+        <property name="mailService" ref="mailService" />
+	    <property name="gestionDocumentos" ref="gestionDocumentos"/>    
+	    <property name="listaService" ref="listaService" />
+	    <property name="proveidoService" ref="proveidoService" />
+	    <property name="seguimientoXUsuarioService" ref="seguimientoXUsuarioService" />
+	    <property name="fechaLimite" ref="fechaLimite" />
+	    <property name="alfrescoWebServiceClient" ref="alfrescoWebServiceClient" />
+	</bean>
+
+	<bean id="dojoAction" scope="prototype" class="org.osinerg.actions.DojoAction">
+      <property name="archivoService" ref="archivoService" />
+		<property name="documentoService" ref="documentoService" />
+		<property name="gridColumnaXUsuarioService" ref="gridcolumnaxusuarioService" />
+		<property name="usuarioService" ref="usuarioService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="tipoIdentificacionService" ref="tipoidentificacionService" />
+		<property name="clienteService" ref="clienteService" />
+		<property name="parametroService" ref="parametroService" />
+		<property name="carpetaBusquedaService" ref="carpetabusquedaService" />
+		<property name="notificacionService" ref="notificacionService" />
+		<property name="rolService" ref="rolService" />
+		<property name="supervisorService" ref="supervisorService" />
+		<property name="distritoDao" ref="distritoDAO" />
+		<property name="reemplazoDao" ref="reemplazoDAO" />
+		<property name="srvPlantilla" ref="plantillaService" />
+		<property name="srvCampo" ref="campoService" />
+		<property name="srvNumeracion" ref="numeracionService" />
+		<property name="srvUnidad" ref="unidadService" />
+		<property name="srvTipoDocumento" ref="tipodocumentoService" />
+		<property name="perfilDao" ref="perfilDAO" />
+		<property name="srvProceso" ref="procesoService" />
+      <property name="srvItem" ref="itemService" />
+      <property name="srvMensajeria" ref="mensajeriaService" />
+      <property name="documentoxclienteService" ref="documentoxclienteService" />
+      <property name="favoritoService" ref="favoritoService" />
+      <property name="concesionarioService" ref="concesionarioService" />
+      <property name="storService" ref="expedientestorService" />
+      <property name="alfrescoWebServiceClient" ref="alfrescoWebServiceClient" />    
+      <property name="documentoDao" ref="documentoDAO" />  
+	</bean>
+
+	<bean id="diafestivoAction" scope="prototype"
+		class="org.osinerg.actions.DiafestivoAction">
+		<constructor-arg ref="diafestivoService" />
+	</bean>
+
+	<bean id="auditoriaAction" scope="prototype"
+		class="org.osinerg.actions.AuditoriaAction">
+		<property name="srvauditoria" ref="auditoriaService" />
+	</bean>
+
+	<bean id="supervisorAction" scope="prototype"
+		class="org.osinerg.actions.SupervisorAction">
+		<property name="supervisorService" ref="supervisorService" />
+	</bean>
+
+	<bean id="expedienteAction" scope="prototype"
+		class="org.osinerg.actions.ExpedienteAction">
+		<constructor-arg ref="expedienteService" />
+		<property name="srvDocumento" ref="documentoService" />
+		<property name="srvRep" ref="repositorioService" />
+		<property name="usuarioService" ref="usuarioService" />
+	</bean>
+
+	<bean id="expedientestorAction" scope="prototype"
+		class="org.osinerg.actions.ExpedientestorAction">
+		<constructor-arg ref="expedientestorService" />
+	</bean>
+
+	<bean id="listaAction" scope="prototype" class="org.osinerg.actions.ListaAction">
+		<constructor-arg ref="listaService" />
+		<property name="srvUsuario" ref="usuarioService" />
+	</bean>
+
+	<bean id="datosAction" scope="prototype" class="org.osinerg.actions.DatosAction">
+		<constructor-arg ref="datosService" />
+		<constructor-arg ref="mensajeriaService" />
+		<constructor-arg ref="tipoenvioService" />
+		<constructor-arg ref="empresadestinoService" />
+		<constructor-arg ref="documentoService" />
+		<constructor-arg ref="ambitoenvioService" />
+		<property name="archivoService" ref="archivoService" />
+	</bean>
+
+	<bean id="envioAction" scope="prototype" class="org.osinerg.actions.EnvioAction">
+		<constructor-arg ref="envioService" />
+		<constructor-arg ref="mensajeriaService" />
+		<constructor-arg ref="datosService" />
+	</bean>
+
+	<bean id="cargoAction" scope="prototype" class="org.osinerg.actions.CargoAction">
+		<constructor-arg ref="cargoService" />
+		<constructor-arg ref="envioService" />
+		<constructor-arg ref="datosService" />
+		<constructor-arg ref="mensajeriaService" />
+		<property name="archivoService" ref="archivoService" />
+	</bean>
+
+	<bean id="mantenimientoAction" scope="prototype" class="org.osinerg.actions.MantenimientoAction">
+		<constructor-arg ref="procesoService" />
+		<constructor-arg ref="rolService" />
+		<constructor-arg ref="unidadService" />
+		<constructor-arg ref="usuarioService" />
+		<property name="clienteService" ref="clienteService" />
+		<property name="srvGrupoproceso" ref="grupoprocesoService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="srvModulo" ref="moduloService" />
+		<property name="srvPerfil" ref="perfilService" />
+		<property name="srvPlantilla" ref="plantillaService" />
+		<property name="srvRecurso" ref="recursoService" />
+		<property name="srvSede" ref="sedeService" />
+		<property name="srvTipoAcceso" ref="tipoaccesoService" />
+		<property name="srvTipodocumento" ref="tipodocumentoService" />
+		<property name="srvTP" ref="tipoprocesoService" />
+		<property name="documentoService" ref="documentoService" />
+		<property name="distritoDAO" ref="distritoDAO" />
+		<property name="srvNumeracion" ref="numeracionService" />
+		<property name="salaDao" ref="salaDAO" />
+		<property name="usuarioStorDao" ref="usuariostorDAO" />
+		<property name="estadoDAO" ref="estadoDAO" />
+		<property name="srvParametro" ref="parametroService" />
+		<property name="srvDepartamento" ref="departamentoService" />
+		<property name="srvProvincia" ref="provinciaService" />
+		<property name="srvDistrito" ref="distritoService" />
+		<property name="srvLista" ref="listaService" />
+		<property name="srvReemplazo" ref="reemplazoService" />
+		<property name="etapaService" ref="etapaService" />
+      <property name="trazabilidaddocumentoService" ref="trazabilidaddocumentoService" />
+      <property name="seguridadService" ref="seguridadService" />
+	</bean>
+
+	<bean id="mensajeriaAction" scope="prototype"
+		class="org.osinerg.actions.MensajeriaAction">
+		<constructor-arg ref="datosService" />
+		<constructor-arg ref="tipoenvioService" />
+		<constructor-arg ref="empresadestinoService" />
+		<constructor-arg ref="mensajeriaService" />
+		<property name="srvDocumento" ref="documentoService" />
+	</bean>
+
+	<bean id="notificacionAction" scope="prototype" class="org.osinerg.actions.NotificacionAction">
+		<constructor-arg ref="notificacionService" />
+		<property name="srvUsuario" ref="usuarioService" />
+		<property name="srvDocumento" ref="documentoService" />
+		<property name="archivoService" ref="archivoService" />
+		<property name="seguimientoXUsuarioService" ref="seguimientoXUsuarioService" />
+		<property name="parametroService" ref="parametroService" />
+		<property name="fechaLimite" ref="fechaLimite" />
+		<property name="listaService" ref="listaService" />
+		<property name="mailService" ref="mailService"/>
+	</bean>
+
+	<bean id="qasFileDownload" scope="prototype"
+		class="org.osinerg.actions.QasFileDownload">
+		<property name="archivoSrv" ref="archivoService" />
+	</bean>
+
+	<bean id="seguimientoAction" scope="prototype"
+		class="org.osinerg.actions.SeguimientoAction">
+		<constructor-arg ref="documentoService" />
+		<constructor-arg ref="repositorioService" />
+		<constructor-arg ref="usuarioService" />
+		<constructor-arg ref="seguimientoService" />
+		<constructor-arg ref="trazabilidaddocumentoService" />
+	</bean>
+
+	<bean id="reporteSigedAction" scope="prototype"
+		class="org.osinerg.actions.ReporteSigedAction">
+		<property name="filaRResumenProcesoService" ref="filaRResumenProcesoService" />
+		<property name="filaRDetalleProcesoService" ref="filaRDetalleProcesoService" />
+		<property name="procesoService" ref="procesoService" />
+		<property name="grupoprocesoService" ref="grupoprocesoService" />
+		<property name="mensajeriaService" ref="mensajeriaService" />
+	</bean>
+
+	<bean id="reporteSigedSTORAction" scope="prototype"
+		class="org.osinerg.actions.ReporteSigedSTORAction">
+		<property name="serviceReporteSTOR" ref="reporteSigedSTORService" />
+		<property name="serviceDiaFestivo" ref="diafestivoService" />
+	</bean>
+	
+	<bean id="reporteAPNAction" scope="prototype" class="org.osinerg.actions.ReporteAPNAction">
+		<property name="reporteAPNService" ref="reporteAPNService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="unidadService" ref="unidadService"/>
+		<property name="documentoService" ref="documentoService"/>
+		<property name="usuarioService" ref="usuarioService"/>
+	</bean>
+	
+	<bean id="consultaAction" scope="prototype" class="org.osinerg.actions.ConsultaAction">
+      	<property name="consultaService" ref="consultaService" />
+      	<property name="usuarioService" ref="usuarioService" />
+	</bean>
+	
+	<bean id="reporteSigedUsuariosAction" scope="prototype"
+		class="org.osinerg.actions.ReporteSigedUsuariosAction">
+		<property name="serviceReporteUsuarios" ref="reporteSigedUsuariosService" />
+		<property name="serviceDiaFestivo" ref="diafestivoService" />
+	</bean>	
+	
+	<bean id="trazabilidadAction" scope="prototype"
+		class="org.osinerg.actions.TrazabilidadAction">
+		<constructor-arg ref="trazabilidaddocumentoService" />
+		<constructor-arg ref="archivoService" />
+		<constructor-arg ref="usuarioService" />
+		<constructor-arg ref="repositorioService" />
+		<constructor-arg ref="trazabilidadexpedienteService" />
+		<property name="documentoService" ref="documentoService" />
+		<property name="etapaService" ref="etapaService" />
+		<property name="procesoService" ref="procesoService" />
+		<property name="trazabilidadcopiaService" ref="trazabilidadcopiaService" />
+		<property name="trazabilidadapoyoService" ref="trazabilidadapoyoService" />
+		<property name="reporteAPNService" ref="reporteAPNService" />
+	</bean>
+
+	<bean id="uploadAction" scope="prototype" class="org.osinerg.actions.UploadAction">
+		<property name="uploadService" ref="uploadService" />
+                <property name="messageSource" ref="messageSource" />
+	</bean>
+
+	<bean id="usuarioAction" scope="prototype" class="org.osinerg.actions.UsuarioAction">
+		<constructor-arg ref="usuarioService" />
+		<property name="srvCliente" ref="clienteService" />
+		<property name="srvDocumento" ref="documentoService" />
+		<property name="srvModulo" ref="moduloService" />
+		<property name="srvPerfil" ref="perfilService" />
+		<property name="srvPlantilla" ref="plantillaService" />
+		<property name="srvProceso" ref="procesoService" />
+		<property name="srvNotificacion" ref="notificacionService" />
+		<property name="srvExpediente" ref="expedienteService" />
+		<property name="srvRecurso" ref="recursoService" />
+		<property name="srvRol" ref="rolService" />
+		<property name="srvSede" ref="sedeService" />
+		<property name="srvTipodocumento" ref="tipodocumentoService" />
+		<property name="srvUnidad" ref="unidadService" />
+		<property name="svrCb" ref="carpetabusquedaService" />
+		<property name="srvArchivoPendiente" ref="archivoPendienteService" />
+		<property name="documentoEnviadoService" ref="documentoEnviadoService" />
+		<property name="srvGrupoProceso" ref="grupoprocesoService" />
+		<property name="srvNumeracion" ref="numeracionService" />
+		<property name="srvParametro" ref="parametroService" />
+		<property name="srvDepartamento" ref="departamentoService" />
+		<property name="srvProvincia" ref="provinciaService" />
+		<property name="srvDistrito" ref="distritoService" />
+		<property name="srvLista" ref="listaService" />
+		<property name="srvReemplazo" ref="reemplazoService" />
+	</bean>
+
+	<bean id="nuevoDocumentoAction" scope="prototype" class="org.osinerg.actions.NuevoDocumentoAction">
+		<constructor-arg ref="archivoPendienteService" />
+		<constructor-arg ref="documentoService" />
+		<constructor-arg ref="plantillaService" />
+		<constructor-arg ref="repositorioService" />
+		<constructor-arg ref="usuarioService" />
+		<constructor-arg ref="archivoService" />
+		<constructor-arg ref="concesionarioService" />
+		<constructor-arg ref="clienteService" />
+		<constructor-arg ref="procesoService" />
+		<constructor-arg ref="tipodocumentoService" />
+		<constructor-arg ref="tipoidentificacionService" />
+		<constructor-arg ref="expedienteService" />
+		<constructor-arg ref="accionService" />
+		<constructor-arg ref="trazabilidaddocumentoService" />
+		<property name="parametroService" ref="parametroService" />
+		<property name="srvNotificacion" ref="notificacionService" />
+                <property name="taskExecutor" ref="taskExecutor" />
+                <property name="mailService" ref="mailService" />
+                <property name="messageSource" ref="messageSource" />
+	</bean>
+
+	<bean id="storAction" scope="prototype" class="org.osinerg.actions.StorAction">
+		<property name="documentoService" ref="documentoService" />
+		<property name="expedienteService" ref="expedienteService" />
+		<property name="usuarioService" ref="usuarioService" />
+		<property name="rolService" ref="rolService" />
+		<property name="expedientestorService" ref="expedientestorService" />
+		<property name="usuariostorService" ref="usuariostorService" />
+		<property name="storManagerService" ref="storManagerService" />
+		<property name="srvRepositorio" ref="repositorioService" />
+		<property name="servicioNotificacion" ref="notificacionService" />
+		<property name="trazabilidaddocumentoService" ref="trazabilidaddocumentoService" />
+		<property name="trazabilidadexpedienteService" ref="trazabilidadexpedienteService" />
+		<property name="documentoEnviadoService" ref="documentoEnviadoService" />
+		<property name="estadoService" ref="estadoService" />
+		<property name="salaService" ref="salaService" />
+		<property name="vocalService" ref="vocalService" />
+		<property name="tipoResultadoService" ref="tipoResultadoService" />
+		<property name="resolucionjaruService" ref="resolucionjaruService" />
+		<property name="concesionarioService" ref="concesionarioService" />
+		<property name="clienteService" ref="clienteService" />
+	</bean>
+
+	<bean id="procedimientoIncAction" scope="prototype"
+		class="org.osinerg.actions.ProcedimientoIncAction">
+		<property name="procedimientoIncumplidosService" ref="procedimientoIncumplidosService" />
+	</bean>
+
+	<bean id="etapaAction" scope="prototype" class="org.osinerg.actions.EtapaAction">
+		<property name="etapaService" ref="etapaService" />
+	</bean>
+
+	<bean id="documentoEnviadoAction" scope="prototype"
+		class="org.osinerg.actions.DocumentoEnviadoAction">
+		<property name="documentoEnviadoService" ref="documentoEnviadoService" />
+		<property name="usuarioService" ref="usuarioService" />
+		<property name="archivoService" ref="archivoService" />
+		<property name="notificacionService" ref="notificacionService" />
+		<property name="trazabilidadcopiaService" ref="trazabilidadcopiaService" />
+		<property name="trazabilidadDocumentoService" ref="trazabilidaddocumentoService" />
+		<property name="trazabilidadApoyoService" ref="trazabilidadapoyoService" />
+		<property name="documentoService" ref="documentoService" />
+		
+	</bean>
+
+	<bean id="carpetaAction" scope="prototype" class="org.osinerg.actions.CarpetaAction">
+		<property name="carpetaService" ref="carpetaService" />
+		<property name="documentoService" ref="documentoService" />
+	</bean>
+
+	<bean id="AutoCompletarAction" scope="prototype"
+		class="org.osinerg.actions.dojo.AutoCompletarAction">
+		<property name="plantillaService" ref="plantillaService" />
+		<property name="srvDocumento" ref="documentoService" />
+		<property name="srvUsuario" ref="usuarioService" />
+		<property name="expedienteDao" ref="expedienteDAO" />
+		<property name="srvProceso" ref="procesoService" />
+		<property name="tipoDocumentoService" ref="tipodocumentoService" />
+		<property name="departamentoService" ref="departamentoService" />
+		<property name="tipoIdentificacionService" ref="tipoidentificacionService" />
+		<property name="clienteService" ref="clienteService" />
+		<property name="distritoService" ref="distritoService" />
+		<property name="provinciaService" ref="provinciaService" />
+		<property name="sedeService" ref="sedeService" />
+		<property name="etapaService" ref="etapaService" />
+		<property name="listaService" ref="listaService" />
+		<property name="tipoEnvioService" ref="tipoenvioService" />
+		<property name="documentoxclienteService" ref="documentoxclienteService" />
+		<property name="ambitoService" ref="ambitoenvioService" />
+		
+		<property name="srvRol" ref="rolService" />
+		<property name="srvAuditoria" ref="auditoriaService" />
+		<property name="srvConcesionario" ref="concesionarioService" />
+		<property name="srvParametro" ref="parametroService" />
+		<property name="srvUnidad" ref="unidadService" />
+		<property name="notificacionDao" ref="notificacionDAO" />
+		<property name="reemplazoDao" ref="reemplazoDAO" />
+		<property name="estadoDao" ref="estadoDAO" />
+      <property name="unidadDAO" ref="unidadDAO" />
+		<property name="tiporesultadoDao" ref="tipoResultadoDAO" />
+		<property name="srvTrazabilidadDocumento" ref="trazabilidaddocumentoService" />
+      <property name="favoritoService" ref="favoritoService" />
+      <property name="salaService" ref="salaService" />
+      <property name="tipoResultadoService" ref="tipoResultadoService" />
+      <property name="vocalService" ref="vocalService" />
+	</bean>
+
+	<bean id="RetrieveDataAction" scope="prototype"
+		class="org.osinerg.actions.dojo.RetrieveDataAction">
+		<property name="concesionarioService" ref="concesionarioService" />
+	</bean>
+
+	<bean id="ReporteAction" scope="prototype"
+		class="org.osinerg.sas.action.ReporteAction" />
+
+	<bean id="ReporteTipo1Action" scope="prototype"
+		class="org.osinerg.sas.action.ReporteTipo1Action" />
+
+	<bean id="reemplazoAction" scope="prototype" class="org.osinerg.actions.ReemplazoAction">
+		<constructor-arg ref="reemplazoService" />
+		<property name="srvProceso" ref="procesoService" />
+	</bean>
+	
+	
+	<!-- Web services -->
+	<bean id="servicioDocumento" class="org.osinerg.webservice.servicios.ServicioDocumento">
+		<property name="expedienteDao" ref="expedienteDAO" />
+		<property name="usuarioDao" ref="usuarioDAO" />
+		<property name="documentoService" ref="documentoService" />
+	</bean>
+
+	<!-- Intalio Visor -->
+	<bean id="intalioAction" class="org.osinerg.actions.IntalioAction">
+		<property name="intalioService" ref="intalioService" />
+		<property name="usuarioService" ref="usuarioService" />
+	</bean>
+
+   <bean id="JasperAction" scope="prototype" class="org.osinerg.actions.JasperAction">
+      <property name="documentoService" ref="documentoService" />
+      <property name="mensajeriaService" ref="mensajeriaService" />
+      <property name="usuarioService" ref="usuarioService" />
+   </bean>
+
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5" />
+        <property name="maxPoolSize" value="10" />
+        <property name="queueCapacity" value="25" />
+    </bean>
+
+    <!-- bean para el manejo de envio de correo electronico -->
+    <bean id="mailService" class="org.osinerg.services.ManejoDeEmailServiceImpl">
+        <property name="usuarioService" ref="usuarioService" />
+        <property name="parametroService" ref="parametroService" />
+    </bean>
+
+    <bean id="strutsFileUpload" scope="prototype" class="org.osinergmin.siged.action.StrutsFileUpload">
+        <property name="messageSource" ref="messageSource" />
+    </bean>
+
+    <bean id="messageSource" class="gob.osinergmin.siged.util.SigedMessageSource">
+        <property name="basenames">
+            <list>
+                <value>messages</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="seguridadService" class="gob.osinergmin.siged.service.impl.SeguridadServiceImpl" />
+
+    <bean id="alfrescoWebscriptClient" class="gob.osinergmin.siged.service.impl.AlfrescoWebscriptServiceImpl">
+       <property name="seguridadService" ref="seguridadService" />
+    </bean>
+    
+    <bean id="alfrescoWebServiceClient" class="org.osinerg.siged.service.impl.AlfrescoWSServiceImpl"/>
+
+    <bean id="timingAdvice" class="org.springframework.aop.interceptor.PerformanceMonitorInterceptor"/>
+
+    <bean id="alfrescoTicketBean" class="org.osinerg.common.alfresco.AlfrescoTicketAspect">
+        <property name="seguridadService" ref="seguridadService" />
+    </bean>
+    <aop:config>
+        <aop:advisor pointcut="execution(* gob.osinergmin.siged.service.*.*(..)) or execution(* org.osinerg.services.*.*(..))" advice-ref="timingAdvice"/>
+        <aop:aspect id="alfrescoTicketAspect" ref="alfrescoTicketBean">
+            <aop:before
+                pointcut="target(org.osinerg.siged.service.AlfrescoWSService) and @target(org.osinerg.common.alfresco.AlfrescoWebServiceCaller)"
+                method="refrescarTicketAlfresco"/>
+        </aop:aspect>
+    </aop:config>
+    
+</beans>

@@ -1,0 +1,244 @@
+package org.osinerg.utils;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import org.apache.log4j.Logger;
+import org.osinerg.services.DiafestivoService;
+import org.osinerg.services.ParametroService;
+import org.osinerg.services.UnidadService;
+import org.osinerg.services.UsuarioService;
+
+import com.btg.osinergmin.siged.domain.DiaFestivo;
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.opensymphony.xwork2.ActionContext;
+
+public class FechaLimite {
+	
+	private static Logger _log=Logger.getLogger(FechaLimite.class);
+	private ParametroService parametroService;
+	private DiafestivoService diafestivoService;
+	private UnidadService unidadService;
+	private UsuarioService usuarioService;
+	private Map<String, Object> mapSession;
+	
+	public void setParametroService(ParametroService parametroService) {
+		this.parametroService = parametroService;
+	}
+
+	public void setDiafestivoService(DiafestivoService diafestivoService) {
+		this.diafestivoService = diafestivoService;
+	}
+
+	public UnidadService getUnidadService() {
+		return unidadService;
+	}
+
+	public void setUnidadService(UnidadService unidadService) {
+		this.unidadService = unidadService;
+	}
+
+	public Map<String, Object> getMapSession() {
+		return mapSession;
+	}
+
+	public void setMapSession(Map<String, Object> mapSession) {
+		this.mapSession = mapSession;
+	}
+
+	
+	public UsuarioService getUsuarioService() {
+		return usuarioService;
+	}
+
+	public void setUsuarioService(UsuarioService usuarioService) {
+		this.usuarioService = usuarioService;
+	}
+
+	public Date calcularFechaLimite(int dias,int horas,int idDestinatario){
+		   _log.debug("________Func Calcular Fecha Limite en Service");
+
+		   mapSession = ActionContext.getContext().getSession();
+		   Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		   usuario = usuarioService.findByIdUsuario(usuario.getIdusuario());			
+		   String horaInicio = (unidadService.buscarObjPor(usuario.getUnidad().getIdunidad().intValue())).getInicioEnvio();
+		   String horaFin = (unidadService.buscarObjPor(usuario.getUnidad().getIdunidad().intValue())).getFinEnvio();
+		   _log.debug("Unidad "+usuario.getUnidad().getIdunidad().intValue()+"Hora Inicio Envio:"+horaInicio+"Hora Fin Envio:"+horaFin );
+		   
+		   //wcarrasco 08-11-2011 deprecado
+		   //String horaInicio=parametroService.findByTipo(Constantes.INICIO_ENVIO).get(0).getValor();
+		   //String horaFin=parametroService.findByTipo(Constantes.FIN_ENVIO).get(0).getValor();
+		   
+
+		   int horaInicioHoras=Integer.parseInt(horaInicio.substring(0,horaInicio.indexOf(':')));
+		   int horaInicioMinutos=Integer.parseInt(horaInicio.substring(horaInicio.indexOf(':')+1));
+		   int horaFinHoras=Integer.parseInt(horaFin.substring(0,horaFin.indexOf(':')));
+		   int horaFinMinutos=Integer.parseInt(horaFin.substring(horaFin.indexOf(':')+1));
+		   Calendar hoy=Calendar.getInstance();
+		   //Calendar nuevo=Calendar.getInstance();
+		   Calendar temp=Calendar.getInstance();
+		   int horaInicial=hoy.get(Calendar.HOUR_OF_DAY);
+		   int minutosInicial=hoy.get(Calendar.MINUTE);
+		   if(horaInicial>horaFinHoras || (horaInicial==horaFinHoras && minutosInicial>=horaFinMinutos) || horaInicial<horaInicioHoras || (horaInicial==horaInicioHoras && minutosInicial<horaInicioMinutos)){
+			   if(horaInicial>=horaFinHoras){
+				   dias++;
+			   }
+			   horaInicial=horaInicioHoras;
+			   minutosInicial=horaInicioMinutos;
+			   temp.set(Calendar.HOUR_OF_DAY,horaInicioHoras);
+			   temp.set(Calendar.MINUTE,horaInicioMinutos);
+		   }
+		   int nuevaHora=horaInicial+horas;
+		   int minutos=0;
+		   while(nuevaHora>horaFinHoras){
+			   int difHoras=horaFinHoras-horaInicial;
+			   horas-=difHoras;
+			   dias++;
+			   horaInicial=horaInicioHoras;
+			   nuevaHora=horaInicial+horas;			   
+			   minutos+=horaInicioMinutos;
+		   }
+		   if(nuevaHora==horaFinHoras && minutosInicial+minutos>horaFinMinutos){
+			   dias++;
+			   nuevaHora=horaInicioHoras;
+			   minutos+=horaInicioMinutos;
+		   }
+		   List<DiaFestivo> festivos=diafestivoService.getDiasFestivosPorUsuario(idDestinatario);
+		   int i=0;  
+		   while(i<dias){
+			   temp.add(Calendar.DAY_OF_MONTH,1);
+			   if(temp.get(Calendar.DAY_OF_WEEK) !=Calendar.SATURDAY && temp.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY && !esDiaFestivo(temp,festivos)){
+				   i++;
+			   }
+		   }
+		   return temp.getTime();
+	   }
+	public Date calcularFechaLimite(Date fecha,int idDestinatario) {
+        Calendar temp = Calendar.getInstance();
+        temp.setTime( fecha );        
+        List<DiaFestivo> festivos=diafestivoService.getDiasFestivosPorUsuario(idDestinatario);
+        // Vamos al lunes siguiente si estamos en un fin de semana.
+        // si es festivo pasa al dia siguiente.
+        while(temp.get(Calendar.DAY_OF_WEEK) ==Calendar.SATURDAY || temp.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY || esDiaFestivo(temp,festivos)){
+            temp.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        return temp.getTime();
+	}
+	public Date fechaFueraHorarioHabil(Date fechaFueraHorario, int idDestinatario) {
+		
+		   mapSession = ActionContext.getContext().getSession();
+		   Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		   usuario = usuarioService.findByIdUsuario(usuario.getIdusuario());			
+		   String horaInicio = (unidadService.buscarObjPor(usuario.getUnidad().getIdunidad().intValue())).getInicioEnvio();
+		   String horaFin = (unidadService.buscarObjPor(usuario.getUnidad().getIdunidad().intValue())).getFinEnvio();
+		   _log.debug("fechaFueraHorarioHabil() Unidad "+usuario.getUnidad().getIdunidad().intValue()+"Hora Inicio Envio:"+horaInicio+"Hora Fin Envio:"+horaFin );
+
+		//wcarrasco 08-11-2011 deprecado   
+		//String horaInicio = parametroService.findByTipo(Constantes.INICIO_ENVIO).get(0).getValor();
+		//String horaFin = parametroService.findByTipo(Constantes.FIN_ENVIO).get(0).getValor();
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+		SimpleDateFormat formatFecha = new SimpleDateFormat("dd-MM-yyyy");
+		Calendar temp = Calendar.getInstance();
+		temp.setTime(fechaFueraHorario);
+		List<DiaFestivo> festivos = diafestivoService.getDiasFestivosPorUsuario(idDestinatario);
+
+		if (horaInicio != null && horaFin != null) {
+			try {
+				Date actual = new Date();
+				String fecha = formatFecha.format(actual) + " ";
+				Date inicio = format.parse(fecha + horaInicio);
+				Date fin = format.parse(fecha + horaFin);
+				if (inicio.after(actual)) {
+					_log.debug("antes de horario");
+					String fechai = formatFecha.format(fechaFueraHorario) + " ";
+					try {
+						fechaFueraHorario = format.parse(fechai + horaInicio);
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}				
+				} else {
+					_log.debug("despues de horario");					
+					if (temp.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY	|| temp.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || esDiaFestivo(temp, festivos)|| (temp.get(Calendar.DAY_OF_WEEK) ==Calendar.FRIDAY && actual.after(fin))){
+					    while (temp.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY	|| temp.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || esDiaFestivo(temp, festivos)|| (temp.get(Calendar.DAY_OF_WEEK) ==Calendar.FRIDAY && actual.after(fin))) {
+						   temp.add(Calendar.DAY_OF_MONTH, 1);
+					    }
+					} else {
+						temp.add(Calendar.DAY_OF_MONTH, 1);
+					}
+
+					String fechaf = formatFecha.format(temp.getTime()) + " ";
+					try {
+						fechaFueraHorario = format.parse(fechaf + horaInicio);
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}					
+				}
+
+			} catch (ParseException e) {
+			}
+		}
+		_log.debug("fechaFueraHorarioHabil()-->Nuevo fechaFueraHorario"+fechaFueraHorario);
+		return fechaFueraHorario;
+	}
+	   private boolean esDiaFestivo(Calendar dia,List<DiaFestivo> festivos){
+		   for(DiaFestivo actual:festivos){
+			   Calendar festivo=Calendar.getInstance();
+			   festivo.setTime(actual.getFechanolaborable());
+			   if(dia.get(Calendar.YEAR)==festivo.get(Calendar.YEAR) 
+					   && dia.get(Calendar.MONTH)==festivo.get(Calendar.MONTH)
+					   && dia.get(Calendar.DAY_OF_MONTH)==festivo.get(Calendar.DAY_OF_MONTH))
+				   return true;
+		   }
+		   return false;
+	   }
+	   public boolean validarHorarioPermitido(Usuario usuario,Integer idDestinatario){		
+
+			try{			
+				if(usuario.getUnidad().getIdunidad().intValue() == Constantes.CODIGO_AREA_GERENCIA.intValue()){
+					return true;
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+
+    		String horaInicio = (unidadService.buscarObjPor(usuario.getUnidad().getIdunidad().intValue())).getInicioEnvio();
+	        String horaFin = (unidadService.buscarObjPor(usuario.getUnidad().getIdunidad().intValue())).getFinEnvio();
+			   _log.debug("validarHorarioPermitido Unidad "+usuario.getUnidad().getIdunidad().intValue()+"Hora Inicio Envio:"+horaInicio+"Hora Fin Envio:"+horaFin );
+
+			SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+			SimpleDateFormat formatFecha = new SimpleDateFormat("dd-MM-yyyy");
+			
+			   
+			//wcarrasco 08-11-2011 deprecado   			   
+			//String horaInicio=parametroService.findByTipo(Constantes.INICIO_ENVIO).get(0).getValor();
+			//String horaFin=parametroService.findByTipo(Constantes.FIN_ENVIO).get(0).getValor();
+			if(horaInicio != null && horaFin != null){
+				try{
+					Date actual = new Date();
+					String fecha = formatFecha.format(actual)+" ";
+					Date inicio = format.parse(fecha + horaInicio);
+					Date fin = format.parse(fecha + horaFin);
+					Boolean fechaPermitido = true;
+					Calendar temp = Calendar.getInstance();
+			        temp.setTime( new Date());        
+			        List<DiaFestivo> festivos=diafestivoService.getDiasFestivosPorUsuario(idDestinatario);
+			        if(temp.get(Calendar.DAY_OF_WEEK) ==Calendar.SATURDAY || temp.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY || esDiaFestivo(temp,festivos)){
+			        	_log.debug("Sabado o Domingo o Festivo");
+			        	fechaPermitido = false;
+			        }
+					return actual.after(inicio) && actual.before(fin) && fechaPermitido;
+				}catch(ParseException e){
+					_log.error("Error al dar formato a las horas de la tabla parametro");
+					return false;
+				}
+			}else{
+				_log.error("Una de las horas de inicio y fin es nula, no se limitara el envio de expedientes");
+				return true;		
+				
+				}
+		}
+
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<package name="mantenimiento" extends="struts-default">
+		<action name="doSave*" method="save{1}" class="mantenimientoAction">
+			<result>blank.html</result>
+         <result name="userfinal">success.html</result>
+			<result name="error">error.html</result>
+         <result name="ya_existe">pages/mantenimiento/edit{1}.jsp</result>
+		</action>
+		<action name="doView*" method="edit{1}" class="mantenimientoAction">
+			<result>pages/mantenimiento/edit{1}.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+      
+		<action name="sincronizarUsuarios" method="sincronizarUsuarios" class="mantenimientoAction">
+			<result>error.html</result>
+		</action>
+		
+		<action name="guardarUsuariosLDAP" method="guardarUsuariosLDAP" class="mantenimientoAction">
+			<result>error.html</result>
+		</action>
+      
+	</package>
+</struts>

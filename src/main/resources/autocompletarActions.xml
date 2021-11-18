@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+   <package name="autocompletar" extends="struts-default">
+      <action name="usuariosPorUnidadOrganica" method="usuariosPorUnidadOrganica" class="AutoCompletarAction" /> 
+      <action name="Parametro_*" method="{1}" class="AutoCompletarAction" />
+      <action name="QRS_*" method="{1}" class="AutoCompletarAction" />
+      <action name="autocompletarConcesionario" method="procesoConcesionario" class="AutoCompletarAction" />
+      <action name="obtenerClientePorNombre" method="obtenerClientePorNombre" class="AutoCompletarAction" />
+      <action name="autocompletarProceso" method="procesoMesaPartes" class="AutoCompletarAction" />
+      <action name="autocompletarSerie" method="procesoSerie" class="AutoCompletarAction" />
+      <action name="obtenerUnidadesEnumerar" method="obtenerUnidadesEnumerar" class="AutoCompletarAction" />
+      <action name="autocompletarEnvioUsuariosDestinatarios" method="autocompletarEnvioUsuariosDestinatarios" class="AutoCompletarAction" />
+       
+      <action name="autocompletarRUCPIDE" method="autocompletarRUCPIDE" class="AutoCompletarAction" />
+      <action name="autocompletarTipoDocumentoPIDE" method="autocompletarTipoDocumentoPIDE" class="AutoCompletarAction" />
+
+      <action name="autocompletarUsuariosxUnidad" method="autocompletarUsuariosxUnidad" class="AutoCompletarAction" />
+      <action name="autocompletarExpediente" method="obtenerLegajo" class="AutoCompletarAction" />
+      
+      <action name="autocompletarAnioFiscal" method="obtenerAnioFiscal" class="AutoCompletarAction" />
+      <action name="autocompletarNumReqTributario" method="obtenerNumReqTributario" class="AutoCompletarAction" />
+
+      <action name="autocompletarUnidadOrgSession" method="autocompletarUnidadOrgSession" class="AutoCompletarAction"></action>
+
+      <action name="autocompletarProcesoVigente" method="obtenerProcesosVigentes" class="AutoCompletarAction" />
+      <action name="autocompletarProcesoVigenteN2" method="obtenerProcesosVigentesN2" class="AutoCompletarAction" />
+
+      <action name="autocompletarProcesoMP" method="obtenerProcesosMP" class="AutoCompletarAction" />
+      <action name="autocompletarTipoInstitucion" method="obtenerTipoInstitucion" class="AutoCompletarAction" />
+      <action name="autocompletarTipoLegajo" method="obtenerTipoLegajo" class="AutoCompletarAction" />
+      <action name="autocompletarTipoLegajoBusqueda" method="obtenerTipoLegajoBusqueda" class="AutoCompletarAction" />
+      
+      <action name="autocompletarPersona" method="obtenerPersonas" class="AutoCompletarAction" />
+      <action name="autocompletarFiltroPersonas" method="obtenerFiltroPersonas" class="AutoCompletarAction" />
+      <action name="autocompletarFiltroInstituciones" method="obtenerFiltroInstituciones" class="AutoCompletarAction" />
+      
+      <action name="autocompletarFiltroInstitucionesxTipo" method="obtenerFiltroInstitucionesxTipo" class="AutoCompletarAction" />
+      
+      <action name="autocompletarFiltroCargos" method="obtenerFiltroCargos" class="AutoCompletarAction" />
+      <action name="autocompletarRemitente" method="obtenerRemitentes" class="AutoCompletarAction" />
+      <action name="autocompletarProcesoN" method="procesoNuevoDocumentoN" class="AutoCompletarAction" />
+      <action name="autocompletarProcesoN2" method="procesoNuevoDocumentoN2" class="AutoCompletarAction" />
+      <action name="autocompletarProceso1" method="dataDerivarTo" class="AutoCompletarAction" />
+      <action name="derivarCC" method="derivarCC" class="AutoCompletarAction" />
+      <action name="derivarCCMasivo" method="derivarCCMasivo" class="AutoCompletarAction" />
+      <action name="obtenerUsuariosCC" method="obtenerUsuariosCC" class="AutoCompletarAction" />
+      <action name="obtenerInstituciones" method="obtenerInstituciones" class="AutoCompletarAction" />
+      <action name="obtenerCliente" method="obtenerCliente" class="AutoCompletarAction" />
+      <action name="autocompletarCargo" method="obtenerCargo" class="AutoCompletarAction" />
+      <action name="autocompletarCargoAdministrado" method="obtenerCargoAdministrado" class="AutoCompletarAction" />
+      <action name="autocompletarCargoRemitente" method="obtenerCargoRemitente" class="AutoCompletarAction" />
+      <action name="autocompletarCargoPersonaNatural" method="obtenerCargoPersonaNatural" class="AutoCompletarAction" />
+      
+      <action name="autocompletarNotificar" method="dataNotificarTo" class="AutoCompletarAction" />
+      <action name="autocompletarRol" method="autocompletarRol" class="AutoCompletarAction" />
+      <action name="autocompletarUsuarioFinal" method="autocompletarUsuarioFinal" class="AutoCompletarAction" />
+      <action name="autocompletarUsuarioDatosFinal" method="autocompletarUsuarioDatosFinal" class="AutoCompletarAction" />
+      <action name="autocompletarUsuario" method="autocompletarUsuario" class="AutoCompletarAction" />
+      <action name="autocompletarAreaDatosFinal" method="autocompletarAreaDatosFinal" class="AutoCompletarAction" />
+      <action name="autocompletarProveido" method="autocompletarProveido" class="AutoCompletarAction" />
+
+      <action name="autocompletarConcesionaria" method="obtenerConcesionaria" class="AutoCompletarAction" />
+      <action name="autocompletarTipoDocumentoFedatario" method="tipoDocumentoFedatario" class="AutoCompletarAction" />
+      <action name="autocompletarAllTipoDocumento" method="tipoDocumentoMesaPartes" class="AutoCompletarAction" />
+      <action name="autocompletarCriteriosConfidencialidad" method="criteriosConfidencialidad" class="AutoCompletarAction" />
+      <action name="autocompletarAllPerfiles" method="perfiles" class="AutoCompletarAction" />
+      <action name="autocompletarAllTipoDocumentoFiltro" method="tipoDocumentoMesaPartesFiltro" class="AutoCompletarAction" />
+      
+      <action name="autocompletarTipoDocumentoTodos" method="autocompletarTipoDocumentoTodos" class="AutoCompletarAction" />
+      <action name="autocompletarAreaDestino" method="autocompletarAreaDestino" class="AutoCompletarAction" />
+
+       <action name="autocompletarServicioFedatario" method="servicioFedatario" class="AutoCompletarAction" />
+
+      <action name="autocompletarAreaTodos" method="autocompletarAreaTodos" class="AutoCompletarAction" />
+      <action name="autocompletarAreaDocumentosPendientes" method="autocompletarAreaDocumentosPendientes" class="AutoCompletarAction" />
+      <action name="autocompletarTipoDocumentoAdjuntar" method="tipoDocumentoAdjuntarConMetadata" class="AutoCompletarAction" />
+      <action name="getNumeracion" method="getNumeracion" class="AutoCompletarAction" />
+
+
+      <action name="autocompletarUnidad" method="autoCompletarUnidad" class="AutoCompletarAction" />
+	  <action name="autocompletarTipoEnvio" method="autocompletarTipoEnvio" class="AutoCompletarAction" />
+
+      <action name="retrieveDataConcesionario" method="dataConcesionario" class="RetrieveDataAction" />
+
+      <action name="retrieveDataCliente" method="dataCliente" class="RetrieveDataAction" />
+
+      <action name="listaDepartamentos" method="listaDepartamentos" class="AutoCompletarAction" />
+      <action name="listaProvincias" method="listaProvincias" class="AutoCompletarAction" />
+      <action name="listaDistritos" method="listaDistritos" class="AutoCompletarAction" />
+      <action name="listaDistritos" method="listaDistritos" class="AutoCompletarAction" />
+      <action name="listaSedes" method="listaSedes" class="AutoCompletarAction" />
+      <action name="procesoMesaPartes" method="procesoMesaPartes" class="AutoCompletarAction" />
+
+
+      <action name="listaMotivos" method="listaMotivos" class="AutoCompletarAction" />
+      <action name="listaSubMotivos" method="listaSubMotivos" class="AutoCompletarAction" />
+      <action name="listaMonedas" method="listaMonedas" class="AutoCompletarAction" />
+
+      <action name="autocompletarProcesoParticipante" method="autocompletarProcesoParticipante" class="AutoCompletarAction" />
+      <action name="autocompletarProcesoParticipantexParametro" method="autocompletarProcesoParticipantexParametro" class="AutoCompletarAction" />
+
+
+      <action name="autocompletarUsuarioxProceso" method="autocompletarUsuarioxProceso" class="AutoCompletarAction" />
+      <action name="autocompletarUsuarioxProcesoSinUsuarioParametro" method="autocompletarUsuarioxProcesoSinUsuarioParametro" class="AutoCompletarAction" />
+      <action name="autocompletarUsuarioxProcesoConUsuario" method="autocompletarUsuarioxProcesoConUsuario" class="AutoCompletarAction" />
+
+      <action name="autocompletarAmbitoenvio" method="autocompletarAmbitoenvio" class="AutoCompletarAction" />
+      <action name="autocompletarempresadestino" method="autocompletarEmpresadestino" class="AutoCompletarAction" />
+      <action name="autocompletarcourrier" method="autocompletarCourrier" class="AutoCompletarAction" />
+      <action name="autocompletarUnidadPeso" method="autocompletarUnidadPeso" class="AutoCompletarAction" />
+      <action name="autocompletarEstadoCargo" method="autocompletarEstadoCargo" class="AutoCompletarAction" />
+      <action name="autocompletarMesesEnviado" method="autocompletarMesesEnviado" class="AutoCompletarAction" />
+      
+      <action name="autocompletarResponsableTecnico" method="autocompletarResponsableTecnico" class="AutoCompletarAction" />
+
+      <action name="autocompletarAnalistaStor" method="autocompletarAnalistaStor" class="AutoCompletarAction" />
+
+      <action name="autocompletarSala" method="autocompletarSala" class="AutoCompletarAction" />
+      <action name="obtenerRevisorLegalStor" method="obtenerRevisorLegalStor" class="AutoCompletarAction" />
+
+      <action name="enviaGridReemplazo" method="enviaGridReemplazo" class="AutoCompletarAction" >
+         <result type="redirectAction">none</result>
+      </action>
+
+      <action name="enviarGridauditoria" method="gridAuditoria" class="AutoCompletarAction" />
+      <action name="enviarGridreporte" method="gridReporte" class="AutoCompletarAction" />
+	  <action name="exportarExcel" method="exportarExcel" class="AutoCompletarAction" />
+      <action name="enviarGridsupervisor" method="gridSupervisor" class="AutoCompletarAction" />
+      
+       <action name="setearAdjuntos" method="setearAdjuntos" class="AutoCompletarAction" />
+      <action name="enviarGridmensajeria" method="gridMensajeria" class="AutoCompletarAction" />
+      <action name="buscarExpediente" method="buscarExpediente" class="AutoCompletarAction" />
+      <action name="buscarLegajo" method="buscarLegajo" class="AutoCompletarAction" />
+      <action name="buscarDocumentoFedatario" method="buscarDocumentoFedatario" class="AutoCompletarAction" />
+      <action name="buscarDocumentoReferenciado" method="buscarDocumentoReferenciado" class="AutoCompletarAction" />
+      <action name="buscarExpedienteAbierto" method="buscarExpedienteAbierto" class="AutoCompletarAction" />
+
+      <action name="recibeNotificacionesLogueado" method="recibeNotificacionesLogueado" class="AutoCompletarAction" />
+
+      <action name="obtenerTipoResultadoResolucionJaru" method="obtenerTipoResultadoResolucionJaru" class="AutoCompletarAction" />
+
+      <action name="obtenerClientePorTipoIdentificacion" method="obtenerClientePorTipoIdentificacion" class="AutoCompletarAction" />
+
+	  <action name="obtenerClienteOptimizado" method="obtenerClienteOptimizado" class="AutoCompletarAction" />
+
+      <action name="obtenerDataClienteCxb" method="obtenerDataClienteCxb" class="AutoCompletarAction" />
+
+      <action name="findClientesbyIdDocumento" method="findClientesbyIdDocumento" class="AutoCompletarAction" />
+
+
+      <action name="autocompletarTipoDocumentoPlantilla" method="tipoDocumentoPlantilla" class="AutoCompletarAction" />
+
+      <action name="autocompletarEtapasporProceso" method="autocompletarEtapasporProceso" class="AutoCompletarAction" />
+
+
+
+      <action name="autocompletarCampos" method="getCamposPorPlantilla" class="AutoCompletarAction" />
+      <action name="autocompletarGridEtapaProceso" method="getCamposGridEtapaProceso" class="AutoCompletarAction" />
+      <action name="autocompletarGridEstadoProceso" method="getCamposGridEstadoProceso" class="AutoCompletarAction" />
+      <action name="autocompleteTipoDocumentoWithoutPlantilla" method="getTipoDocumentoWithoutPlantilla" class="AutoCompletarAction" />
+      <action name="autocompletarProcesoPorUsuario" method="autocompletarProcesoPorUsuario" class="AutoCompletarAction" />
+      <action name="buscarCliente" method="buscarCliente" class="AutoCompletarAction" />
+      <action name="buscarPara" method="buscarPara" class="AutoCompletarAction" />
+      <action name="getFavorito" method="getFavorito" class="AutoCompletarAction" />
+     
+
+      <action name="autocompletarSalaStor" method="autocompletarSalaStor" class="AutoCompletarAction" />
+      <action name="autocompletarEstadoStor" method="autocompletarEstadoStor" class="AutoCompletarAction" />
+      <action name="autocompletarResultadoStor" method="autocompletarResultadoStor" class="AutoCompletarAction" />
+      <action name="autocompletarVocalStor" method="autocompletarVocalStor" class="AutoCompletarAction" />
+      <action name="autocompletarAllEtapasStor" method="autocompletarAllEtapasStor" class="AutoCompletarAction" />
+      <action name="autocompletarPrioridadTodos" method="autocompletarPrioridadTodos" class="AutoCompletarAction" />
+      <action name="getRolesPorUsuario" method="getRolesPorUsuario" class="AutoCompletarAction"></action>
+      <action name="autocompletarTipoAdjunto" method="getTipoAdjunto" class="AutoCompletarAction"></action>
+      <action name="autocompletarParametro" method="getParametro" class="AutoCompletarAction"></action>
+      <action name="autocompletarParametroActivo" method="getParametroActivo" class="AutoCompletarAction"></action>
+
+       <action name="autocompletarAreaDerivacion" method="autocompletarAreaDerivacion" class="AutoCompletarAction"></action>
+       <action name="autocompletarAreaMesaParte" method="autocompletarAreaMesaParte" class="AutoCompletarAction"></action>
+       <action name="autocompletarAreaMTC" method="autocompletarAreaMTC" class="AutoCompletarAction"></action>
+       <action name="autocompletarTipoDocumentoMTC" method="autocompletarTipoDocumentoMTC" class="AutoCompletarAction"></action>
+       <action name="autocompletarAno" method="autocompletarAno" class="AutoCompletarAction"></action>
+       <action name="autocompletarMes" method="autocompletarMes" class="AutoCompletarAction"></action>
+      
+   </package>
+</struts>

@@ -1,0 +1,15 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Carpeta;
+
+public interface CarpetaDAO {
+	
+	 public List<Carpeta> findbyDocumento (Integer IdDocumento ) ; 
+	 
+	   public Carpeta saveCarpeta(Carpeta carpeta) ; 
+	   public Carpeta findByIdcarpeta (Integer IdCarpeta); 
+	   public void  deleteCarpeta(Carpeta carpeta) ; 
+
+}

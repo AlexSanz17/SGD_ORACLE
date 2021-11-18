@@ -1,0 +1,19 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.osinerg.daos;
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Tiporesultado;
+
+/**
+ *
+ * @author Usuario
+ */
+public interface  TiporesultadoDAO {
+   public Tiporesultado findByIdTiporesultado(Integer idTiporesultado);
+   public List<Tiporesultado> findAll();
+
+}

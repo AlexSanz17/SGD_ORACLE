@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<%@ page contentType="text/html" pageEncoding="UTF-8" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ page import="com.btg.osinergmin.siged.domain.Proveido" %>
+<%@ page import="java.util.List" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+	<head>
+	  <title>Enviar M&uacute;ltiple</title>
+      <link type="text/css" rel="stylesheet" href="css/styleSiged.css" />
+      <link type="text/css" rel="stylesheet" href="js/dojo/css/styleDojo.css" />
+		<style type="text/css">
+         div.falso {
+            position: absolute;
+            /*top: -48px;*/
+            left: 80px;
+            z-index: 0;
+            /*width: 14px;
+            height: 3px;*/
+         }
+
+         input.file {
+            position: relative;            
+            filter:alpha(opacity: 0);
+            opacity: 0;
+            z-index: 1;
+            /*top: -49px; 
+            text-align: left;
+            left: 80px;*/
+            width: 50px;
+            left: 10px;
+         }
+         .copia{
+         	margin-right: 5px;
+         }
+		</style>
+		<%
+			List<Proveido> proveidos = (List<Proveido>)request.getAttribute("proveidos");
+		%>
+		<script type="text/javascript">
+			var djConfig = {
+				isDebug: false,
+				parseOnLoad: true
+			};
+		</script>
+		<script type="text/javascript" src="js/dojo/dojo/dojo.js"></script>
+		<script type="text/javascript" src="js/siged/upload.js"></script>
+		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/siged/siged.js"></script>
+      	<script type="text/javascript" src="js/siged/siged.forms.js"></script>
+		<script type="text/javascript" src="js/siged/siged.string.js"></script>
+      	
+		<script type="text/javascript">
+	        dojo.require("dijit.form.Button");
+	        dojo.require("dijit.form.RadioButton");
+	        dojo.require("dijit.Menu");
+	        dojo.require("dijit.layout.BorderContainer");
+			dojo.require("dijit.MenuItem");
+	        dojo.require("dijit.form.NumberTextBox");
+			
+         	var enviando=false;
+         	var editandoAcciones = false;
+         	var acciones = [];
+         	var prioridades = [];
+         	var idEditandoAcc;
+         	
+			function enviar(){
+				if(!enviando){
+					enviando=true;
+					dijit.byId("dlgProgresBar").show();
+					//document.getElementById("copiarApoyo").submit();
+					
+					if(editandoAcciones){
+						guardarAcciones(idEditandoAcc);
+					}
+					var apoyos = [];
+					var txtacciones = [];
+					
+					dijit.byId("listParaApoyo").getChildren().forEach(function(node){
+						apoyos.push(node.id);
+					});
+					
+					if(acciones.length > 0){
+						txtacciones = completarAcciones();
+					}
+					
+					if(!apoyos.length){
+						alert("Debe seleccionar al menos un destinatario para el envio multiple");
+						dijit.byId("dlgProgresBar").hide();
+						enviando=false;
+						return;
+					}
+					
+					if(dijit.byId("plazo3").attr("checked") ){
+						
+						//alert("plazo");
+						
+					}else {
+					
+						if(dijit.byId("plazo1").attr("checked")){
+							if(!dijit.byId("dias").attr("value")){
+								alert("Si va a emplear plazos por días por favor indique la cantidad de días para el plazo");
+								dijit.byId("dlgProgresBar").hide();
+								enviando=false;
+								return;
+							}else{
+								dijit.byId("fecha").attr("value", "");
+							}
+						}else{
+							if(!dijit.byId("fecha").attr("value")){
+								alert("Si va a emplear plazos por fecha por favor indique la fecha en la que vence el plazo");
+								dijit.byId("dlgProgresBar").hide();
+								enviando=false;
+								return;
+							}else{
+								dijit.byId("dias").attr("value", "");
+							}
+						}						
+					}					
+					
+					dojo.xhrPost({
+						form : document.getElementById("copiarApoyo"),
+						content: {
+							apoyo	:	apoyos,
+							ta	:	dijit.byId("CA_editor").attr("value"),
+							strAcciones : txtacciones,
+							strPrioridades : prioridades
+						},
+						load : function(){
+							refrescar();
+							dijit.byId("dlgProgresBar").hide();
+						}
+					});
+				}
+			}
+			
+			var filterPara = function(e) {
+			   	dijit.byId("grdPara").setQuery({nombres : "*" + this.attr("value") + "*"}, {ignoreCase: true});
+			};
+	
+			var resetPara = function() {
+				dijit.byId("txtFiltroPara").attr("value", "");
+			   	dojo.byId("txtFiltroPara").focus();
+			   	dijit.byId("grdPara").showMessage("");
+			   	dijit.byId("grdPara").setStore(new dojo.data.ItemFileReadStore({url: "buscarPara.action?mode=" + MODE}));
+			   	dijit.byId("grdPara").focus.next();
+			   	dijit.byId("grdPara").render();
+			};
+			
+			function activarChk(){
+				for(var j=1; j<16; j++){
+					dijit.byId("acciones"+j).attr("disabled", false);
+				}
+				for(var j=1; j<5; j++){
+					dijit.byId("prioridad"+j).attr("disabled", false);
+				}
+				/*dijit.byId("chkAccionesCont").getChildren().forEach(function(node){
+					dijit.byId(node.id).attr("disabled", false);
+				});*/
+			};
+			
+			function limpiarAcciones(){
+				for(var j=1; j<16; j++){
+					dijit.byId("acciones"+j).attr("checked", false);
+				}
+				for(var j=1; j<5; j++){
+					dijit.byId("prioridad"+j).attr("checked", false);
+				}
+				/*dijit.byId("chkAccionesCont").getChildren().forEach(function(node){
+					dijit.byId(node.id).attr("checked", false);
+				});*/
+			}
+			
+			function completarAcciones(){
+				var listaAcc = [];
+								
+				for(var j=0; j<acciones.length; j++){
+					var filaAcc = [];
+					filaAcc.push(acciones[j][0]);
+					for(var k = 1; k<acciones[j].length; k++){
+						if(acciones[j][k] == "1"){
+							filaAcc.push(dojo.byId("txtacciones"+k).value);
+						}
+					}
+					listaAcc.push(filaAcc);
+				}
+				return listaAcc;
+			}
+			
+			function guardarAcciones(id){
+				var list = [];
+				for(var j = 0 ; j< acciones.length; j++){
+					if(id == acciones[j][0]){
+						list = acciones[j];
+					}
+				}
+				if(list.length > 0){
+					/**REN ya se han ingresado las acciones del usuario -----------------------------------------------------*/
+					var i = 1;
+					for(var j=1; j<16; j++){
+						if(dijit.byId("acciones"+j).attr("checked")){
+							list[i] = 1;
+						}else{
+							list[i] = 0;
+						}
+						i++;
+					}
+					/*dijit.byId("chkAccionesCont").getChildren().forEach(function(node){
+						if(dijit.byId(node.id).attr("checked")){
+							list[i] = 1;
+						}else{
+							list[i] = 0;
+						}
+						i++;
+					});*/
+					
+				}else{
+					/**REN aun no se llenaba este nodo ----------------------------------------------------------------------*/
+					list.push(id);
+					
+					for(var j=1; j<16; j++){
+						if(dijit.byId("acciones"+j).attr("checked")){
+							list.push(1);
+						}else{
+							list.push(0);
+						}
+						i++;
+					}
+					
+					/*dijit.byId("chkAccionesCont").getChildren().forEach(function(node){
+						if(dijit.byId(node.id).attr("checked")){
+							list.push(1);
+						}else{
+							list.push(0);
+						}
+						i++;
+					});*/
+					
+					acciones.push(list);	
+				}
+				guardarPrioridades(id);
+			}
+			
+			function guardarPrioridades(id){
+				var list = [];
+				for(var j = 0 ; j< prioridades.length; j++){
+					if(id == prioridades[j][0]){
+						list = prioridades[j];
+					}
+				}
+				if(list.length > 0){
+					/**REN ya se han ingresado la prioridad para el usuario -----------------------------------------------------*/
+					for(var j=1; j<5; j++){
+						if(dijit.byId("prioridad"+j).attr("checked")){
+							list[1] = dijit.byId("prioridad"+j).attr("value");
+							break;
+						}
+					}
+					
+				}else{
+					/**REN aun no se llenaba este nodo ----------------------------------------------------------------------*/
+					list.push(id);
+					
+					for(var j=1; j<5; j++){
+						if(dijit.byId("prioridad"+j).attr("checked")){
+							list.push(dijit.byId("prioridad"+j).attr("value"));
+							break;
+						}
+					}
+					
+					prioridades.push(list);	
+				}
+			}
+			
+			function cargarAcciones(id){
+				limpiarAcciones();
+				var list = [];
+				for(var j = 0 ; j< acciones.length; j++){
+					if(id == acciones[j][0]){
+						list = acciones[j];
+					}
+				}
+				if(list.length > 0){
+					/**REN ya se habian guardado acciones para este usuario -------------------------------------------------*/
+					for(var j = 1 ; j< list.length; j++){
+						if(list[j] == 1){
+							dijit.byId("acciones"+j).attr("checked", true);
+						}
+					}
+				}
+				
+				cargarPrioridades(id);
+			}
+			
+			function cargarPrioridades(id){
+				var valor = <s:property value="documento.prioridad"/>;
+				for(var j = 0 ; j< prioridades.length; j++){
+					if(id == prioridades[j][0]){
+						valor = prioridades[j][1];
+					}
+				}
+				valor++;
+				/**REN ya se habia guardado una prioridad para este usuario -------------------------------------------------*/
+				dijit.byId("prioridad"+valor).attr("checked", true);
+				/*for(var j = 1 ; j< 5; j++){						
+					if(dijit.byId("prioridad"+j).attr("value") == valor){
+						dijit.byId("prioridad"+j).attr("checked", true);
+						break;
+					}
+				}*/
+			}
+			
+			function editarAcciones(){
+				editandoAcciones = true;
+			};
+			
+			function removerDestinatario(id){
+				dijit.byId("listParaApoyo").getChildren().forEach(function(node){
+					if(node.id == id){
+						removerDestinatarioArreglo(node.id);
+						node.destroy();
+						limpiarAcciones();
+					}
+				});
+			}
+			
+			function removerDestinatarioArreglo(id){
+				var j = 0;
+				var existeDestArr = false;
+				while(j< acciones.length){
+					if(id == acciones[j][0]){
+						existeDestArr = true;
+						break;	
+					}
+					j++;
+				}
+				if(existeDestArr){
+					acciones.splice(j, 1);
+				}
+			}
+			
+			var selectContactoFromGrdPara = function(e) {
+				if (!gDoubleClick) {
+			    	if (e.rowIndex == undefined) {
+			        	return;
+			      	}
+			    	var id = dijit.byId("grdPara").getItem(e.rowIndex).id;
+			    	var nombre = dijit.byId("grdPara").getItem(e.rowIndex).nombres;
+			    	if(nombre!=null && nombre!="" && id!=null && id!=""){
+				    	if(!dijit.byId(""+id)){
+				    		new dijit.MenuItem({
+						    	id	:	id,
+								name : "apoyo",
+								label: nombre,
+								onClick: function(e){
+									if(editandoAcciones){
+										/**REN Guardamos las acciones anteriores y limpiamos las acciones actuales-----------*/
+										guardarAcciones(idEditandoAcc);
+										editandoAcciones = false;
+									}else{
+										/**REN Cargamos las acciones en el formulario----------------------------------------*/
+										activarChk();
+									}
+									idEditandoAcc = this.id;
+									cargarAcciones(idEditandoAcc);
+									
+									var refBotonRemover = dijit.byId("btnRemoverDest"); 
+									
+									refBotonRemover.attr("disabled", false);
+									refBotonRemover.attr("label","Remover " + nombre);
+									refBotonRemover.attr("onClick", function(e){
+										removerDestinatario(id);
+										refBotonRemover.attr("disabled", true);
+										refBotonRemover.attr("label","Remover");
+									});
+									
+								}
+							}).placeAt(dijit.byId("listParaApoyo"));
+				    	}
+			    	}
+				}
+			   	dijit.byId("dlgPara").hide();
+			};
+			
+			var showGrdPara = function() {
+				gDoubleClick = false;
+			   	dijit.byId("dlgPara").show();
+			   	dijit.byId("txtFiltroPara").attr("value", "");
+			   	dijit.byId("grdPara").showMessage("");
+			   	dijit.byId("grdPara").setStore(new dojo.data.ItemFileReadStore({url: "buscarPara.action?mode=copiaApoyo&iIdProceso="+"<s:property value='documento.expediente.proceso.idproceso' />"}));
+			   	dijit.byId("grdPara").focus.next();
+			   	dijit.byId("grdPara").render();
+			};
+			function refrescar() {
+				window.opener.eliminarRegistro();
+	           	this.window.close();
+	     	}
+			dojo.addOnLoad(function(){
+				new dijit.Menu({
+					style: "border:none;"			
+				},"listParaApoyo");
+			});
+			
+			function plazo(id){
+	        	 if(id == "valPlazoDia" || id == "valPlazoFijo"){		         
+		         document.getElementById('idInputSinPlazoM').value = "";		         
+		         }if (id == "sPlazoM") {
+			         document.getElementById('idInputSinPlazoM').value = "sinPlazo";
+			     }
+	         }
+		</script>
+	</head>
+	<body class="soria" <s:if test='cerrar!=null'>onload="refrescar();"</s:if>>
+		<s:if test="cerrar==null">
+			<form id="copiarApoyo" action="copiarApoyo.action" method="post">
+			<table width="97%" align="center">
+				<tr>
+					<td>&nbsp;</td>
+				</tr>
+				<tr align="center">
+					<td align="left">
+						<img src="images/enviar.bmp" alt="Enviar" style="float: left;" onclick="javascript:enviar();" />
+					</td>
+				</tr>
+				<tr>
+					<td>
+						&nbsp;
+						<s:hidden name="iIdDoc" />
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div dojoType="dijit.form.Button" onClick="showGrdPara()">Agregar Destinatario</div>
+						<!-- <button dojoType="dijit.form.Button" onClick="removerDestinatario()">Remover Destinatarios</button> -->
+						<div id="btnRemoverDest"  dojoType="dijit.form.Button" disabled >Remover</div>
+					</td>
+				</tr>
+				<tr>
+					<td style="height:7em; padding:5px; background-color:#FFFFFF; border:solid 1px; border-color:#BCBCBC;">
+						<div dojoType="dijit.layout.BorderContainer" style="background-color:#FFFFFF; width:100%; overflow:auto; padding:5px; border:thin; ">
+							<div id="listParaApoyo"></div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td style="background-color:#FFFFFF; border:solid 1px; border-color:#BCBCBC; ">
+						<div id="chkAccionesCont" dojoType="dijit.layout.BorderContainer" style="background-color:#FFFFFF; width:100%; height:15em; padding-left:5px;">
+							<table style="width:100%;">
+								<tr>
+									<%if(proveidos != null && !proveidos.isEmpty()){ 
+										int i = 1;
+										for(Proveido p : proveidos){
+									%>
+									<td style="padding-left:0.5em;">
+										<input dojoType="dijit.form.CheckBox" id="acciones<%=i %>" onClick="editarAcciones()" disabled/>
+										<input id="txtacciones<%=i %>" type="hidden" value="<%=p.getIdProveido()%>"/><%=p.getNombre() %>
+									</td>
+									<% 		
+										if(i % 4 == 0){
+									%>
+										</tr>
+										<tr>
+									<%	}
+										i++;
+										}
+									} %>	
+								</tr>
+								<tr style="border-top: 0.02em solid; border-top-color: #BCBCBC;">
+									<td style="padding:0.5em 0.5em 0.5em 0.5em;" colspan="4">
+										<strong>Prioridad:
+										<input dojoType="dijit.form.RadioButton" id="prioridad1" name="prioridades" onClick="editarAcciones()" disabled value="0" <s:if test="documento.prioridad == 0">checked</s:if>/> Baja
+										<input dojoType="dijit.form.RadioButton" id="prioridad2" name="prioridades" onClick="editarAcciones()" disabled value="1" <s:if test="documento.prioridad == 1">checked</s:if>/> Normal
+										<input dojoType="dijit.form.RadioButton" id="prioridad3" name="prioridades" onClick="editarAcciones()" disabled value="2" <s:if test="documento.prioridad == 2">checked</s:if>/> Urgente
+										<input dojoType="dijit.form.RadioButton" id="prioridad4" name="prioridades" onClick="editarAcciones()" disabled value="3" <s:if test="documento.prioridad == 3">checked</s:if>/> Muy Urgente
+									</td>
+								</tr>
+								<tr style="border-top: 0.02em solid; border-top-color: #BCBCBC;">
+									<td style="padding:0.5em 0.5em 0.5em 0.5em;" colspan="4">
+										<input dojoType="dijit.form.RadioButton" id="plazo1" name="plazos" checked  value="valPlazoDia" onclick="plazo('valPlazoDia');"/> <strong>Plazo por d&iacute;as: </strong>
+										<span><input id="dias" dojoType="dijit.form.NumberTextBox" name="objDD.iPlazoDia" value="<s:property value='documento.expediente.proceso.tiempoatencion' />" style="width:4em;" maxLength=2/> d&iacute;as de plazo</span>
+										<br />
+										<input dojoType="dijit.form.RadioButton" id="plazo2" name="plazos" value="valPlazoFijo" onclick="plazo('valPlazoFijo');"/> <strong>Plazo por fecha fija: </strong>
+										<span>El plazo vence el <input id="fecha" name="objDD.strFechaLimiteAtencion" dojoType="dijit.form.DateTextBox" constraints="{min: new Date() ,datePattern:'dd/MM/yyyy'}" /></span>
+										<br />
+										<input dojoType="dijit.form.RadioButton" id="plazo3" name="plazos" value="sPlazoM" onclick="plazo('sPlazoM');"/> <strong>Sin Plazo </strong>
+										<input type="hidden" name="objDD.strSinPlazo" id="idInputSinPlazoM" value="sinPlazo"/>
+									</td>
+								</tr>
+								<tr style="border-top: 0.02em solid; border-top-color: #BCBCBC;">
+									<td style="padding:0.5em 0.5em 0.5em 0.5em;" colspan="4">
+										<strong>Asunto: </strong>
+										<input dojoType="dijit.form.TextBox" name="objDD.strAsunto" value="<s:property value='documento.asunto' />" style="width:57em;"/>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="hidden" id="ta" value="<s:property value='ta' escape='false' />"/>
+						<div dojoType="dijit.Editor" id="CA_editor" style="background-color: #FFF; height:20em;" ></div>
+						<script type="text/javascript">
+							var cadena  = document.getElementById("ta").value;
+							document.getElementById("CA_editor").innerHTML = cadena.substring(0,3999);
+						</script>
+					</td>
+				</tr>
+			</table>
+			</form>
+		</s:if>
+		<s:else>
+			<p style="text-align: center;">Operaci&oacute;n realizada satisfactoriamente</p>
+		</s:else>
+		<%@ include file="../pages/util/progressBar.jsp"%>
+		<%@ include file="derivar-dialogs.jsp" %>
+	</body>
+</html>
+
+

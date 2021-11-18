@@ -1,0 +1,5 @@
+@import "estilo.css";
+@import "busquedaExpediente.css";
+@import "siged.css";
+@import "sigedIconos.css";
+@import "transferSelect.css";

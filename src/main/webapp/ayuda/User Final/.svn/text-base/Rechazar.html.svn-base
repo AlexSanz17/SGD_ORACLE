@@ -1,0 +1,65 @@
+﻿<html>
+	
+<head>
+	<title>Rechazar</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <meta name="generator" content="HelpNDoc">
+	<link type="text/css" rel="stylesheet" media="all" href="css/reset.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/base.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/hnd.css" />
+	<!--[if lte IE 8]>
+		<link type="text/css" rel="stylesheet" media="all" href="css/ielte8.css" />
+	<![endif]-->
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/hnd.js"></script>
+	<script type="text/javascript"><!--
+		var sTopicId = top.location.href.substring(top.location.href.lastIndexOf("/") + 1, top.location.href.length);
+		if (top.frames.length == 0)
+			top.location.href = "User Final.htm?" + sTopicId
+		else if (top && top.FrameTOC && top.FrameTOC.SelectTocItem)
+			top.FrameTOC.SelectTocItem(sTopicId);
+	</script>
+</head>
+
+<body>
+
+	<div id="topic_header">
+			<div id="topic_header_content">
+				<h1>Rechazar</h1>
+				
+				<div id="topic_breadcrumb">
+					<a href="General.html">General</a> &rsaquo;&rsaquo; </div>
+				</div>
+			<div id="topic_header_nav">
+				<a href="General.html"><img src="img/arrow_up.png" alt="Parent"/></a>
+				
+				<a href="General.html"><img src="img/arrow_left.png" alt="Previous"/></a>
+				
+				<a href="TrazabilidaddelExpediente.html"><img src="img/arrow_right.png" alt="Next"/></a>
+				
+				</div>
+			<div class="clear"></div>
+		</div>
+	<div id="topic_content">
+		
+<p class="rvps5"><span class="rvts13">Rechazar:</span></p>
+<p class="rvps4"><span class="rvts13">Esta opción es usada para devolver un documento a la persona que lo envió. </span><span class="rvts14">Seleccionamos </span><span class="rvts15">Rechazar</span><span class="rvts14">, cuando el Documento no pertenece o presenta algún error. La diferencia que existe con Transferir es sólo en la Trazabilidad. Finalmente, puedes añadir alguna observación si consideres necesario y p</span><span class="rvts13">ara enviarlo usamos el botón </span><span class="rvts16">“Enviar”</span><span class="rvts13">.</span></p>
+<p class="rvps4"><span class="rvts13">(*) El </span><span class="rvts16">Rechazar,</span><span class="rvts13"> se realiza a la persona que te envió el Documento.</span></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><img border="0" alt hspace="1" vspace="1" src="lib/RECHAZAR1.jpg"></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><span class="rvts13">Verificamos en la Trazabilidad quien me envió el documento, ya que cuando haga el rechazo, el documento se devolverá al usuario remitente.</span></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><img border="0" alt hspace="1" vspace="1" src="lib/TRAZABILIDAD.jpg"></p>
+<p class="rvps2"><span class="rvts6">Created with the Personal Edition of HelpNDoc: </span><a class="rvts7" href="http://www.helpndoc.com">Easily create iPhone documentation</a></p>
+</div>
+	
+	<div id="topic_footer">
+
+			<div id="topic_footer_content">
+				SISTEMA DE GESTION DOCUMENTARIA - APN</div>
+		</div>
+	</body>
+	
+</html>
+

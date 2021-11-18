@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Modulo;
+
+public interface ModuloDAO {
+
+   public List<Modulo> findAll();
+   
+   public List<Modulo> findModuloActivos();
+
+   public Modulo findByIdModulo(Integer iIdModulo);
+
+   public Modulo saveModulo(Modulo objModulo);
+}

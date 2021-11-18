@@ -1,0 +1,353 @@
+package org.osinerg.services;
+
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import javax.persistence.NoResultException;
+import org.apache.log4j.Logger;
+import org.osinerg.daos.ClienteDAO;
+import org.osinerg.dojo.ClienteJSon;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.DocumentoDetail;
+import org.osinerg.utils.StringUtil;
+import org.osinerg.webservice.clientes.consultaRuc.DatosRucWSFacadeRemoteProxy;
+import org.osinerg.webservice.clientes.consultaRuc.beans.BeanDdp;
+import org.osinerg.webservice.clientes.consultaRuc.beans.BeanDds;
+import org.osinerg.webservice.clientes.consultaRuc.beans.BeanT1144;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Cliente;
+import com.btg.osinergmin.siged.domain.Distrito;
+import com.btg.osinergmin.siged.domain.Provincia;
+
+public class ClienteServiceImpl implements ClienteService{
+	
+	private static Logger log=Logger.getLogger(ClienteServiceImpl.class);
+	private ClienteDAO dao;
+	private AuditoriaService srvAuditoria;
+	private DistritoService distritoService;
+
+	// ////////////////////////////////
+	// Constructors //
+	// ////////////////////////////////
+	public ClienteServiceImpl(ClienteDAO dao){
+		this.dao=dao;
+	}
+
+	// ////////////////////////////////
+	// Methods //
+	// ////////////////////////////////
+	@Transactional
+	public void deleteCliete(Cliente objCliente){
+		objCliente.setEstado(Constantes.ESTADO_INACTIVO);
+		dao.guardarObj(objCliente);
+	}
+
+	public Map<Integer,String> getClienteList() throws RuntimeException{
+		try{
+			Map<Integer,String> mapAux=new HashMap<Integer,String>();
+			List<Cliente> lstC=getDao().findAll();
+			for(Cliente objC : lstC){
+				mapAux.put(objC.getIdCliente(),objC.getNumeroIdentificacion());
+			}
+			return mapAux;
+		}catch(RuntimeException re){
+			log.error(re.getMessage(),re);
+			return null;
+		}
+	}
+
+	public Cliente findByIdCliente(Integer iIdCliente){
+		return dao.findByIdCliente(iIdCliente);
+	}
+
+	public Cliente findByNroIdentificacion(String sNroIdentificacion){
+		return dao.findByNroIdentificacion(sNroIdentificacion);
+	}
+
+        public Cliente findByExpediente(Integer idExpediente) {
+		return dao.findByExpediente(idExpediente);
+	}
+
+	@Override
+	public List<Cliente> findLikeNroIdentificacion(String sNroIdentificacion){
+		return dao.findLikeNroIdentificacion(sNroIdentificacion);
+	}
+
+        public List<Cliente> findLikeNroIdentificacionOrNombre(String prm) {
+            return dao.findLikeNroIdentificacionOrNombre(prm);
+        }
+
+	@Transactional
+	public Cliente guardarObj(Cliente objClienteOld,Cliente objClienteNew,String sUsuarioSesion,String sTipoAuditoria){
+		try{
+			srvAuditoria.aplicarAuditoria(objClienteOld,objClienteNew,sUsuarioSesion,Constantes.AUDITORIA_OPCION_GUARDAR,sTipoAuditoria);
+		}catch(ClassNotFoundException e){
+			log.error(e.getMessage(),e);
+		}
+		objClienteNew=dao.guardarObj(objClienteNew);
+		log.debug("Cliente guardado con ID ["+objClienteNew.getIdCliente()+"] Razon Social ["+objClienteNew.getRazonSocial()+"]");
+		return objClienteNew;
+	}
+
+   @Transactional
+   public Cliente updateInfoCliente(DocumentoDetail objDD) {
+      Cliente objCliente = null;
+      objCliente = this.findByIdCliente(objDD.getIIdCliente());
+
+//      if (!StringUtil.isEmpty(objDD.getClienterazonsocial())) {
+//         if (log.isDebugEnabled()) {
+//            log.debug("Se actualizaran los datos del cliente");
+//         }
+//
+//         objCliente.setRazonSocial(objDD.getClienterazonsocial());
+//         objCliente.setNombres(objDD.getClientenombres());
+//         objCliente.setApellidoPaterno(objDD.getClienteapellidopaterno());
+//         objCliente.setApellidoMaterno(objDD.getClienteapellidomaterno());
+//         objCliente.setRepresentanteLegal(objDD.getClienterepresentantelegal());
+//         objCliente.setDireccionPrincipal(objDD.getClientedireccionprincipal());
+//
+//         if (objDD.getClienteubigeoprincipal() != null) {
+//            objCliente.setUbigeoPrincipal(distritoService.findById(objDD.getClienteubigeoprincipal()));
+//         }
+//
+//         objCliente.setDireccionAlternativa(objDD.getClientedireccionalternativa());
+//
+//         if (objDD.getClienteubigeoalternativo() != null) {
+//            objCliente.setUbigeoAlternativo(distritoService.findById(objDD.getClienteubigeoalternativo()));
+//         }
+//
+//         objCliente.setTelefono(objDD.getClientetelefono());
+//         objCliente.setCorreo(objDD.getClientecorreo());
+//         objCliente = dao.guardarObj(objCliente);
+//      }
+
+      return objCliente;
+   }
+
+	public List<Cliente> findAll(){
+		List<Cliente> lstCliente=getDao().findAll();
+		for(Cliente objCliente : lstCliente){
+			if(objCliente.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)){
+				objCliente.setsNombre(objCliente.getRazonSocial());
+			}else{
+				String sNombre=objCliente.getNombres()+" "+objCliente.getApellidoPaterno();
+				sNombre+=(objCliente.getApellidoMaterno()!=null) ? " "+objCliente.getApellidoMaterno() : "";
+				objCliente.setsNombre(sNombre);
+			}
+		}
+		return lstCliente;
+	}
+
+	public List<Cliente> findByTipoIdentificacionList(Integer iIdTipoIdentificacion, String sTipoIdentificacion){
+		try{
+			return getDao().findByTipoIdentificacionList(iIdTipoIdentificacion, sTipoIdentificacion);
+		}catch(NoResultException nre){
+			log.warn(nre.getMessage());
+			return null;
+		}
+	}
+
+	public Cliente findByTipoIdentificacionList2(Integer iIdTipoIdentificacion, String sTipoIdentificacion,String nroIdentificacion){
+		try{
+			return getDao().findByTipoIdentificacionList2(iIdTipoIdentificacion, sTipoIdentificacion,nroIdentificacion);
+		}catch(NoResultException nre){
+			log.warn(nre.getMessage());
+			return null;
+		}
+	}
+	
+	// ////////////////////////////////
+	// Getters and Setters //
+	// ////////////////////////////////
+	public ClienteDAO getDao(){
+		return dao;
+	}
+
+	public void setDao(ClienteDAO dao){
+		this.dao=dao;
+	}
+
+	public AuditoriaService getSrvAuditoria(){
+		return srvAuditoria;
+	}
+
+	public void setSrvAuditoria(AuditoriaService srvAuditoria){
+		this.srvAuditoria=srvAuditoria;
+	}
+
+	/**
+	 * Retorna un objeto Cliente a partir del ruc ingresado. Para esto conulta
+	 * el webserice de la SUNAT.
+	 * 
+	 * @param ruc
+	 * 			el numero de RUC del cliente
+	 * @author German Enriquez
+	 */
+	@Override
+	public ClienteJSon getClientePorRUCSunat(String ruc){
+		ClienteJSon cliente=null;
+		if(ruc!=null && !ruc.equals("")){
+			//System.setProperty("http.proxyHost",ValoresProperties.getProperty("webservice.proxy.host"));
+			//System.setProperty("http.proxyPort",ValoresProperties.getProperty("webservice.proxy.port"));
+			//log.debug(System.getProperty("http.proxyHost"));
+			//log.debug(System.getProperty("http.proxyPort"));
+			DatosRucWSFacadeRemoteProxy proxy=new DatosRucWSFacadeRemoteProxy();
+			try{
+				BeanDdp principales=proxy.getDatosPrincipales(ruc);
+				if(principales!=null){
+					cliente=new ClienteJSon();
+					if(principales.getDdp_numruc()!=null){
+						log.debug("Cliente encontrado con razon social "+principales.getDdp_nombre());
+						
+						cliente.setIdentificacion(ruc);
+						cliente.setRazonSocial(principales.getDdp_nombre().trim());
+						String direccion=principales.getDdp_nomvia().trim()+" ";
+						direccion+=principales.getDdp_numer1().trim()+" ";
+						String interior=principales.getDdp_inter1().trim();
+						if(interior!=null && !interior.equals("")){
+							direccion+=interior+" ";
+						}
+						direccion+=principales.getDdp_nomzon().trim();
+						cliente.setDireccion(direccion);
+						int distrito=0;
+						int provincia=0;
+						int departamento=0;						
+						try{
+							distrito=Integer.parseInt(principales.getDdp_ubigeo());
+							Distrito dist=distritoService.findById(distrito);							
+							if(dist!=null){
+								Provincia prov=dist.getProvincia();
+								if(prov!=null){
+									provincia=prov.getIdprovincia();
+									departamento=prov.getDepartamento().getIddepartamento();
+								}
+							}
+						}
+						catch(NumberFormatException e){
+							log.warn("No se pudo encontrar el distrito con ubigeo: "+principales.getDdp_ubigeo());
+						}
+						cliente.setDistrito(distrito);
+						cliente.setProvincia(provincia);
+						cliente.setDepartamento(departamento);
+						//cliente.setRepresentantelegal(resultado.get)
+						BeanDds secundarios=proxy.getDatosSecundarios(ruc);
+						if(secundarios!=null){
+							String telefono=secundarios.getDds_telef1().trim();
+							if(!telefono.equals("-"))
+								cliente.setTelefono(telefono);
+						}
+						BeanT1144 otros=proxy.getDatosT1144(ruc);
+						if(otros!=null){
+							String correo=otros.getCod_correo1().trim();
+							if(!correo.equals("-"))
+								cliente.setCorreo(correo);
+						}
+					}else{
+						cliente.setIdentificacion("No se ha podido encontrar el RUC en los registros de la SUNAT") ;
+					}
+				}
+			}catch(RemoteException e){
+				log.error("Ocurrio un error al intentar conectarse con el webservice.",e);
+				cliente=new ClienteJSon();
+				cliente.setIdentificacion("Ocurri&oacute; un error al tratar de acceder a la SUNAT.");
+			}
+		}
+		return cliente;
+	}
+
+	@Override
+	public List<ClienteJSon> getClientesPorRazonSocialSunat(String razonSocial){
+		List<ClienteJSon> clientes=null;
+		if(razonSocial!=null && !razonSocial.equals("")){
+			DatosRucWSFacadeRemoteProxy proxy=new DatosRucWSFacadeRemoteProxy();
+			try{
+				BeanDdp[] principales=proxy.buscaRazonSocial(razonSocial);
+				if(principales!=null && principales.length>0){
+					clientes=new ArrayList<ClienteJSon>();
+					for(BeanDdp principal : principales){						
+						if(principal!=null){
+							String ruc=principal.getDdp_numruc();
+							if(ruc!=null){
+								ruc=ruc.trim();
+								log.debug("Cliente encontrado con razon social "+principal.getDdp_nombre());
+								ClienteJSon cliente=new ClienteJSon();
+								cliente.setIdentificacion(ruc);
+								cliente.setRazonSocial(principal.getDdp_nombre().trim());								
+								clientes.add(cliente);
+							}
+						}						
+					}
+				}
+			}
+			catch(RemoteException e){
+				log.error("Ocurrio un error al intentar conectarse con el webservice.",e);
+			}
+		}
+		return clientes;
+	}
+
+	public void setDistritoService(DistritoService distritoService){
+		this.distritoService=distritoService;
+	}
+
+   @Override
+   public List<Cliente> findLstByCriteria(String sFiltroBusqueda) {
+      StringTokenizer stFiltroBusqueda = null;
+      String[] filtroBusqueda = null;
+
+      try {
+         stFiltroBusqueda = new StringTokenizer(sFiltroBusqueda);
+
+         if (stFiltroBusqueda.countTokens() <= 0) {
+            log.info("No se recibio filtro de busqueda");
+
+            return null;
+         }
+
+         filtroBusqueda = new String[stFiltroBusqueda.countTokens()];
+         int i = 0;
+
+         while (stFiltroBusqueda.hasMoreTokens()) {
+            filtroBusqueda[i++] = stFiltroBusqueda.nextToken();
+         }
+
+         if (log.isDebugEnabled()) {
+            for (i = 0; i < filtroBusqueda.length; i++) {
+               log.debug("token [" + filtroBusqueda[i] + "]");
+            }
+         }
+
+         return dao.findLstByCriteria(filtroBusqueda);
+      } catch (Exception e) {
+         log.error(e.getMessage(), e);
+
+         return null;
+      }
+   }
+
+   @Override
+   public String generateNroIdentificacionOtro() {
+      return dao.generateNroIdentificacionOtro();
+   }
+
+   @Override
+   public Cliente findObjectBy(String numeroIdentificacion, Character estado) {
+      if (log.isDebugEnabled()) {
+         log.debug("Buscando cliente con numeroIdentificacion [" + numeroIdentificacion + "] estado [" + estado + "]");
+      }
+
+      if (StringUtil.isEmpty(numeroIdentificacion) || estado == null) {
+         return null;
+      }
+
+      return dao.findObjectBy(numeroIdentificacion, estado);
+   }
+   
+   public List<Cliente> findByNombreRazonLike(String like){
+	   return dao.findByNombreRazonLike(like);
+   }
+}

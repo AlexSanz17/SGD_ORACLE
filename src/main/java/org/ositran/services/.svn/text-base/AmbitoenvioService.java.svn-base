@@ -1,0 +1,14 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.AmbitoEnvio;
+
+
+public interface AmbitoenvioService {
+   
+   public AmbitoEnvio findId(int Id);
+   
+   public List<AmbitoEnvio> findAll();
+   
+}

@@ -1,0 +1,2574 @@
+package org.osinerg.actions;
+
+import static org.osinerg.utils.StringUtil.isEmpty;
+import gob.osinergmin.siged.config.SigedProperties;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpUtils;
+
+import net.sf.jxls.transformer.XLSTransformer;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.json.annotations.SMDMethod;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.osinerg.daos.AuditoriaDAO;
+import org.osinerg.daos.DistritoDAO;
+import org.osinerg.daos.DocumentoDAO;
+import org.osinerg.daos.PerfilDAO;
+import org.osinerg.daos.ReemplazoDAO;
+import org.osinerg.dojo.BusquedaAvanzada;
+import org.osinerg.dojo.ClienteBeanJson;
+import org.osinerg.dojo.ClienteJSon;
+import org.osinerg.dojo.NumeracionJSON;
+import org.osinerg.dojo.ObjetoJSON;
+import org.osinerg.dojo.ProcesoBeanJson;
+import org.osinerg.dojo.Recurso;
+import org.osinerg.dojo.grid.Estructura;
+import org.osinerg.dojo.grid.GridUsuario;
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.reporte.LBTRUtil;
+import org.osinerg.services.ArchivoService;
+import org.osinerg.services.CampoService;
+import org.osinerg.services.CarpetabusquedaService;
+import org.osinerg.services.ClienteService;
+import org.osinerg.services.ConcesionarioService;
+import org.osinerg.services.DocumentoService;
+import org.osinerg.services.DocumentoxclienteService;
+import org.osinerg.services.ExpedienteService;
+import org.osinerg.services.ExpedientestorService;
+import org.osinerg.services.FavoritoService;
+import org.osinerg.services.GridcolumnaxusuarioService;
+import org.osinerg.services.ItemService;
+import org.osinerg.services.MensajeriaService;
+import org.osinerg.services.NotificacionService;
+import org.osinerg.services.NumeracionService;
+import org.osinerg.services.ParametroService;
+import org.osinerg.services.PlantillaService;
+import org.osinerg.services.ProcesoService;
+import org.osinerg.services.RolService;
+import org.osinerg.services.SupervisorService;
+import org.osinerg.services.TipodocumentoService;
+import org.osinerg.services.TipoidentificacionService;
+import org.osinerg.services.UnidadService;
+import org.osinerg.services.UsuarioService;
+import org.osinerg.siged.service.AlfrescoWSService;
+import org.osinerg.utils.ArchivoTemporal;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.DocumentoDetail;
+import org.osinerg.utils.StringUtil;
+import org.osinerg.utils.UtilOsinerg;
+import org.springframework.jms.IllegalStateException;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import com.btg.osinergmin.siged.domain.Accion;
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.Auditoria;
+import com.btg.osinergmin.siged.domain.Campo;
+import com.btg.osinergmin.siged.domain.CarpetaBusqueda;
+import com.btg.osinergmin.siged.domain.Cliente;
+import com.btg.osinergmin.siged.domain.Concesionario;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Documentoxcliente;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Favorito;
+import com.btg.osinergmin.siged.domain.FilaBandejaUF;
+import com.btg.osinergmin.siged.domain.GridXGridColumna;
+import com.btg.osinergmin.siged.domain.Gridcolumnaxusuario;
+import com.btg.osinergmin.siged.domain.Mensajeria;
+import com.btg.osinergmin.siged.domain.Notificacion;
+import com.btg.osinergmin.siged.domain.Numeracion;
+import com.btg.osinergmin.siged.domain.Parametro;
+import com.btg.osinergmin.siged.domain.Plantilla;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Reemplazo;
+import com.btg.osinergmin.siged.domain.Rol;
+import com.btg.osinergmin.siged.domain.Supervisor;
+import com.btg.osinergmin.siged.domain.Tipoidentificacion;
+import com.btg.osinergmin.siged.domain.Tipoproceso;
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+import com.btg.osinergmin.siged.domain.Unidad;
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.ibm.icu.text.DateFormat;
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.ActionContext;
+
+public class DojoAction {
+
+	private static Log log = LogFactory.getLog(DojoAction.class);
+
+	private Integer idCarpetaBusqueda;
+	private Integer idTipoGrid;
+	private Integer iIdUpload;
+	private String idDoc;
+	private String rutaAlfresco;
+	private String contDocumentosRecibidos;
+	private Documento objDocumento;
+	private Archivo archivo;
+	private List<FilaBandejaUF> listDocumentosRecibidos;
+	private String archivoPrincipal;
+	private String PDF;
+	private Boolean paraAprobar;
+	private Character agrupacion;
+		
+	private CarpetaBusqueda carpetaBusqueda;
+	private List<Item> lstDocumentoGrid;
+	private Map<String, Object> mapSession;
+	
+	private PerfilDAO perfilDao;
+	private DistritoDAO distritoDao;
+	private ReemplazoDAO reemplazoDao;
+	private DocumentoDAO documentoDao;
+	
+	private RolService rolService;
+	private ItemService srvItem;
+	private CampoService srvCampo;
+	private UnidadService srvUnidad;
+	private ProcesoService srvProceso;
+	private ClienteService clienteService;
+	private ArchivoService archivoService;
+	private UsuarioService usuarioService;
+	private FavoritoService favoritoService;
+	private DocumentoService documentoService;
+	private ParametroService parametroService;
+	private PlantillaService srvPlantilla;
+	private ExpedienteService expedienteService;
+	private AlfrescoWSService alfrescoWebServiceClient;
+	private SupervisorService supervisorService;
+	private MensajeriaService srvMensajeria;
+	private NumeracionService srvNumeracion;
+	private NotificacionService notificacionService;
+	private TipodocumentoService srvTipoDocumento;
+	private ConcesionarioService concesionarioService;
+	private ExpedientestorService storService;
+	private CarpetabusquedaService carpetaBusquedaService;
+	private DocumentoxclienteService documentoxclienteService;
+	private TipoidentificacionService tipoIdentificacionService;
+	private GridcolumnaxusuarioService gridColumnaXUsuarioService;
+	
+	private Integer iddestinatario;
+	private String sTipoDerivacion;
+	private String sOpcion;
+	private String strAcc;
+	private Boolean provieneDeMail;
+	
+	public String execute() throws Exception {
+		log.debug("-> [Action] DojoAction - execute():String ");
+		return Action.SUCCESS;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@SMDMethod
+	public ObjetoJSON getListaDocumentosRecibidos(BusquedaAvanzada objFiltro){
+		log.debug("-> [Action] DojoAction - getListDocumentosRecibidos():String ");
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		listDocumentosRecibidos = documentoService.getContDocUsuarioFinal(objUsuario, true,objFiltro);
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");		
+		List<Item> items = new ArrayList<Item>();		
+		for (FilaBandejaUF filaBandejaUF : listDocumentosRecibidos) {
+            	Item item = new Item();
+				item.setId(filaBandejaUF.getId());
+				log.debug("DOCUMENTO: "+item.getId());
+				items.add(item);
+		}		
+		objJSON.setItems(items);
+		return objJSON;
+	}
+	
+	public String getInicioMenu(){
+		log.debug("-> [Action] DojoAction - getInicioMenu():String ");
+		
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+			return null;
+		}
+		contDocumentosRecibidos = String.valueOf(documentoService.getContDocUsuarioFinal(objUsuario, true,null).size());
+		
+		//listDocumentosRecibidos = gridColumnaXUsuarioService.getContDocUsuarioFinal(objUsuario, true);
+		
+        log.debug("contDocumentosRecibidos"+contDocumentosRecibidos);
+		return "verInicioMenu";
+		
+	}
+	
+	public String getMenuDocumentosRecibidos(){
+		log.debug("-> [Action] DojoAction - getMenuDocumentosRecibidos():String ");
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+			return null;
+		}
+		//listDocumentosRecibidos = documentoService.getContDocUsuarioFinal(objUsuario, true,null);
+		return "verMenuDocRec";
+		
+	}
+
+
+	public void limpiarCarpetaTemporalxUsuario(String usuario) {
+		log.debug("-> [Action] DocumentoAction - limpiarCarpetaTemporalxUsuario():void ");
+
+		File carpetaTemporal = new File(SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.UPLOAD_CARPETA_TEMPO));
+		if (carpetaTemporal.exists() && carpetaTemporal.isDirectory()) {
+			String[] archivosTemporales = carpetaTemporal.list();
+			File tempDelete = null;
+			for (String archivoTemporal : archivosTemporales) {
+				if (archivoTemporal.contains("[" + usuario)) {
+					log.debug("Archivo temporal a elminar:" + archivoTemporal);
+					tempDelete = new File(SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.UPLOAD_CARPETA_TEMPO), archivoTemporal);
+					tempDelete.delete();
+				}
+			}
+		}
+	}
+	
+	public void descargarArchivo()	throws ServletException, IOException {
+	    
+		log.debug("-> [Action] DojoAction - exportarExcelCarpetaBusqueda():void ");
+		HttpServletRequest request=ServletActionContext.getRequest();
+		HttpServletResponse response=ServletActionContext.getResponse();
+		
+	        response.setContentType("text/html;charset=UTF-8");
+	        //PrintWriter out = response.getWriter();
+	        try {
+	        	//http://servicios.apn.gob.pe:8090/alfresco/download/direct/workspace/SpacesStore/ca875f39-57c8-4bd5-8bcb-07a3a5f63a0c/jpgPruebamantenimiento.JPG
+	            String archivo =    "http://servicios.apn.gob.pe:8090/alfresco/download/direct/workspace/SpacesStore/ca875f39-57c8-4bd5-8bcb-07a3a5f63a0c/jpgPruebamantenimiento.JPG?ticket=TICKET_1e0f06a47f4ecc3da91add2aaa0ec5fd5e4b2353";       //request.getParameter("archivo");
+	            File f = new File(archivo);
+	            response.setContentType("application/pdf");//Se define  el tipo de archivo a descargar
+	            response.setHeader ("Content-Disposition", "attachment; filename="+ archivo +"");
+	            InputStream in =new FileInputStream(f);
+	            ServletOutputStream outs = response.getOutputStream();
+	            int bit = 256;
+	            try{
+	                while ((bit) >= 0){
+	                    bit = in.read();
+	                    outs.write(bit);
+	                }
+	            }catch (IOException ioe){ioe.printStackTrace(System.out);}
+	            outs.flush();
+	            outs.close();
+	            in.close();
+	        } finally { 
+	            //out.close();
+	        }
+		
+		
+		
+		/*	SI FUNCIONA SOLO QUE BAJA SETEADO NO SIRVE
+		try {
+			// Url con la foto
+			URL url = new URL(
+					"http://servicios.apn.gob.pe:8090/alfresco/download/direct/workspace/SpacesStore/ca875f39-57c8-4bd5-8bcb-07a3a5f63a0c/jpgPruebamantenimiento.JPG?ticket=TICKET_1e0f06a47f4ecc3da91add2aaa0ec5fd5e4b2353");
+
+			// establecemos conexion
+			URLConnection urlCon = url.openConnection();
+
+			// Sacamos por pantalla el tipo de fichero
+			System.out.println(urlCon.getContentType());
+
+			// Se obtiene el inputStream de la foto web y se abre el fichero
+			// local.
+			InputStream is = urlCon.getInputStream();
+			FileOutputStream fos = new FileOutputStream("c:/foto.jpg");
+
+			// Lectura de la foto de la web y escritura en fichero local
+			byte[] array = new byte[1000]; // buffer temporal de lectura.
+			int leido = is.read(array);
+			while (leido > 0) {
+				fos.write(array, 0, leido);
+				leido = is.read(array);
+			}
+
+			// cierre de conexion y fichero.
+			is.close();
+			fos.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}*/
+		
+	}
+	
+	public String imprimirGridCarpetasBusqueda(){
+		log.debug("-> [Action] DojoAction - imprimirGrid():String ");
+		lstDocumentoGrid = gridColumnaXUsuarioService.convertFromCarpetaBusquedaToItem(idCarpetaBusqueda);
+		carpetaBusqueda = carpetaBusquedaService.ViewbyId(idCarpetaBusqueda);
+		return "imprimirCB";
+	}
+	
+   public void exportarExcelCarpetaBusqueda() throws ServletException, IOException {
+		    log.debug("-> [Action] DojoAction - exportarExcelCarpetaBusqueda():void ");
+			HttpServletRequest request=ServletActionContext.getRequest();
+			HttpServletResponse response=ServletActionContext.getResponse();
+			    
+			try {
+				//Integer iIdCarpetaBusqueda1 = 106; //Se recibio carpeta de busqueda con ID [106]
+						
+				
+				log.debug("Se recibio carpeta de busqueda con ID [" + idCarpetaBusqueda + "]");
+				
+				lstDocumentoGrid = gridColumnaXUsuarioService.convertFromCarpetaBusquedaToItem(idCarpetaBusqueda);
+				carpetaBusqueda = carpetaBusquedaService.ViewbyId(idCarpetaBusqueda);
+				
+				HttpServletRequestWrapper srw = new HttpServletRequestWrapper(request);
+				String ruta = srw.getRealPath("");
+				ruta += "/excel/CarpetaBusqueda.xls";
+                log.debug("carpeta de busqueda titulo"+carpetaBusqueda.getNombreCarpeta());
+			    HSSFWorkbook objetoExcel = getCarpetaBusquedaHSSFW(lstDocumentoGrid,ruta, carpetaBusqueda.getNombreCarpeta());		    
+			    LBTRUtil.ExportExcel(objetoExcel, response, "CarpetaBusqueda");  
+		        
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}					
+		}
+		
+	  @SuppressWarnings({ "unchecked", "rawtypes" })
+		public HSSFWorkbook getCarpetaBusquedaHSSFW(List listResultados, String ruta, String titulo){		
+			{ 
+				try{				    
+			        Map beans = new HashMap();
+			        SimpleDateFormat dateFormat =  new SimpleDateFormat("dd/MM/yyyy");   
+			        beans.put("row", listResultados);
+			        beans.put("titulo", titulo); 
+			        beans.put("dateFormat", dateFormat);
+			        XLSTransformer transformer = new XLSTransformer(); 		        
+			        File plantilla  = new File (ruta);		        
+			        FileInputStream plantillaStream =  new FileInputStream(plantilla);                
+			        return  transformer.transformXLS ( plantillaStream , beans ) ; 
+				} catch (Exception e) {
+					e.printStackTrace();
+					return null ;     
+				}
+		    }
+		}
+
+	public void cambiarAgrupacionUsuario(){
+		log.debug("-> [Action] DojoAction - cambiarAgrupacionUsuario():void ");
+		mapSession = ActionContext.getContext().getSession();
+		Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		usuario = usuarioService.findByIdUsuario(usuario.getIdusuario());
+		if(usuario.getBandejaAgrupada() != null && usuario.getBandejaAgrupada().equals(Constantes.Si)){
+			usuario.setBandejaAgrupada(Constantes.No);
+		}else{
+			usuario.setBandejaAgrupada(Constantes.Si);
+		}
+		usuario = usuarioService.guardarUsuario(usuario);
+		mapSession.put(Constantes.SESSION_USUARIO,usuario);
+	}
+	
+	public String mostrarFiltrosBandeja(){
+		return "filtros";
+	}
+	
+	@SuppressWarnings("unchecked")
+	@SMDMethod
+	public int isThereAttachment(Integer idExpediente) {
+		log.debug("-> [Action] DojoAction - isThereAttachment():int ");
+		try {
+			List<ArchivoTemporal> lstArchivo = null;
+			Map<String, List<ArchivoTemporal>> mapUpload = null;
+
+			if (idExpediente == null) {
+				log.error("No se recibio un idExpediente correcto");
+
+				return -1;
+			}
+
+			if (log.isDebugEnabled()) {
+				log.debug("Verificando archivos del idExpediente [" + idExpediente + "]");
+			}
+
+			mapSession = ActionContext.getContext().getSession();
+			mapUpload = (Map<String, List<ArchivoTemporal>>) mapSession.get(Constantes.SESSION_UPLOAD_LIST);
+
+			if (mapUpload == null || mapUpload.values().isEmpty() || ((mapUpload.get(Constantes.UPLOAD_ARCHIVO1) == null || mapUpload.get(Constantes.UPLOAD_ARCHIVO1).isEmpty()) && (mapUpload.get(Constantes.UPLOAD_ARCHIVO2) == null || mapUpload.get(Constantes.UPLOAD_ARCHIVO2).isEmpty()))) {
+				log.warn("No hay archivos en el upload temporal");
+
+				return 0;
+			}
+
+			lstArchivo = mapUpload.get(Constantes.UPLOAD_ARCHIVO1);
+
+			if (lstArchivo != null && lstArchivo.size() > 0) {
+				if (log.isDebugEnabled()) {
+					log.debug("Verificando la duplicidad de [" + lstArchivo.size() + "] archivo(s)");
+				}
+
+				for (ArchivoTemporal archivoUpload : lstArchivo) {
+					List<Archivo> archivosEnDB = archivoService.findLstByExpediente(idExpediente);
+
+					if (archivosEnDB != null && archivosEnDB.size() >= 0) {
+						for (Archivo archivo : archivosEnDB) {
+							if (log.isDebugEnabled()) {
+								log.debug("Verificando archivoUpload [" + archivoUpload.getSNombre() + "] archivoEnDB [" + archivo.getNombreReal() + "]");
+							}
+
+							if (archivoUpload.getSNombre().equals(archivo.getNombreReal()) && archivo.getEstadoDigitalizacion() != Constantes.ESTADO_RECHAZADO) {
+								log.warn("El archivo que se intenta subir ya existe en el repositorio");
+
+								return 2;
+							}
+						}
+					}
+				}
+			}
+
+			return 1;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+
+			return -1;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@SMDMethod
+	public ObjetoJSON buildGrid() {
+		log.debug("-> [Action] DojoAction - buildGrid():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Integer iTipoGrid = null;
+		List<Estructura> lstEstructura = null;
+		List<Gridcolumnaxusuario> lstGridColumnaXUsuario = null;
+		List<Item> lstItem = null;
+		Map<String, Integer> mapRecurso = null;
+		Usuario objUsuario = null;
+		setMapSession(ActionContext.getContext().getSession());
+		mapRecurso = (Map<String, Integer>) getMapSession().get(Constantes.SESSION_RECURSO);
+		objUsuario = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+		Rol rol = objUsuario.getRol();
+		if (rol == null) {
+			rol = rolService.findByNombre(Constantes.ROL_USUARIO_FINAL);
+		}
+		lstGridColumnaXUsuario = gridColumnaXUsuarioService.findByIdUsuario(objUsuario.getIdusuario());
+		// usamos el dao de perfil para evitar problemas de sesion con la base
+		// de datos
+		List<GridXGridColumna> delPerfil = perfilDao.findByIdPerfil(rol.getIdperfil().getIdperfil()).getColumnas();
+		log.debug("Rol [" + rol.getNombre() + "] Perfil [" + rol.getIdperfil().getNombre() + "] numero de columnas [" + delPerfil.size() + "]");
+		/*
+		 * if (lstGridColumnaXUsuario == null || lstGridColumnaXUsuario.size() <
+		 * 1) { lstGridColumna =
+		 * objUsuario.getRol().getIdperfil().getGridcolumnaList();
+		 * log.debug("Columnas a mostrar [" + lstGridColumna.size() + "]"); }
+		 */
+		// German dice: me parece que esto esta de mas
+		/*
+		 * for (Gridcolumna obj :
+		 * objUsuario.getRol().getIdperfil().getGridcolumnaList()) {
+		 * log.debug(obj.getField() + " " + obj.getName() + " " +
+		 * obj.getWidth()); }
+		 */
+		if (mapRecurso.get("MPGrd") == 1 || mapRecurso.get("DigGrd") == 1 || mapRecurso.get("QASGrd") == 1 || mapRecurso.get("UsuFinGrd") == 1) {
+			iTipoGrid = 1;
+		}
+		lstEstructura = gridColumnaXUsuarioService.buildEstructura(lstGridColumnaXUsuario, delPerfil, objUsuario.getIdusuario());
+		lstItem = gridColumnaXUsuarioService.buildItems(lstEstructura, objUsuario, iTipoGrid);
+		objJSON.setItems(lstItem);
+		objJSON.setStructure(lstEstructura);
+		objJSON.setHoraservidor("" + System.currentTimeMillis());
+		Parametro parametro1 = parametroService.findByTipoUnico(Constantes.PARAMETRO_NOTIFICACION_AMARILLA);
+		Parametro parametro2 = parametroService.findByTipoUnico(Constantes.PARAMETRO_NOTIFICACION_ROJA);
+		objJSON.setParametroalerta1(parametro1.getValor());
+		objJSON.setParametroalerta2(parametro2.getValor());
+		return objJSON;
+	}
+
+	/**
+	 * Guarda las caracteristicas del grid del usuario
+	 *
+	 * @param grid
+	 *            las columnas del grid
+	 * @author German Enriquez
+	 */
+
+	@SMDMethod
+	public void guardarGridUsuario(GridUsuario[] grid) {
+		log.debug("-> [Action] DojoAction - guardarGridUsuario():void ");
+
+		// iniciarFactorias();
+		setMapSession(ActionContext.getContext().getSession());
+		try {
+			Usuario usuario = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+			if (usuario != null) {
+				gridColumnaXUsuarioService.guardarGridUsuario(grid, usuario.getIdusuario());
+				log.info("Se guardo el estado de las columnas para el usuario " + usuario.getNombres() + " " + usuario.getApellidos());
+			}
+		} catch (IllegalStateException e) {
+			log.warn("La sesion ya ha sido invalidada, no guardamos nada");
+		}
+	}
+
+	@SMDMethod
+	public ObjetoJSON getJerarquia() {
+		log.debug("-> [Action] DojoAction - getJerarquia():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");
+		objJSON.setItems(usuarioService.getJerarquia());
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON getArbolDocumentoExpediente(Integer idExpediente, Integer idDocumento) {
+		log.debug("-> [Action] DojoAction - getArbolDocumentoExpediente():void ");
+		log.debug(" getArbolDocumentoExpediente idexp :" + idExpediente);
+		//estoy aumentadndo
+		//idExpediente = (documentoDao.findByIdDocumento(idDocumento)).getExpediente().getId().intValue();
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");
+		objJSON.setItems(expedienteService.getDojoExpedienteTree(idExpediente, idDocumento));
+		return objJSON;
+	}
+
+	@SMDMethod
+	public String  getArbolDocumentoExpediente1() {
+		//prueba
+		/*log.debug("-> [Action] DojoAction - getArbolDocumentoExpediente():void ");
+
+		log.debug(" getArbolDocumentoExpediente idexp :" + idExpediente);
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");
+		objJSON.setItems(expedienteService.getDojoExpedienteTree(idExpediente, idDocumento));
+		return objJSON;*/
+		return "{identifier: 'id', label: 'name', items: [ { id: 'AF', name:'Africa', type:'continent', population:'900 million', area: '30,221,532 sq km', timezone: '-1 UTC to +4 UTC', children:[{_reference:'EG'}, {_reference:'KE'}, {_reference:'SD'}] }, { id: 'EG', name:'Egypt', type:'country' }, { id: 'KE', name:'Kenya', type:'country', children:[{_reference:'Nairobi'}, {_reference:'Mombasa'}] }, { id: 'Nairobi', name:'Nairobi', type:'city' }, { id: 'Mombasa', name:'Mombasa', type:'city' }, { id: 'SD', name:'Sudan', type:'country', children:{_reference:'Khartoum'} }, { id: 'Khartoum', name:'Khartoum', type:'city' }, { id: 'AS', name:'Asia', type:'continent', children:[{_reference:'CN'}, {_reference:'IN'}, {_reference:'RU'}, {_reference:'MN'}] }, { id: 'CN', name:'China', type:'country' }, { id: 'IN', name:'India', type:'country' },{ id: 'RU', name:'Russia', type:'country' }, { id: 'MN', name:'Mongolia', type:'country' }]}";
+	}
+
+	@SMDMethod
+	public String enviaGridSupervisor(String idSupervisor, String fechaEntrega, String fechaEnvio) {
+		log.debug("-> [Action] DojoAction - enviaGridSupervisor():String ");
+
+		SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+		Supervisor supervisor = supervisorService.findById(Integer.parseInt(idSupervisor));
+		if (supervisor != null) {
+			if (log.isDebugEnabled()) {
+				log.debug("id=" + idSupervisor);
+				log.debug("fechaEntrega=" + fechaEntrega);
+				log.debug("fechaEnvio=" + fechaEnvio);
+			}
+			if (fechaEntrega != null && !fechaEntrega.equals("")) {
+				try {
+					supervisor.setFechadentrega(formatoFecha.parse(fechaEntrega));
+
+				} catch (ParseException e) {
+					return "La fecha ingresada no es valida";
+				}
+			} else {
+				supervisor.setFechadentrega(null);
+			}
+
+			if (fechaEnvio != null && !fechaEnvio.equals("")) {
+				try {
+					supervisor.setFechadevolucion(formatoFecha.parse(fechaEnvio));
+
+				} catch (ParseException e) {
+					return "La fecha ingresada no es valida";
+				}
+			} else {
+				supervisor.setFechadevolucion(null);
+			}
+			supervisorService.saveSupervisor(supervisor);
+		} else {
+			return "No se pudo guardar el supervisor.";
+		}
+		return "Cambios guardados Correctamente";
+	}
+
+	@SuppressWarnings("unchecked")
+	@SMDMethod
+	public String enviaGridReemplazo(String str) throws Exception {
+		log.debug("-> [Action] DojoAction - enviaGridReemplazo):String ");
+
+		SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		// try{
+		// iniciarFactorias();
+		Usuario usuario = (Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+		// UsuarioService usuarioService=serviceFactory.getUsuarioService();
+		// ReemplazoService reemplazoDao=(ReemplazoService)
+		// beanFactory.getBean("reemplazoService");
+		reemplazoDao.deleteByIdreemplazado(usuario.getIdusuario());
+		log.debug(str);
+		Object obj = JSONValue.parse(str);
+		JSONObject objeto = (JSONObject) obj;
+		JSONArray items = (JSONArray) objeto.get("items");
+		Iterator<JSONObject> iter = items.iterator();
+		while (iter.hasNext()) {
+			JSONObject item = iter.next();
+			// log.debug(item);
+			if (item.size() > 5) { // esta validacion puede ser mejor
+				Reemplazo reemplazo = new Reemplazo();
+				reemplazo.setEstado('A');
+				reemplazo.setFechafinalreemplazo(formatoFecha.parse((String) item.get("fechafin") + " 23:59"));
+				reemplazo.setFechainicialreemplazo(formatoFecha.parse((String) item.get("fechainicio") + " 00:00"));
+				reemplazo.setIdreemplazado(usuario.getIdusuario());
+				// log.debug(item.get("idreemplazo"));
+				Usuario usuariotemp = usuarioService.findByIdUsuario(Integer.valueOf(item.get("idreemplazo").toString()));
+				reemplazo.setIdusuario(usuariotemp);
+				reemplazo.setIdproceso(Integer.valueOf(item.get("id").toString()));
+				// log.debug(item);
+				reemplazoDao.saveReemplazo(reemplazo);
+				if (reemplazo.getIdproceso() != null) {
+					Proceso proceso = ((ProcesoService) WebApplicationContextUtils.getWebApplicationContext(ServletActionContext.getRequest().getSession().getServletContext()).getBean("procesoService")).findByIdProceso(reemplazo.getIdproceso());
+					try {
+						registrarAuditoriaReemplazos(proceso, reemplazo, Constantes.TA_RegistrarReemplazo, Constantes.TM_UserFinal, Constantes.TO_Enviar);
+					} catch (Exception ex) {
+						log.error(ex.getMessage(), ex);
+					}
+				}
+			} else {
+				log.debug("este item(Proceso: " + (String) item.get("label") + ") no tiene reemplazo asignado");
+			}
+		}
+		return "Cambios guardados Correctamente";
+		/*
+		 * }catch(Exception e){ e.printStackTrace(); return "Ocurrio un Error";
+		 * }
+		 */
+	}
+
+	@SuppressWarnings("unchecked")
+	@SMDMethod
+	public String enviaGridReemplazoParametro(String str, String idUsuario) throws Exception {
+		log.debug("-> [Action] DojoAction - enviaGridReemplazoParametro():String ");
+
+		SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		// try{
+		// iniciarFactorias();
+		Usuario usuario = usuarioService.findByIdUsuario(Integer.valueOf(idUsuario));
+		reemplazoDao.deleteByIdreemplazado(usuario.getIdusuario());
+		log.debug(str);
+		Object obj = JSONValue.parse(str);
+		JSONObject objeto = (JSONObject) obj;
+		JSONArray items = (JSONArray) objeto.get("items");
+		Iterator<JSONObject> iter = items.iterator();
+		while (iter.hasNext()) {
+			JSONObject item = iter.next();
+			log.debug(item);
+			if (item.size() > 5) { // esta validacion puede ser mejor
+				Reemplazo reemplazo = new Reemplazo();
+				reemplazo.setEstado('A');
+				reemplazo.setFechafinalreemplazo(formatoFecha.parse((String) item.get("fechafin") + " 23:59"));
+				reemplazo.setFechainicialreemplazo(formatoFecha.parse((String) item.get("fechainicio") + " 00:00"));
+				reemplazo.setIdreemplazado(usuario.getIdusuario());
+				log.debug(item.get("idreemplazo"));
+				Usuario usuariotemp = usuarioService.findByIdUsuario(Integer.valueOf(item.get("idreemplazo").toString()));
+				reemplazo.setIdusuario(usuariotemp);
+				reemplazo.setIdproceso(Integer.valueOf(item.get("id").toString()));
+				log.debug(item);
+				reemplazoDao.saveReemplazo(reemplazo);
+			} else {
+				log.debug("este item(Proceso: " + (String) item.get("label") + ") no tiene reemplazo asignado");
+			}
+		}
+		return "Cambios guardados Correctamente";
+		/*
+		 * }catch(Exception e){ e.printStackTrace(); return "Ocurrio un Error";
+		 * }
+		 */
+	}
+
+
+	@SMDMethod
+	public String saveCliente(String sTipoIdentificacion, Cliente objCliente) {
+		log.debug("-> [Action] DojoAction - saveCliente():String ");
+
+		if (objCliente == null) {
+			log.error("No se recibio ningun cliente");
+			return null;
+		}
+		if (isEmpty(sTipoIdentificacion)) {
+			log.error("No se recibio el tipo de identificacion");
+			return null;
+		}
+		log.debug("sTipoIdentificacion [" + sTipoIdentificacion + "]");
+		// try{
+		log.debug("objCliente [" + objCliente + "]");
+		log.debug("Cliente a actualizar con ID [" + objCliente.getIdCliente() + "]");
+		log.debug("Nro Identificacion [" + objCliente.getNumeroIdentificacion() + "]");
+
+		if (Constantes.TIPO_IDENTIFICACION_OTRO.equalsIgnoreCase(sTipoIdentificacion) && isEmpty(objCliente.getNumeroIdentificacion())) {
+			objCliente.setNumeroIdentificacion(clienteService.generateNroIdentificacionOtro());
+
+			log.info("Numero de identificacion generado [" + objCliente.getNumeroIdentificacion() + "]");
+		}
+
+		if ((objCliente.getIdCliente() == null || objCliente.getIdCliente() == 0) && clienteService.findByNroIdentificacion(objCliente.getNumeroIdentificacion()) != null) {
+			log.warn("El cliente con Nro de Identificacion [" + objCliente.getNumeroIdentificacion() + "] ya existe en la Base de Datos");
+			return "NotCreated";
+		}
+		log.info("Creando cliente...");
+		Cliente objClienteNew = null;
+		Cliente objClienteOld = null;
+		String sTipoAuditoria = null;
+		Tipoidentificacion objTipoidentificacion = null;
+		Usuario objUsuarioSesion = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuarioSesion = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		objClienteOld = new Cliente();
+		objTipoidentificacion = tipoIdentificacionService.buscarObjPor(sTipoIdentificacion);
+		log.debug("** Creacion de Cliente **");
+		objCliente.setTipoIdentificacion(objTipoidentificacion);
+		objClienteNew = objCliente;
+		objClienteNew.setEstado(Constantes.ESTADO_ACTIVO);
+		objClienteNew.setFechaCreacion(new Date());
+		if (objCliente.getUbigeoPrincipal() != null) {
+			objClienteNew.setUbigeoPrincipal(distritoDao.findById(objCliente.getUbigeoPrincipal().getIddistrito()));
+		}
+		if (objCliente.getUbigeoAlternativo() != null) {
+			objClienteNew.setUbigeoAlternativo(distritoDao.findById(objCliente.getUbigeoAlternativo().getIddistrito()));
+		}
+		sTipoAuditoria = Constantes.AUDITORIA_TIPO_REGISTRO;
+		objClienteNew = clienteService.guardarObj(objClienteOld, objClienteNew, objUsuarioSesion.getUsuario(), sTipoAuditoria);
+		return objClienteNew.getNumeroIdentificacion();
+		/*
+		 * }catch(Exception e){ log.error(e.getMessage(),e); return null; }
+		 */
+	}
+
+	@SMDMethod
+	public String deleteCliente(Cliente objCliente) {
+		log.debug("-> [Action] DojoAction - deleteCliente():String ");
+
+		if (objCliente == null) {
+			log.error("No se recibio ningun cliente");
+			return null;
+		}
+		// try{
+		log.debug("Cliente a eliminar con ID [" + objCliente.getIdCliente() + "]");
+		objCliente = clienteService.findByIdCliente(objCliente.getIdCliente());
+		clienteService.deleteCliete(objCliente);
+		return "deleted";
+		/*
+		 * }catch(Exception e){ log.error(e.getMessage(),e); return null; }
+		 */
+	}
+
+
+	@SMDMethod
+	public String verArchivoAlfresco(String sURL) {
+		log.debug("-> [Action] DojoAction - verArchivoAlfresco():String ");
+		mapSession = ActionContext.getContext().getSession();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		log.debug("Ruta Archivo Alfresco [" + sURL + "]");
+		String ipPublica = SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.IP_PUBLICA);
+		String dominioPublico = SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.DOMINIO_PUBLICO);
+		String alfrescoHostPublico = SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.ALFRESCO_HOST_PUBLICO);
+		String forward=alfrescoWebServiceClient.obtenerLinkContenido(sURL);
+		try {
+			URL urlReq = new URL(HttpUtils.getRequestURL(request).toString());
+			log.debug("URL ["+urlReq.toExternalForm()+"] Host ["+urlReq.getHost()+"]");
+			
+			URL url = new URL(forward);
+			if(urlReq.getHost().equals(ipPublica) || urlReq.getHost().equals(dominioPublico)){
+				forward = forward.replace(url.getHost(), alfrescoHostPublico);
+				log.debug("Reemplazando IP por ["+alfrescoHostPublico+"]");
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return forward;
+	}
+	
+	@SMDMethod
+	public String menuIG(){
+		String result = "";
+		Usuario usuarioSesion = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+		usuarioSesion = usuarioService.findByIdUsuario(usuarioSesion.getIdusuario());
+		List<Rol> rolList ; 
+		rolList = rolService.getRolesPorUsuario(usuarioSesion.getUsuario());
+		for(int i=0;i<rolList.size(); i++ ){
+			Rol r = new Rol();
+			r = rolList.get(i);
+			if(r.equals("".equals(""))){
+				
+			}
+		}
+		
+		
+	return "";
+	} 
+	
+	@SMDMethod
+	public String derivarIG(Integer objDDiIdDocumento,Integer objDDiIdRemitente,Integer iddestinatario, String sTipoDerivacion,String sOpcion,String objDDstrAccion,String objDDstrTexto){
+		log.debug("-> [Action] DocumentoAction - derivaruserIG():String ");
+		
+		log.debug("ENTRO AQUIIII ");
+			
+		DocumentoDetail objDD = new DocumentoDetail ();
+				
+				objDD.setIIdDocumento(objDDiIdDocumento);	
+				 
+				objDD.setiIdRemitente(objDDiIdRemitente);
+				 
+				this.setIddestinatario(iddestinatario);
+				
+				this.setSTipoDerivacion(sTipoDerivacion);
+				
+				this.setSOpcion(sOpcion);
+				
+				objDD.setStrAccion(objDDstrAccion);
+				 
+				objDD.setStrTexto(objDDstrTexto);
+		
+		log.debug("ENTRO AQUIIII ----VAMOS A VER  ");
+		String[] acciones = StringUtil.stringToArray(strAcc);
+		String tipoRetorno = Action.SUCCESS;
+		Date fechaLimiteAtencionAnterior = null;
+		try {
+			log.debug("derivar o rechazar usuario {}"+objDD.getStrAccion());
+			log.debug("fecha sin plazo : "+ objDD.getStrSinPlazo());
+			
+			mapSession = ActionContext.getContext().getSession();
+			//arrIdDoc = (Integer[]) mapSession.get("arrIdDoc");  verrr
+			String nombrePC = (String)mapSession.get("nombrePC");			
+			log.debug("Transfiriendo desde "+nombrePC);
+			log.debug("PROBAR DESDE aplicacion : objDD.iIdRemitente"+ objDD.getiIdRemitente() + "objDD.strAsunto"+ objDD.getStrAsunto()+ "objDD.getAprobarIG()"+objDD.getAprobarIG()+ "getIddestinatario()" + getIddestinatario());
+			log.debug("objDD.getIIdDocumento()"+objDD.getIIdDocumento()+ "getSTipoDerivacion()"+ getSTipoDerivacion()+ " objDD.strTexto()"+ objDD.getStrTexto()+ "objDD.getStrAccion()"+ objDD.getStrAccion());
+			Usuario destinatario = usuarioService.findByIdUsuario(getIddestinatario());
+			if(destinatario == null || destinatario.getEstado().equals(String.valueOf(Constantes.ESTADO_INACTIVO))){
+				return "errorUsuario";
+			}			
+			
+			/*Etapa objEtapa = null;
+			
+			if (objExpediente != null && objExpediente.getIdetapa() != null && objExpediente.getIdetapa().getIdetapa() != null) {
+				objEtapa = new Etapa();
+				objEtapa = etapaService.findByIdetapa(objExpediente.getIdetapa().getIdetapa());
+			}
+			*/
+			
+			if (getSTipoDerivacion().equals(Constantes.DERIVAR_NORMAL)) {
+				if (objDD.getStrAccion().equals(Constantes.ACCION_REENVIAR)) {
+					
+				} 
+				// rechaza el QAS a digitalizador
+				else if (objDD.getStrAccion().equals(Constantes.ACCION_RECHAZARQAS)) {
+					
+				} // cuando rechaza el usuario final a QAS
+				else if (objDD.getStrAccion().equals(Constantes.ACCION_RECHAZAR)) {
+					//tipoRetorno = "errorVisor";
+					Documento documento = documentoService.findByIdDocumento(objDD.getIIdDocumento());
+					log.debug("Entro a Rerchazar : objDD.getIIdDocumento() "+objDD.getIIdDocumento());
+					documento.setLeido(Constantes.ESTADO_NO_LEIDO);
+
+					Usuario usuarioSesion = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+					usuarioSesion = usuarioService.findByIdUsuario(usuarioSesion.getIdusuario());
+					
+					Rol rol = usuarioSesion.getRol();
+					String nombreRol = Constantes.ROL_USUARIO_FINAL;
+					if (rol != null) {
+						nombreRol = rol.getNombre();
+					}
+					DocumentoDetail objDDtemp = new  DocumentoDetail();
+					objDDtemp = documentoService.getDocumentDetailOptimized(objDD.getIIdDocumento(), nombreRol);
+					
+
+					
+					if (documento != null) {
+						String strCont = objDD.getStrTexto();
+						strCont += "<br />----------------------------------------------<br />"+usuarioSesion.getNombreCompleto()+
+						  		" ("+(usuarioSesion.getRoles() != null ? usuarioSesion.getRoles().get(0).getNombre() : "")+")";
+						log.debug("DocumentoAction asunto :" + objDDtemp.getStrAsunto() + " conteido :" + objDD.getStrAsunto() +" texto"+ strCont);
+						documentoService.rechazarDocumento(usuarioSesion, documento, objDDtemp.getStrAsunto(), strCont, Constantes.ACCION_RECHAZAR, nombrePC);
+					}
+				} // cuando rechaza el usuario
+				else if (objDD.getStrAccion().equals(Constantes.ACCION_RECHAZARUSER)) {
+					
+					
+				}else if (objDD.getStrAccion().equals(Constantes.ACCION_APROBAR)) {	
+					//tipoRetorno = "errorVisor";
+					Documento documento = documentoService.findByIdDocumento(objDD.getIIdDocumento());
+					//documento.setPrioridad(objDD.getPrioridad());
+					documento.setLeido(Constantes.ESTADO_NO_LEIDO);
+					
+					
+					Usuario usuarioSesion = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+					usuarioSesion = usuarioService.findByIdUsuario(usuarioSesion.getIdusuario());
+					
+					Rol rol = usuarioSesion.getRol();
+					String nombreRol = Constantes.ROL_USUARIO_FINAL;
+					if (rol != null) {
+						nombreRol = rol.getNombre();
+					}
+					DocumentoDetail objDDtemp = new  DocumentoDetail();
+					objDDtemp = documentoService.getDocumentDetailOptimized(objDD.getIIdDocumento(), nombreRol);
+					
+					if (documento != null) {
+						String strCont = objDD.getStrTexto();
+						strCont += "<br />Aprobado<br />----------------------------------------------<br />"+usuarioSesion.getNombreCompleto()+
+						  		" ("+(usuarioSesion.getRoles() != null ? usuarioSesion.getRoles().get(0).getNombre() : "")+")";
+						log.debug("DocumentoAction asunto :" + objDDtemp.getStrAsunto() + " contenido :" + objDD.getStrAsunto() +" texto"+ strCont );
+						documentoService.rechazarDocumento(usuarioSesion, documento, objDDtemp.getStrAsunto(), strCont, Constantes.ACCION_APROBAR, nombrePC);
+					}
+				}else if (objDD.getStrAccion().equals(Constantes.ACCION_DESPACHAR)) {	
+					
+					Documento documento = documentoService.findByIdDocumento(objDD.getIIdDocumento());
+					documento.setLeido(Constantes.ESTADO_NO_LEIDO);
+					
+					Usuario usuarioSesion = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+					usuarioSesion = usuarioService.findByIdUsuario(usuarioSesion.getIdusuario());
+					
+					if (documento != null) {
+						String strCont = objDD.getStrTexto();
+						strCont += "<br />----------------------------------------------<br />"+usuarioSesion.getNombreCompleto()+
+						  		" ("+(usuarioSesion.getRoles() != null ? usuarioSesion.getRoles().get(0).getNombre() : "")+")";
+						log.debug("DocumentoAction  texto"+ strCont );
+						documentoService.despacharDocumento_IG(documento, null, strCont, Constantes.ACCION_DESPACHAR, nombrePC,usuarioSesion.getIdusuario());
+					}
+				}
+			} else if (getSTipoDerivacion().equals(Constantes.DERIVAR_MASIVO)) {
+				
+			}
+
+			provieneDeMail = (Boolean) mapSession.get("provieneDeMail");
+
+			if (log.isDebugEnabled()) {
+				log.debug("provieneDeMail [" + provieneDeMail + "]");
+			}
+
+			if (provieneDeMail != null && provieneDeMail) {
+				if (mapSession instanceof org.apache.struts2.dispatcher.SessionMap) {
+					mapSession.remove(Constantes.SESSION_ALFRESCO);
+					mapSession.remove(Constantes.SESSION_AUDITABLE);
+					mapSession.remove(Constantes.SESSION_FORWARD_TO_URL);
+					mapSession.remove(Constantes.SESSION_IDDOCUMENTO);
+					mapSession.remove(Constantes.SESSION_RECURSO);
+					mapSession.remove(Constantes.SESSION_UPLOAD_LIST);
+					mapSession.remove(Constantes.SESSION_USUARIO);
+					mapSession.remove("provieneDeMail");
+					((org.apache.struts2.dispatcher.SessionMap) mapSession).invalidate();
+				}
+			}
+
+//			this.cerrar = "OK";
+			return tipoRetorno;
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error(e.getMessage(), e);
+
+			return Action.ERROR;
+		}
+
+	}
+
+
+	@SMDMethod
+	public Map<String, List<Estructura>> getAllStructures() {
+		log.debug("-> [Action] DojoAction - getAllStructures():Map<String, List<Estructura>> ");
+
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+			return null;
+		}
+		return gridColumnaXUsuarioService.getStructuresByRol(objUsuario);
+	}
+
+	/**REN Busca la estructura y el contenido de la grilla-------------------------------------------------------------------*/
+	@SMDMethod
+	public ObjetoJSON getDGDocumentosXExpediente(String sTipoGrid, Integer idDocumento) {
+		log.debug("-> [Action] DojoAction - getDataGrid():ObjetoJSON ");
+
+		if (sTipoGrid == null) {
+			log.error("No se recibio un tipo de grid correcto");
+			return null;
+		}
+
+		if(!sTipoGrid.equals(Constantes.TIPO_GRID_DOCUMENTO) && !sTipoGrid.equals(Constantes.TIPO_GRID_EXPEDIENTE)){
+			log.error("Grid Recibido no valido");
+			return null;
+		}
+		
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+			return null;
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Tipo de grid solicitado [" + sTipoGrid + "]");
+		}
+		
+		objJSON.setItems(gridColumnaXUsuarioService.getItemsDocumentosXExpediente(sTipoGrid, idDocumento, objUsuario));        
+		objJSON.setStructure(gridColumnaXUsuarioService.getEstructura(sTipoGrid, objUsuario));
+
+		return objJSON;
+	}
+
+	/**REN Busca los documentos de solo un expediente------------------------------------------------------------------------*/
+	@SMDMethod
+	public ObjetoJSON getDataGrid(String sTipoGrid) {
+		log.debug("-> [Action] DojoAction - getDataGrid():ObjetoJSON ");
+
+		if (sTipoGrid == null) {
+			log.error("No se recibio un tipo de grid correcto");
+
+			return null;
+		}
+
+		//TIPO_GRID_DIG_DOC_INGRESADOS==15 ,el tipo de grid no existe en bd, pero tiene como equivalente TIPO_GRID_DOCUMENTO
+		if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_DIG_DOC_INGRESADOS)) {
+			sTipoGrid = Constantes.TIPO_GRID_DOCUMENTO;
+		}
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+
+			return null;
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Tipo de grid solicitado [" + sTipoGrid + "]");
+		}
+		objJSON.setItems(gridColumnaXUsuarioService.getItems(sTipoGrid, objUsuario, null));
+		if(sTipoGrid.equals(Constantes.TIPO_GRID_DOCUMENTOS_ARCHIVADOS)){
+			mapSession.put("flagBtnReAbrir", true);
+		}else{
+			mapSession.put("flagBtnReAbrir", false);
+		}        
+		objJSON.setStructure(gridColumnaXUsuarioService.getEstructura(sTipoGrid, objUsuario));
+
+		return objJSON;
+	}
+	
+	@SMDMethod
+	public ObjetoJSON getDataGridByUser(String sTipoGrid, Integer idUsuario) {
+		log.debug("-> [Action] DojoAction - getDataGridByUser():ObjetoJSON ");
+
+		if (sTipoGrid == null) {
+			log.error("No se recibio un tipo de grid correcto");
+			return null;
+		}
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = this.usuarioService.findByIdUsuario(idUsuario);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Tipo de grid solicitado [" + sTipoGrid + "]");
+		}
+		objJSON.setItems(gridColumnaXUsuarioService.getItemsSinBandejaCompartida(objUsuario));
+		objJSON.setStructure(gridColumnaXUsuarioService.getEstructura(sTipoGrid, objUsuario));
+
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON buildGridCarpetaBusqueda(Integer iIdCarpetaBusqueda) {
+		log.debug("-> [Action] DojoAction - buildGridCarpetaBusqueda():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setItems(gridColumnaXUsuarioService.convertFromCarpetaBusquedaToItem(iIdCarpetaBusqueda));
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON getDataGridBusquedaSimple(String sParametroBusqueda) {
+		log.debug("-> [Action] DojoAction - getDataGridBusquedaSimple():ObjetoJSON ");
+
+		mapSession = ActionContext.getContext().getSession();
+		Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);  
+		usuario = usuarioService.findByIdUsuario(usuario.getIdusuario());
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setItems(gridColumnaXUsuarioService.getItems_BusquedaSimple(sParametroBusqueda, usuario));
+		return objJSON;
+	}
+
+
+	@SMDMethod
+	public ObjetoJSON busquedaAvanzada(String sTipoFiltro, BusquedaAvanzada objFiltro, String arrFecha[]) {
+		log.debug("-> [Action] DojoAction - busquedaAvanzada():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		if (log.isDebugEnabled()) {
+			log.debug("Fecha Documento Desde [" + arrFecha[0] + "]");
+			log.debug("Fecha Documento Hasta [" + arrFecha[1] + "]");
+			log.debug("Fecha Expediente Desde [" + arrFecha[2] + "]");
+			log.debug("Fecha Expediente Hasta [" + arrFecha[3] + "]");
+		}
+		if (objFiltro.getEstadoexpediente().equals("T")) {
+			objFiltro.setEstadoexpediente("%");
+		}
+		objJSON.setItems(gridColumnaXUsuarioService.getItems_BusquedaAvanzada(sTipoFiltro, objFiltro, arrFecha));
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ProcesoBeanJson obtenerProcesos(Integer idProceso) {
+		log.debug("-> [Action] DojoAction - obtenerProcesos():ProcesoBeanJson ");
+
+		ProcesoBeanJson objJSON = new ProcesoBeanJson();
+		Proceso p=srvProceso.getProcesoxId(idProceso);
+		objJSON.setUnidad(p.getsUnidad());
+		String tipoProcesoPiloto = parametroService.findByTipoUnico(Constantes.TIPO_PROCESO_PILOTO).getValor();
+		String tipoProcesoProduccion = parametroService.findByTipoUnico(Constantes.TIPO_PROCESO_PRODUCCION).getValor();
+		objJSON.setNombreambiente(p.getProduccion() == null || p.getProduccion().toString().equals("N") ? tipoProcesoPiloto : tipoProcesoProduccion);
+		objJSON.setProceso(p.getNombre());
+		objJSON.setAmbiente((p.getProduccion() == null || p.getProduccion().toString().equals("N") ? p.getProduccion():' '));
+		objJSON.setAreadestino(p.getsUnidad());
+		objJSON.setDestinatario(p.getsResNombres() + " " + p.getsResApelidos());
+		objJSON.setPermitesumilla(String.valueOf(p.getPermitesumilla()));
+		objJSON.setTipoproceso(p.getsTipoProceso().toLowerCase());
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ClienteBeanJson obtenerClientexTI(String tipoIdentificacion,String nroIdentificacion) throws Exception{
+		log.debug("-> [Action] DojoAction - obtenerClientexTI():ClienteBeanJson ");
+
+		ClienteBeanJson clienteBeanJson=new ClienteBeanJson();
+		Cliente objC=new Cliente();
+		if(isEmpty(tipoIdentificacion)){
+			objC=clienteService.findByTipoIdentificacionList2(null,null,nroIdentificacion);
+		}
+		else{
+			objC=clienteService.findByTipoIdentificacionList2(null,tipoIdentificacion,nroIdentificacion);
+		}
+
+		if(objC != null){
+
+			clienteBeanJson.setTipoidentificacion(objC.getTipoIdentificacion().getNombre());
+			clienteBeanJson.setNroIdentificacion(objC.getNumeroIdentificacion());
+			if(objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)){
+				clienteBeanJson.setLabel(objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + objC.getRazonSocial());
+			}
+			else if(objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)){
+				String sNombreCompleto=objC.getNombres() + (objC.getApellidoPaterno() == null ? "" : " " + objC.getApellidoPaterno());
+				sNombreCompleto+=(objC.getApellidoMaterno() == null ? "" : " " + objC.getApellidoMaterno());
+				clienteBeanJson.setLabel(objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + sNombreCompleto);
+			}
+			// log.debug("Nombre del Cliente ["+reply.get("label").toString()+"]");
+			clienteBeanJson.setIdcliente(objC.getIdCliente().toString());
+			String razonSocial=objC.getRazonSocial();
+			clienteBeanJson.setRazonsocial(razonSocial == null ? "" : razonSocial);
+			clienteBeanJson.setRepresentantelegal(objC.getRepresentanteLegal() == null ? "" : objC.getRepresentanteLegal());
+			String nombres=objC.getNombres();
+			clienteBeanJson.setNombres(nombres == null ? "" : nombres);
+			String paterno=objC.getApellidoPaterno();
+			clienteBeanJson.setApellidopaterno(paterno == null ? "" : paterno);
+			String materno=objC.getApellidoMaterno();
+			clienteBeanJson.setApellidomaterno(materno == null ? "" : materno);
+			clienteBeanJson.setDireccionp(objC.getDireccionPrincipal() == null ? "" : objC.getDireccionPrincipal());
+
+			if(objC.getIdDistritoUP() != null){
+				clienteBeanJson.setIddistrito(objC.getIdDistritoUP().toString());
+				clienteBeanJson.setDistrito(objC.getSDistritoUP());
+				if(objC.getIdProvinciaUP() != null){
+					clienteBeanJson.setIdprovincia(objC.getIdProvinciaUP().toString());
+					clienteBeanJson.setProvincia(objC.getSProvinciaUP());
+					if(objC.getIdDepartamentoUP() != null){
+						clienteBeanJson.setIddepartamento(objC.getIdDepartamentoUP().toString());
+						clienteBeanJson.setDepartamento(objC.getSDepartamentoUP());
+					}
+					else{
+						clienteBeanJson.setDepartamento("");
+					}
+				}
+				else{
+					clienteBeanJson.setProvincia("");
+				}
+			}
+			else{
+				clienteBeanJson.setDistrito("");
+			}
+
+			clienteBeanJson.setDirecciona(objC.getDireccionAlternativa() == null ? "" : objC.getDireccionAlternativa());
+
+			if(objC.getIdDistritoUA() != null){
+				clienteBeanJson.setIddistritoa(objC.getIdDistritoUA().toString());
+				clienteBeanJson.setDistritoa(objC.getSDistritoUA());
+				if(objC.getIdProvinciaUA() != null){
+					clienteBeanJson.setIdprovinciaa(objC.getIdProvinciaUA().toString());
+					clienteBeanJson.setProvinciaa(objC.getSProvinciaUA());
+					if(objC.getIdDepartamentoUA() != null){
+						clienteBeanJson.setIddepartamentoa(objC.getIdDepartamentoUA().toString());
+						clienteBeanJson.setDepartamentoa(objC.getSDepartamentoUA());
+					}
+					else{
+						clienteBeanJson.setDepartamentoa("");
+					}
+				}
+				else{
+					clienteBeanJson.setProvinciaa("");
+				}
+			}
+			else{
+				clienteBeanJson.setDistrito("");
+			}
+			clienteBeanJson.setTelefono(objC.getTelefono() == null ? "" : objC.getTelefono());
+			clienteBeanJson.setCorreo(objC.getCorreo() == null ? "" : objC.getCorreo());
+		}
+		return clienteBeanJson;
+	}
+
+
+	@SMDMethod
+	public String[] getParameters() {
+		log.debug("-> [Action] DojoAction - getParameters():String[] ");
+
+		String[] arrParameters = new String[3];
+		arrParameters[0] = String.valueOf(System.currentTimeMillis());
+		arrParameters[1] = parametroService.findByTipoUnico(Constantes.PARAMETRO_NOTIFICACION_AMARILLA).getValor();
+		arrParameters[2] = parametroService.findByTipoUnico(Constantes.PARAMETRO_NOTIFICACION_ROJA).getValor();
+
+		return arrParameters;
+	}
+
+	@SMDMethod
+	public String[] getPorcentajesAlertas() {
+		log.debug("-> [Action] DojoAction - getPorcentajesAlertas():String[] ");
+
+		//        mapSession = ActionContext.getContext().getSession();
+		//        Usuario objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		//         //listItems = lista de items "proceso" en los cuales el usuario participa
+		//        List<Item> listItems = gridColumnaXUsuarioService.getItems_Reemplazo(objUsuario);
+		//        String[] arrParameters=new String[listItems.size()+1];
+		//		for(int i=0; i<listItems.size();i++){
+		//			arrParameters[i]= listItems.get(i).getIdproceso()+"/"+listItems.get(i).getPorcentajealerta1()+"/"+listItems.get(i).getPorcentajealerta2();
+		//		}
+		//		arrParameters[listItems.size()]=String.valueOf(System.currentTimeMillis());
+
+		String[] arrParameters = new String[1];
+		arrParameters[0] = String.valueOf(System.currentTimeMillis());
+		return arrParameters;
+	}
+
+
+	@SMDMethod
+	public ObjetoJSON getCarpetasBusqueda() {
+		log.debug("-> [Action] DojoAction - getCarpetasBusqueda():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+		log.debug("Carpetas de busqueda a buscar del usuario [" + objUsuario.getUsuario() + "]");
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");
+		objJSON.setItems(carpetaBusquedaService.getTreeCarpetaBusqueda(objUsuario.getIdusuario()));
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON getDocumentosRecibidos_old(BusquedaAvanzada objFiltro) {
+		log.debug("-> [Action] DojoAction - getDocumentosRecibidos():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+		log.debug("Documentos recibidos a buscar del usuario [" + objUsuario.getUsuario() + "]");
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");
+		if (objFiltro == null) {
+			log.debug("SIN FILTRO");
+			objJSON.setItems(documentoService.getTreeDocumentosRecibidos(objUsuario, true));
+		}else{
+			//objJSON.setItems(documentoService.getTreeDocumentosRecibidos(objUsuario, true));
+			objJSON.setItems(documentoService.getTreeDocumentosRecibidosFiltro(objUsuario, true, objFiltro));
+		}
+		
+		return objJSON;
+	}
+	
+	@SMDMethod
+	public ObjetoJSON getDocumentosRecibidos(BusquedaAvanzada objFiltro, Integer idDocumento) {
+		log.debug("-> [Action] DojoAction - getDocumentosRecibidos():void ");
+		
+		//estoy aumentadndo
+		Integer idExpediente = (documentoDao.findByIdDocumento(idDocumento)).getExpediente().getId().intValue();
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");
+		
+		objJSON.setItems(documentoService.getDojoDocumentoTree(objFiltro, idExpediente, idDocumento));
+		
+				
+		
+		return objJSON;
+		
+	}
+		
+	@SMDMethod
+	public String saveCarpetaBusqueda(CarpetaBusqueda objCarpetaBusqueda, String arrFecha[]) {
+		log.debug("-> [Action] DojoAction - saveCarpetaBusqueda():String ");
+
+		SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+
+		log.debug("Se recibio carpeta de busqueda con ID [" + objCarpetaBusqueda.getIdCarpetaBusqueda() + "] nombre [" + objCarpetaBusqueda.getNombreCarpeta() + "]");
+		log.debug("Fecha Documento Desde [" + arrFecha[0] + "]");
+		log.debug("Fecha Documento Hasta [" + arrFecha[1] + "]");
+		log.debug("Fecha Expediente Desde [" + arrFecha[2] + "]");
+		log.debug("Fecha Expediente Hasta [" + arrFecha[3] + "]");
+
+		try {
+			if (!arrFecha[0].equals("") && !arrFecha[1].equals("")) {
+				objCarpetaBusqueda.setFechaDocumentoInicio(formatDate.parse(arrFecha[0]));
+				objCarpetaBusqueda.setFechaDocumentoFinal(formatDate.parse(arrFecha[1]));
+			}
+		} catch (Exception ex) {
+			log.error(ex.getMessage(), ex);
+		}
+
+		try {
+			if (!arrFecha[2].equals("") && !arrFecha[3].equals("")) {
+				objCarpetaBusqueda.setFechaExpedienteInicio(formatDate.parse(arrFecha[2]));
+				objCarpetaBusqueda.setFechaExpedienteFinal(formatDate.parse(arrFecha[3]));
+			}
+		} catch (ParseException ex) {
+			log.error(ex.getMessage(), ex);
+		}
+
+		if (objCarpetaBusqueda.getIdCarpetaBusqueda() == null || objCarpetaBusqueda.getIdCarpetaBusqueda() == 0) {
+			log.debug("** CREACION DE CARPETA DE BUSQUEDA **");
+		} else {
+			log.debug("** MODIFICACION DE CARPETA DE BUSQUEDA **");
+		}
+
+		objCarpetaBusqueda.setUsuario(objUsuario);
+		carpetaBusquedaService.saveCarpetaBusqueda(objCarpetaBusqueda);
+
+		return "Created";
+	}
+
+
+	@SMDMethod
+	public ObjetoJSON eliminarCarpetaBusqueda(Integer iIdCarpetaBusqueda) {
+		log.debug("-> [Action] DojoAction - eliminarCarpetaBusqueda():ObjetoJSON ");
+
+		if (iIdCarpetaBusqueda == null) {
+			log.debug("No se recibio ninguna carpeta de busqueda a eliminar");
+			return null;
+		}
+		CarpetaBusqueda objCarpetaBusqueda = null;
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) getMapSession().get(Constantes.SESSION_USUARIO);
+		log.debug("Carpeta de busqueda a eliminar con ID [" + iIdCarpetaBusqueda + "] perteneciente al usuario [" + objUsuario.getUsuario() + "]");
+		objCarpetaBusqueda = carpetaBusquedaService.ViewbyId(iIdCarpetaBusqueda);
+		carpetaBusquedaService.eliminarCarpetabusqueda(objCarpetaBusqueda);
+		objJSON.setIdentifier("id");
+		objJSON.setLabel("name");
+		objJSON.setItems(carpetaBusquedaService.getTreeCarpetaBusqueda(objUsuario.getIdusuario()));
+		return objJSON;
+	}
+
+
+	@SMDMethod
+	public ObjetoJSON getReemplazo(Boolean iMantReemplazo) {
+		log.debug("-> [Action] DojoAction - getReemplazo():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+
+		if (iMantReemplazo) {
+			objJSON.setItems(gridColumnaXUsuarioService.getItems_MantReemplazo());
+		} else {
+			mapSession = ActionContext.getContext().getSession();
+			objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+			log.debug("Reemplazo a buscar del usuario [" + objUsuario.getUsuario() + "]");
+			objJSON.setItems(gridColumnaXUsuarioService.getItems_Reemplazo(objUsuario));
+		}
+
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON getLista() {
+		log.debug("-> [Action] DojoAction - getLista():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		objJSON.setItems(gridColumnaXUsuarioService.getItems_Lista(objUsuario));
+
+		return objJSON;
+	}
+
+	@SMDMethod
+	public NumeracionJSON getNumeracion (Integer unidadId,Integer tipodocumento) throws Exception {
+		log.debug("-> [Action] DojoAction - getNumeracion():NumeracionJSON ");
+
+		WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(ServletActionContext.getServletContext());
+		NumeracionService numeracionService=(NumeracionService)wac.getBean("numeracionService");
+		UnidadService unidadService =  (UnidadService)wac.getBean("unidadService");
+		Unidad unidad =	unidadService.buscarObjPor(unidadId);
+		Numeracion num =  numeracionService.findByIdbyUnidad( unidad, tipodocumento);
+		NumeracionJSON nj=new NumeracionJSON();
+		nj.setTipo(num.getTiponumeracion());
+		nj.setFirmante(num.getFirmante());
+		nj.setDestinatario(num.getDestinatario());
+		return nj;
+	}
+
+	@SuppressWarnings("unchecked")
+	@SMDMethod
+	public List<Recurso> getUnread() {
+		log.debug("-> [Action] DojoAction - getUnread():List<Recurso> ");
+
+		Integer iEnabled = 0;
+		Integer iUnread = 0;
+		List<Recurso> lstUnread = new ArrayList<Recurso>();
+		Map<String, Integer> mapRecurso = null;
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		mapRecurso = (Map<String, Integer>) mapSession.get(Constantes.SESSION_RECURSO);
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		for (String sRecurso : Constantes.arrUnreadMenu) {
+			iEnabled = (Integer) mapRecurso.get(sRecurso);
+			log.debug("Recurso [" + sRecurso + "] Habilitado [" + iEnabled + "]");
+
+			if (iEnabled > 0) {
+				iUnread = 0;
+
+				if (sRecurso.equalsIgnoreCase(Constantes.RECURSO_DOC_REGISTADOS) || sRecurso.equalsIgnoreCase(Constantes.RECURSO_DOC_DIGITALIZADOS) || sRecurso.equalsIgnoreCase(Constantes.RECURSO_DOC_DIGITALIZADOR)) {
+					iUnread = documentoService.findCantDocumentos(objUsuario);
+				} else if (sRecurso.equalsIgnoreCase(Constantes.RECURSO_NOTIFICACIONES)) {
+					iUnread = notificacionService.obtenerCantidadNotificacionesxUsuario(objUsuario.getIdusuario());
+				} else if (sRecurso.equalsIgnoreCase(Constantes.RECURSO_INFORMATIVOS)) {
+					List<Notificacion> lstNotificacion = null;
+
+					lstNotificacion = notificacionService.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_DERIVACION, Constantes.ESTADO_NO_LEIDO);
+					lstNotificacion.addAll(notificacionService.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_DERIVACIONCONCOPIA, Constantes.ESTADO_NO_LEIDO));
+					lstNotificacion.addAll(notificacionService.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_NUMERACION_DESTINATARIO, Constantes.ESTADO_NO_LEIDO));
+					lstNotificacion.addAll(notificacionService.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_NUMERACION_DOCUMENTOCONCOPIA, Constantes.ESTADO_NO_LEIDO));
+					lstNotificacion.addAll(notificacionService.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_FIN_APOYO, Constantes.ESTADO_NO_LEIDO));
+
+					iUnread = lstNotificacion.size();
+				} else if (sRecurso.equalsIgnoreCase(Constantes.RECURSO_DOC_RECIBIDOS)) {
+					iUnread = documentoService.findCantDocumentosRecibidos(objUsuario);
+				} else if (sRecurso.equalsIgnoreCase(Constantes.RECURSO_MIS_EXPEDIENTES)) {
+					iUnread = documentoService.findCantMisExpedientes(objUsuario);
+				}
+
+				Recurso objRecurso = new Recurso(sRecurso, iUnread);
+				lstUnread.add(objRecurso);
+				log.debug("Se encontraron [" + iUnread + "] no leidos para el recurso [" + sRecurso + "] pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+			}
+		}
+
+		return lstUnread;
+	}
+
+
+	@SMDMethod
+	public List<Recurso> getUsuariosCompartidos() {
+		log.debug("-> [Action] DojoAction - getUsuariosCompartidos():List<Recurso> ");
+
+		List<Recurso> usuariosCompartidos = new ArrayList<Recurso>();
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		log.debug("Usuario -> " + objUsuario.getIdusuario());
+		List<Usuario> tmp = usuarioService.buscarUsuariosCompartidos(objUsuario.getIdusuario());
+		for (Usuario u:tmp) {
+			usuariosCompartidos.add(new Recurso(u.getNombreCompleto(), u.getIdusuario()));
+		}
+		log.debug("Nº usuarios compartidos = " + (usuariosCompartidos != null ? usuariosCompartidos.size(): "Error al obtener la kista de usuarios compartidos"));
+		return usuariosCompartidos;
+	}
+
+
+	@SMDMethod
+	public List<Recurso> getCountDocuments() {
+		log.debug("-> [Action] DojoAction - getCountDocuments():List<Recurso> ");
+
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		return documentoService.getCountDocuments(objUsuario);
+	}
+
+	@SMDMethod
+	public String updateRead(Integer iIdToUpdate, String sCodigo) {
+		log.debug("-> [Action] DojoAction - updateRead():String ");
+
+		mapSession = ActionContext.getContext().getSession();
+		Usuario objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		objUsuario = usuarioService.findByIdUsuario(objUsuario.getIdusuario());
+		
+		Documento objDocumento = null;
+		Notificacion objNotificacion = null;
+		
+		log.debug("Se recibio el ID [" + iIdToUpdate + "]");
+
+		if (sCodigo.equalsIgnoreCase(Constantes.RECURSO_DOC_RECIBIDOS)) {
+			objDocumento = documentoService.updateLeido(iIdToUpdate, objUsuario);
+			log.debug("Documento actualizado con ID [" + objDocumento.getIdDocumento() + "] a estado leido [" + objDocumento.getLeido() + "]");
+		} else if (sCodigo.equalsIgnoreCase(Constantes.RECURSO_NOTIFICACIONES) || sCodigo.equalsIgnoreCase(Constantes.RECURSO_INFORMATIVOS)) {
+			objNotificacion = notificacionService.updateLeido(iIdToUpdate);
+			log.debug("Notificacion actualizada con ID [" + objNotificacion.getIdnotificacion() + "] a estado leido [" + objNotificacion.getLeido() + "]");
+		}
+
+		return "done";
+	}
+
+	@SMDMethod
+	public String verificarProceso(Integer iIdProceso) {
+		log.debug("-> [Action] DojoAction - verificarProceso():String ");
+
+		log.debug("Se recibio el ID del proceso [" + iIdProceso + "]");
+
+		Proceso objProceso = srvProceso.findByIdProceso(iIdProceso);
+		if (Constantes.PROCESO_STOR.equalsIgnoreCase(objProceso.getIdgrupoproceso().getNombre())) {
+			return Constantes.PROCESO_STOR;
+		}
+		return "none";
+	}
+
+	@SMDMethod
+	public ObjetoJSON getCamposPorPlantilla(Integer iTipoPlantilla) {
+		log.debug("-> [Action] DojoAction - getCamposPorPlantilla():ObjetoJSON ");
+
+		log.debug("ID de Plantilla [" + iTipoPlantilla + "]");
+		ObjetoJSON objJSON = new ObjetoJSON();
+		if (iTipoPlantilla > 0) {
+			objJSON.setItems(gridColumnaXUsuarioService.getCamposPorPlantilla(iTipoPlantilla));
+		} else {
+			objJSON.setItems(new ArrayList<Campo>());
+		}
+		return objJSON;
+	}
+
+	@SMDMethod
+	public void deletePlantilla(Integer iIdPlantilla) {
+		log.debug("-> [Action] DojoAction - deletePlantilla():void ");
+
+		Plantilla objPlantilla = srvPlantilla.findByIdplantilla(iIdPlantilla);
+		objPlantilla.setEstado(Constantes.ESTADO_INACTIVO);
+		objPlantilla = srvPlantilla.guardarObj(objPlantilla);
+		log.debug("Se elimino plantilla con ID [" + objPlantilla.getIdplantilla() + "] Nombre [" + objPlantilla.getDescripcion() + "]");
+	}
+
+	@SuppressWarnings("unchecked")
+	@SMDMethod
+	public void savePlantilla(Plantilla objPlantilla, Integer[] arrCampoToDelete) {
+		log.debug("-> [Action] DojoAction - savePlantilla():void ");
+
+		Integer iTipo = null;
+		String sDescripcion = null;
+		String sCampos = null;
+		if (objPlantilla == null) {
+			log.error("No se recibio ninguna plantilla");
+			return;
+		}
+		log.debug("Se recibio plantilla con ID [" + objPlantilla.getIdplantilla() + "]");
+		sCampos = objPlantilla.getCampos();
+		if (objPlantilla.getIdplantilla().intValue() > 0) {
+			iTipo = objPlantilla.getTipo();
+			sDescripcion = objPlantilla.getDescripcion();
+			objPlantilla = srvPlantilla.findByIdplantilla(objPlantilla.getIdplantilla());
+			objPlantilla.setTipo(iTipo);
+			objPlantilla.setDescripcion(sDescripcion);
+		} else {
+			objPlantilla.setIdplantilla(null);
+			objPlantilla.setFechacreacion(new Date());
+			objPlantilla.setEstado(Constantes.ESTADO_ACTIVO);
+		}
+		Object obj = JSONValue.parse(sCampos);
+		JSONObject objeto = (JSONObject) obj;
+		JSONArray items = (JSONArray) objeto.get("items");
+		Iterator<JSONObject> iter = items.iterator();
+		Campo objCampo = null;
+		JSONObject item = null;
+		while (iter.hasNext()) {
+			item = iter.next();
+			Integer id = Integer.valueOf(item.get("id").toString());
+			String codigo = (String) item.get("codigo");
+			String descripcion = (String) item.get("descripcion");
+			String tipo = (String) item.get("tipo");
+			String valor = (String) item.get("valor");
+			log.debug("ID [" + id + "]");
+			log.debug("Codigo [" + codigo + "]");
+			log.debug("Descripcion [" + descripcion + "]");
+			log.debug("Tipo [" + tipo + "]");
+			log.debug("Valor por Defecto [" + valor + "]");
+			if (id.intValue() > 0) {
+				for (int i = 0; i < objPlantilla.getCampoList().size(); i++) {
+					if (objPlantilla.getCampoList().get(i).getIdCampo().intValue() == id.intValue()) {
+						objPlantilla.getCampoList().get(i).setCodigo(codigo);
+						objPlantilla.getCampoList().get(i).setDescripcion(descripcion);
+						objPlantilla.getCampoList().get(i).setTipo(tipo.equals("Caja de Texto") ? "TX" : "TA");
+						objPlantilla.getCampoList().get(i).setValorDefecto(valor);
+						break;
+					}
+				}
+			} else {
+				objCampo = new Campo();
+				objCampo.setCodigo(codigo);
+				objCampo.setDescripcion(descripcion);
+				objCampo.setTipo(tipo.equals("Caja de Texto") ? "TX" : "TA");
+				objCampo.setValorDefecto(valor);
+				objCampo.setEstado(Constantes.ESTADO_ACTIVO);
+				objCampo.setPlantilla(objPlantilla);
+				if (objPlantilla.getIdplantilla() != null) {
+					srvCampo.guardarObj(objCampo);
+				} else {
+					if (objPlantilla.getCampoList() == null) {
+						log.debug("No hay campos asociados a la plantilla");
+						objPlantilla.setCampoList(new ArrayList<Campo>());
+					}
+					objPlantilla.getCampoList().add(objCampo);
+				}
+			}
+		}
+		if (arrCampoToDelete != null && objPlantilla.getCampoList() != null) {
+			log.debug("Campos a eliminar [" + arrCampoToDelete.length + "]");
+			for (Integer iIdC : arrCampoToDelete) {
+				for (int i = 0; i < objPlantilla.getCampoList().size(); i++) {
+					if (objPlantilla.getCampoList().get(i).getIdCampo().intValue() == iIdC.intValue()) {
+						objPlantilla.getCampoList().get(i).setEstado(Constantes.ESTADO_INACTIVO);
+						break;
+					}
+				}
+			}
+		}
+		objPlantilla = srvPlantilla.guardarObj(objPlantilla);
+		log.debug("Se guardo plantilla con ID [" + objPlantilla.getIdplantilla() + "] Nombre [" + objPlantilla.getDescripcion() + "]");
+	}
+
+	@SMDMethod
+	public Integer validarExpedienteHistorico(String sNroExpediente) {
+		log.debug("-> [Action] DojoAction - validarExpedienteHistorico():Integer ");
+
+		Expediente objExpediente = expedienteService.buscarObjPor(sNroExpediente);
+
+		if (objExpediente == null) {
+			log.debug("No se encontro ningun Expediente con Nro [" + sNroExpediente + "]");
+		} else {
+			log.debug("Expediente encontrado con ID [" + objExpediente.getIdexpediente() + "] Nro Expediente [" + objExpediente.getNroexpediente() + "]");
+
+			return 1;
+		}
+
+		return 0;
+	}
+
+	private void registrarAuditoriaReemplazos(Proceso proceso, Reemplazo reemplazo, String tipoauditoria, String modulo, String opcion) {
+		log.debug("-> [Action] DojoAction - registrarAuditoriaReemplazos():void ");
+
+		/*******************************************************/
+		// Registrando la auditoria del Reemplazo
+		/*******************************************************/
+		AuditoriaDAO daoauditoria = (AuditoriaDAO) WebApplicationContextUtils.getWebApplicationContext(ServletActionContext.getRequest().getSession().getServletContext()).getBean("auditoriaDAO");
+		Usuario usuario = (Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+		/*******************************************************/
+		// Registrando la auditoria
+		/*******************************************************/
+		Auditoria ObjAuditoriaReemplazo = new Auditoria();
+		ObjAuditoriaReemplazo.setTipoAuditoria(tipoauditoria);
+		ObjAuditoriaReemplazo.setModulo(modulo);
+		ObjAuditoriaReemplazo.setOpcion(opcion);
+		ObjAuditoriaReemplazo.setFechaAudioria(new Date());
+		ObjAuditoriaReemplazo.setUsuario(usuario.getUsuario());
+		ObjAuditoriaReemplazo.setCampo("Reemplazante");
+		ObjAuditoriaReemplazo.setNuevoValor(reemplazo.getIdusuario().getUsuario());
+		ObjAuditoriaReemplazo.setProceso(proceso);
+		daoauditoria.SaveAuditoria(ObjAuditoriaReemplazo);
+	}
+
+	@SMDMethod
+	public String saveNumeracion(Numeracion objNumeracion, String sIdUnidad, String sIdTipoDocumento) {
+		log.debug("-> [Action] DojoAction - saveNumeracion():String ");
+
+		if (objNumeracion == null) {
+			log.error("No se recibio ninguna Numeracion");
+
+			return "error";
+		}
+
+		if (sIdUnidad.equals("") && sIdTipoDocumento.equals("")) {
+			log.debug("Se recibio unidad con ID [" + objNumeracion.getIdNumeracion().getIdunidad() + "]");
+			log.debug("Se recibidio tipo de documento con ID [" + objNumeracion.getIdNumeracion().getIdtipodocumento() + "]");
+
+			if (srvNumeracion.findById(objNumeracion.getIdNumeracion().getIdunidad(), objNumeracion.getIdNumeracion().getIdtipodocumento()) != null) {
+				log.debug("Esta Numeracion ya existe en la Base de Datos");
+
+				return "NotCreated";
+			}
+
+			objNumeracion.setUnidad(srvUnidad.buscarObjPor(objNumeracion.getIdNumeracion().getIdunidad()));
+			objNumeracion.setTipodocumento(srvTipoDocumento.findByIdTipoDocumento(objNumeracion.getIdNumeracion().getIdtipodocumento()));
+		}
+
+		objNumeracion.setFormato(objNumeracion.getFormatoleft() + "$NUMERO" + objNumeracion.getFormatoright());
+
+		if (sIdUnidad.equals("") && sIdTipoDocumento.equals("")) {
+			objNumeracion = srvNumeracion.guardarObj(objNumeracion);
+			log.debug("Numeracion creada");
+		} else {
+			objNumeracion = srvNumeracion.actualizarObj(objNumeracion);
+			log.debug("Numeracion actualizada");
+		}
+
+		return "cool";
+	}
+
+	@SMDMethod
+	public ClienteJSon getClientePorRUC(String ruc) {
+		log.debug("-> [Action] DojoAction - getClientePorRUC():ClienteJSon ");
+
+		ClienteJSon cliente = null;
+		Cliente existente = clienteService.findByNroIdentificacion(ruc);
+		if (existente != null) {
+			cliente = new ClienteJSon();
+			cliente.setIdentificacion("El cliente ya existe.");
+		} else {
+			cliente = clienteService.getClientePorRUCSunat(ruc);
+		}
+		return cliente;
+	}
+
+	@SMDMethod
+	public List<ClienteJSon> getClientesPorRazonSocial(String razonSocial) {
+		log.debug("-> [Action] DojoAction - getClientesPorRazonSocial():List<ClienteJSon> ");
+
+		List<ClienteJSon> salida = new ArrayList<ClienteJSon>();
+		List<ClienteJSon> encontrados = clienteService.getClientesPorRazonSocialSunat(razonSocial);
+		if (encontrados != null) {
+			for (ClienteJSon cliente : encontrados) {
+				Cliente existente = clienteService.findByNroIdentificacion(cliente.getIdentificacion());
+				if (existente == null) {
+					salida.add(cliente);
+				}
+			}
+			return salida;
+		}
+		return null;
+	}
+
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SMDMethod
+	public List ObtenerlistaCampos2(String tipoPlantilla, String idexpediente) {
+		log.debug("-> [Action] DojoAction - ObtenerlistaCampos2():List ");
+
+		List<Campo> lstCampo = null;
+		Expediente objE = null;
+
+		log.debug("Tipo de Plantilla con ID [" + tipoPlantilla + "]");
+		log.debug("Expediente asociado con ID [" + idexpediente + "]");
+		lstCampo = srvPlantilla.listCamposByTipoPlantilla(new Integer(tipoPlantilla));
+
+		if (!idexpediente.isEmpty()) {
+			objE = expedienteService.findByIdExpediente(Integer.valueOf(idexpediente));
+		}
+
+		if (lstCampo == null) {
+			lstCampo = new ArrayList();
+			log.debug("$$$$$$$ vacio : ");
+		} else {
+			log.debug("$$$$$$$ tamaño : " + lstCampo.size());
+
+			for (int i = 0; i < lstCampo.size(); i++) {
+				String sDatoValor = "";
+
+				if (objE != null) {
+					if (lstCampo.get(i).getValorDefecto().equals("Propietario del Documento")) {
+						sDatoValor = objE.getDocumentoPrincipal().getPropietario().getNombres() + " " + objE.getDocumentoPrincipal().getPropietario().getApellidos();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Area del Propietario del Documento")) {
+						sDatoValor = objE.getDocumentoPrincipal().getPropietario().getUnidad().getNombre();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Cliente")) {
+						if (objE.getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+							sDatoValor = objE.getClienterazonsocial();
+						} else {
+							sDatoValor = objE.getClientenombres() + " " + objE.getClienteapellidopaterno();
+						}
+					} else if (lstCampo.get(i).getValorDefecto().equals("Concesionario")) {
+						if (objE.getConcesionario() != null) {
+							sDatoValor = objE.getConcesionario().getRazonSocial();
+						}
+					} else if (lstCampo.get(i).getValorDefecto().equals("Proceso")) {
+						sDatoValor = objE.getProceso().getNombre();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Etapa")) {
+						if (objE.getIdetapa() != null) {
+							sDatoValor = objE.getIdetapa().getDescripcion();
+						}
+					} else if (lstCampo.get(i).getValorDefecto().equals("Actividad")) {
+						if (objE.getIdactividad() != null) {
+							sDatoValor = objE.getIdactividad().getNombre();
+						}
+					} else if (lstCampo.get(i).getValorDefecto().equals("Nro Expediente")) {
+						sDatoValor = objE.getNroexpediente();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Descripcion")) {
+						sDatoValor = objE.getDescripcion();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Asunto del Expediente")) {
+						sDatoValor = objE.getAsunto();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Contenido")) {
+						sDatoValor = objE.getContenido();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Observacion")) {
+						sDatoValor = objE.getObservacion();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Fecha Creacion")) {
+						sDatoValor = objE.getFechacreacion().toString();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Estado")) {
+						sDatoValor = String.valueOf(objE.getEstado());
+					} else if (lstCampo.get(i).getValorDefecto().equals("Observacion de Rechazo")) {
+						sDatoValor = objE.getObservacionrechazo();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Nro Interno")) {
+						sDatoValor = objE.getNrointerno();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Responsable del Expediente")) {
+						sDatoValor = objE.getIdpropietario().getNombres() + " " + objE.getIdpropietario().getApellidos();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Area del Responsable del Expediente")) {
+						sDatoValor = objE.getIdpropietario().getUnidad().getNombre();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Responsable del Proceso")) {
+						sDatoValor = objE.getProceso().getResponsable().getNombres() + " " + objE.getProceso().getResponsable().getApellidos();
+					} else if (lstCampo.get(i).getValorDefecto().equals("Area del Responsable del Proceso")) {
+						sDatoValor = objE.getProceso().getResponsable().getUnidad().getNombre();
+					}
+				}
+
+				lstCampo.get(i).setValor(sDatoValor == null ? "" : sDatoValor);
+			}
+		}
+
+		return lstCampo;
+	}
+
+	@SMDMethod
+	public String ObtenerInfoNumeracion(String idProceso, String idtipodoc) {
+		log.debug("-> [Action] DojoAction - ObtenerInfoNumeracion():String ");
+
+		try {
+			Proceso objP = srvProceso.findByIdProceso(Integer.valueOf(idProceso));
+			Numeracion num = srvNumeracion.findByIdNumeracion(objP.getResponsable().getUnidad().getIdunidad(), new Integer(idtipodoc));
+			log.debug("Numero actual [" + num.getNumeroactual() + "]");
+
+			return num.getNumeroactual().toString();
+		} catch (Exception e) {
+			return "";
+		}
+	}
+
+	@SMDMethod
+	public Integer calcularEnFechaTexto(Integer idDoc, String fecha) {
+		log.debug("-> [Action] DojoAction - calcularEnFechaTexto():Integer ");
+
+		if (idDoc == null) {
+			return 0;
+		}
+		try {
+			SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy");
+			Date fechaTest = fmt.parse(fecha);
+			Date fechaLimite = documentoService.getFechaLimiteAtencion(idDoc);
+			log.debug("Fecha T:" + fechaTest + " - Fecha L:" + fechaLimite);
+			return (fechaTest.getTime() - fechaLimite.getTime()) > 0 ? 1 : -1;
+		} catch (ParseException e) {
+			return 0;
+		}
+	}
+
+	@SMDMethod
+	public ObjetoJSON findClientesbyIdDocumento(Integer idDocumento) {
+		log.debug("-> [Action] DojoAction - findClientesbyIdDocumento():ObjetoJSON ");
+
+		ObjetoJSON json = new ObjetoJSON();
+
+		List<Documentoxcliente> listaDocxCliente = documentoxclienteService.findClientesbyIdDocumento(idDocumento);
+		List<Item> listaItems = new ArrayList<Item>();
+		for (Documentoxcliente objdxc : listaDocxCliente) {
+			Item objItem = new Item();
+			if (Constantes.TIPO_IDENTIFICACION_RUC.equals(objdxc.getCliente().getTipoIdentificacion().getNombre())) {
+				objItem.setRazonsocial(objdxc.getCliente().getRazonSocial());
+			} else {
+				objItem.setRazonsocial(objdxc.getCliente().getNombres() + " " + objdxc.getCliente().getApellidoPaterno() + " " + objdxc.getCliente().getApellidoMaterno());
+			}
+			objItem.setId(objdxc.getCliente().getIdCliente());
+			objItem.setTipo(objdxc.getCliente().getTipoIdentificacion().getNombre());
+			objItem.setIdentificacion(objdxc.getCliente().getNumeroIdentificacion());
+			objItem.setDireccion(objdxc.getCliente().getDireccionPrincipal());
+			// objItem.set
+			if (objdxc.getCliente().getUbigeoPrincipal() != null) {
+				objItem.setDistrito(objdxc.getCliente().getUbigeoPrincipal().getNombre());
+				objItem.setDepartamento(objdxc.getCliente().getUbigeoPrincipal().getProvincia().getDepartamento().getNombre());
+				objItem.setProvincia(objdxc.getCliente().getUbigeoPrincipal().getProvincia().getNombre());
+			}
+			listaItems.add(objItem);
+		}
+
+		json.setItems(listaItems);
+
+		return json;
+	}
+
+	@SMDMethod
+	public ObjetoJSON getDocumentos(Integer iIdExpediente) {
+		log.debug("-> [Action] DojoAction - getDocumentos():ObjetoJSON ");
+
+		ObjetoJSON json = new ObjetoJSON();
+
+		json.setItems(srvItem.findLstDocumentoBy(iIdExpediente));
+
+		return json;
+	}
+
+	/**REN Metodo usado cuando se envia a mensajeria -------------------------------------------------------------------------*/
+	@SMDMethod
+	public String saveMensajeria(Integer tipoEnvio, List<Item> lstClienteCustom, String idsDocumentosSeleccionados, Integer idDocPrincipalExpediente) {
+		log.debug("-> [Action] DojoAction - saveMensajeria():String ");		
+
+		if (lstClienteCustom == null || lstClienteCustom.size() <= 0) {
+			log.error("No se recibio clientes");
+			return null;
+		}
+
+		if (idDocPrincipalExpediente == null || idDocPrincipalExpediente == 0) {
+			log.error("No se recibio documento principal");
+			return null;
+		}
+
+		Integer[] idsDocumentosMensajeria = new Integer[1];
+		if (idsDocumentosSeleccionados != null && !idsDocumentosSeleccionados.equals("")) {
+
+			String[] idsStr = idsDocumentosSeleccionados.split(",");
+			idsDocumentosMensajeria = new Integer[idsStr.length+1];
+			int i = 0;
+			for (String idStr : idsStr) {
+				idsDocumentosMensajeria[i] = Integer.parseInt(idStr);
+				i++;
+			}
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Tipo Envio [" + tipoEnvio + "]");
+			for (Item item : lstClienteCustom) {
+				log.debug("Cliente identificacion [" + item.getIdentificacion() + "] razon social [" + item.getRazonsocial() + "] direccion [" + item.getDireccion() + "] departamento [" + item.getDepartamento() + "] provincia [" + item.getProvincia() + "] distrito [" + item.getDistrito() + "]");
+			}
+			log.debug("Documento Principal [" + idDocPrincipalExpediente + "]");
+			for (Integer idDocumento : idsDocumentosMensajeria) {
+				log.debug("Documento ID [" + idDocumento + "]");
+			}
+		}
+
+		try {
+			mapSession = ActionContext.getContext().getSession();
+			Usuario objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+			String nombrePC = (String) mapSession.get("nombrePC"); 
+			
+			for (Item item : lstClienteCustom) {
+				Mensajeria objMensajeria = srvMensajeria.guardarObj(objUsuario, idDocPrincipalExpediente, Constantes.DOCUMENTO_PRINCIPAL, tipoEnvio, item, null);
+				for (int i = 0; i < idsDocumentosMensajeria.length-1; i++) {
+					srvMensajeria.guardarObj(objUsuario, idsDocumentosMensajeria[i], Constantes.DOCUMENTO_NO_PRINCIPAL, tipoEnvio, item, objMensajeria.getIdmensajeria());
+				}
+			}
+			idsDocumentosMensajeria[idsDocumentosMensajeria.length-1] = idDocPrincipalExpediente;
+			srvMensajeria.guardarTrazaEnvioMensajer�a(idsDocumentosMensajeria, lstClienteCustom, objUsuario, nombrePC);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+
+			return null;
+		}
+
+		return "";
+	}
+
+	@SMDMethod
+	public NumeracionJSON findNumeracionDocumento(Integer iIdTipoDocumento, Integer iIdFirmante) {
+		log.debug("-> [Action] DojoAction - findNumeracionDocumento():NumeracionJSON ");
+
+		if (iIdTipoDocumento == null || iIdFirmante == null) {
+			log.error("Parametros recibidos incorrectamente");
+
+			return null;
+		}
+
+		Usuario firmante = null;
+		//NumeracionJSON json = null;
+		Numeracion numeracion = null;
+
+		if (log.isDebugEnabled()) {
+			log.debug("iIdTipoDocumento [" + iIdTipoDocumento + "] idFirmante [" + iIdFirmante + "]");
+		}
+
+		if ((firmante = usuarioService.findByIdUsuario(iIdFirmante)) == null) {
+			log.info("No se encontro firmante con idFirmante [" + iIdFirmante + "]");
+
+			return null;
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Se encontro firmante [" + firmante.getUsuario() + "] perteneciente a la unidad [" + firmante.getUnidad().getNombre() + "]");
+		}
+
+		if ((numeracion = srvNumeracion.findByIdbyUnidad(firmante.getUnidad(), iIdTipoDocumento)) == null) {
+			log.info("No se encontro numeracion con iIdTipoDocumento [" + iIdTipoDocumento + "] idFirmante [" + iIdFirmante + "]");
+
+			return null;
+		}
+
+		//return (json = new NumeracionJSON(numeracion.getTiponumeracion(), numeracion.getFirmante(), numeracion.getDestinatario()));
+		return new NumeracionJSON(numeracion.getTiponumeracion(), numeracion.getFirmante(), numeracion.getDestinatario());
+	}
+
+	@SMDMethod
+	public String saveFavorito(String idContacto) {
+		log.debug("-> [Action] DojoAction - saveFavorito():String ");
+
+		if (idContacto == null) {
+			log.error("Parametros recibidos incorrectamente");
+
+			return null;
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("idContacto [" + idContacto + "]");
+		}
+
+		Character tipoContacto = Constantes.FAVORITO_TIPOCONTACTO_USUARIO;
+
+		if (idContacto.startsWith("LISTA_")) {
+			idContacto = idContacto.split("LISTA_")[1];
+			tipoContacto = Constantes.FAVORITO_TIPOCONTACTO_LISTA;
+		}
+
+		mapSession = ActionContext.getContext().getSession();
+		Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		Favorito existeFavorito = favoritoService.findObjectBy(usuario.getIdusuario(), Integer.valueOf(idContacto), tipoContacto, Constantes.ESTADO_ACTIVO);
+
+		if (existeFavorito != null) {
+			log.info("Ya existe el contacto [" + existeFavorito.getContacto() + "] para el propietario [" + existeFavorito.getPropietario() + "]");
+
+			return existeFavorito.getContacto().toString();
+		}
+
+		Favorito favorito = favoritoService.saveFavorito(usuario.getIdusuario(), Integer.valueOf(idContacto), tipoContacto);
+
+		return favorito.getContacto().toString();
+	}
+
+	@SMDMethod
+	public ObjetoJSON SMDCompletarConcesionario(Integer idConcesionario) {
+		log.debug("-> [Action] DojoAction - SMDCompletarConcesionario():ObjetoJSON ");
+
+		ObjetoJSON json = new ObjetoJSON();
+		Concesionario concesionario = concesionarioService.findByIdConcesionario(idConcesionario);
+		List<Item> listaItems = new ArrayList<Item>();
+		Item objItem = new Item();
+		objItem.setDireccion((concesionario.getDireccion() == null) ? " - " : concesionario.getDireccion());
+		objItem.setCorreo((concesionario.getCorreo() == null) ? " - " : concesionario.getCorreo());
+		listaItems.add(objItem);
+		json.setItems(listaItems);
+		return json;
+	}
+
+	@SMDMethod
+	public ObjetoJSON SMDCompletarCliente(String idCliente) {
+		log.debug("-> [Action] DojoAction - SMDCompletarCliente():ObjetoJSON ");
+
+		ObjetoJSON json = new ObjetoJSON();
+		Cliente existente = clienteService.findByNroIdentificacion(idCliente);
+		List<Item> listaItems = new ArrayList<Item>();
+		if (existente != null) {
+			Item objItem = new Item();
+			String resp = "";
+			resp = existente.getNombreRazon() != null ? existente.getNombreRazon() : "";
+			objItem.setNombre(resp);
+			resp = existente.getRepresentanteLegal() != null ? existente.getRepresentanteLegal() : "";
+			objItem.setRepresentante(resp);
+			if (existente.getUbigeoPrincipal() != null) {
+				resp = existente.getDireccionPrincipal() != null ? existente.getDireccionPrincipal() : "";
+				objItem.setDireccion(resp);
+				objItem.setDistrito(String.valueOf(existente.getUbigeoPrincipal().getIddistrito()));
+				objItem.setProvincia(String.valueOf(existente.getUbigeoPrincipal().getProvincia().getIdprovincia()));
+				objItem.setDepartamento(String.valueOf(existente.getUbigeoPrincipal().getProvincia().getDepartamento().getNombre()));
+			} else {
+				objItem.setDireccion("");
+				objItem.setDistrito("");
+				objItem.setProvincia("");
+				objItem.setDepartamento("");
+			}
+			if (existente.getUbigeoAlternativo() != null) {
+				resp = existente.getDireccionAlternativa() != null ? existente.getDireccionAlternativa() : "";
+				objItem.setDireccionAlternativa(resp);
+				objItem.setDistritoAlternativo(String.valueOf(existente.getUbigeoAlternativo().getIddistrito()));
+				objItem.setProvinciaAlternativa(String.valueOf(existente.getUbigeoAlternativo().getProvincia().getIdprovincia()));
+				objItem.setDepartamentoAlternativo(String.valueOf(existente.getUbigeoAlternativo().getProvincia().getDepartamento().getNombre()));
+			} else {
+				objItem.setDireccionAlternativa("");
+				objItem.setDistritoAlternativo("");
+				objItem.setProvinciaAlternativa("");
+				objItem.setDepartamentoAlternativo("");
+			}
+			resp = existente.getCorreo() != null ? existente.getCorreo() : "";
+			objItem.setCorreo(resp);
+			resp = existente.getTelefono() != null ? existente.getTelefono() : "";
+			objItem.setTelefono(resp);
+			listaItems.add(objItem);
+		}
+		json.setItems(listaItems);
+		return json;
+	}
+
+	@SMDMethod
+	public ObjetoJSON setAttributeInSession(String key, String o) {
+		log.debug("-> [Action] DojoAction - setAttributeInSession():ObjetoJSON ");
+
+		ActionContext.getContext().getSession().put(key, o);
+		return new ObjetoJSON();
+	}
+
+	@SMDMethod
+	public ObjetoJSON getSubmotivosSTOR(Integer idExpediente) {
+		log.debug("-> [Action] DojoAction - getSubmotivosSTOR():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setItems(storService.getItemSubmotivos(idExpediente));
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON getSuministrosSTOR(Integer idExpediente) {
+		log.debug("-> [Action] DojoAction - getSuministrosSTOR():ObjetoJSON ");
+
+		ObjetoJSON objJSON = new ObjetoJSON();
+		objJSON.setItems(storService.getItemSuministros(idExpediente));
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON filtrarBandeja(String sTipoGrid, BusquedaAvanzada objFiltro) {
+		//TODO recien empiezo a hacer este metodo
+		log.debug("-> [Action] DojoAction - filtrarBandeja():ObjetoJSON ");
+
+		if (sTipoGrid == null) {
+			log.error("No se recibio un tipo de grid correcto");
+			return null;
+		}
+		
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+			return null;
+		}
+
+		log.info("Tipo de grid solicitado [" + sTipoGrid + "]");
+		
+		objJSON.setItems(gridColumnaXUsuarioService.getItems(sTipoGrid, objUsuario, objFiltro));
+		objJSON.setStructure(gridColumnaXUsuarioService.getEstructura(sTipoGrid, objUsuario));
+		
+		return objJSON;
+	}
+
+	@SMDMethod
+	public ObjetoJSON getArchivosXUsuario(Integer idDocumento) {
+		log.debug("-> [Action] DojoAction - getArchivosXUsuario():ObjetoJSON ");
+		
+		ObjetoJSON objJSON = new ObjetoJSON();
+		Usuario objUsuario = null;
+
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+			return null;
+		}
+		
+		objJSON.setItems(archivoService.buscarItemArchivoXAutor(objUsuario.getIdusuario(), idDocumento));
+		
+		return objJSON;
+	}
+	
+	public List<Item> getLstDocumentoGrid() {
+		return lstDocumentoGrid;
+	}
+
+	public void setLstDocumentoGrid(List<Item> lstDocumentoGrid) {
+		this.lstDocumentoGrid = lstDocumentoGrid;
+	}
+
+	public Map<String, Object> getMapSession() {
+		return mapSession;
+	}
+
+	public void setMapSession(Map<String, Object> mapSession) {
+		this.mapSession = mapSession;
+	}
+
+	public void setRolService(RolService rolService) {
+		this.rolService = rolService;
+	}
+
+	public void setDocumentoService(DocumentoService documentoService) {
+		this.documentoService = documentoService;
+	}
+
+	public void setGridColumnaXUsuarioService(GridcolumnaxusuarioService gridColumnaXUsuarioService) {
+		this.gridColumnaXUsuarioService = gridColumnaXUsuarioService;
+	}
+
+	public void setUsuarioService(UsuarioService usuarioService) {
+		this.usuarioService = usuarioService;
+	}
+
+	public void setExpedienteService(ExpedienteService expedienteService) {
+		this.expedienteService = expedienteService;
+	}
+
+	public void setTipoIdentificacionService(TipoidentificacionService tipoIdentificacionService) {
+		this.tipoIdentificacionService = tipoIdentificacionService;
+	}
+
+	public void setClienteService(ClienteService clienteService) {
+		this.clienteService = clienteService;
+	}
+
+	public void setParametroService(ParametroService parametroService) {
+		this.parametroService = parametroService;
+	}
+
+	public void setCarpetaBusquedaService(CarpetabusquedaService carpetaBusquedaService) {
+		this.carpetaBusquedaService = carpetaBusquedaService;
+	}
+
+	public void setNotificacionService(NotificacionService notificacionService) {
+		this.notificacionService = notificacionService;
+	}
+
+	public void setSupervisorService(SupervisorService supervisorService) {
+		this.supervisorService = supervisorService;
+	}
+
+	public void setDistritoDao(DistritoDAO distritoDao) {
+		this.distritoDao = distritoDao;
+	}
+
+	public void setReemplazoDao(ReemplazoDAO reemplazoDao) {
+		this.reemplazoDao = reemplazoDao;
+	}
+
+	public PlantillaService getSrvPlantilla() {
+		return srvPlantilla;
+	}
+
+	public void setSrvPlantilla(PlantillaService srvPlantilla) {
+		this.srvPlantilla = srvPlantilla;
+	}
+
+	public void setSrvCampo(CampoService srvCampo) {
+		this.srvCampo = srvCampo;
+	}
+
+	public void setSrvNumeracion(NumeracionService srvNumeracion) {
+		this.srvNumeracion = srvNumeracion;
+	}
+
+	public void setSrvUnidad(UnidadService srvUnidad) {
+		this.srvUnidad = srvUnidad;
+	}
+
+	public void setSrvTipoDocumento(TipodocumentoService srvTipoDocumento) {
+		this.srvTipoDocumento = srvTipoDocumento;
+	}
+
+	public void setPerfilDao(PerfilDAO perfilDao) {
+		this.perfilDao = perfilDao;
+	}
+
+	public ProcesoService getSrvProceso() {
+		return srvProceso;
+	}
+
+	public void setSrvProceso(ProcesoService srvProceso) {
+		this.srvProceso = srvProceso;
+	}
+
+	public ItemService getSrvItem() {
+		return srvItem;
+	}
+
+	public void setSrvItem(ItemService srvItem) {
+		this.srvItem = srvItem;
+	}
+
+	public DocumentoxclienteService getDocumentoxclienteService() {
+		return documentoxclienteService;
+	}
+
+	public void setDocumentoxclienteService(DocumentoxclienteService documentoxclienteService) {
+		this.documentoxclienteService = documentoxclienteService;
+	}
+
+	public MensajeriaService getSrvMensajeria() {
+		return srvMensajeria;
+	}
+
+	public void setSrvMensajeria(MensajeriaService srvMensajeria) {
+		this.srvMensajeria = srvMensajeria;
+	}
+
+	public FavoritoService getFavoritoService() {
+		return favoritoService;
+	}
+
+	public void setFavoritoService(FavoritoService favoritoService) {
+		this.favoritoService = favoritoService;
+	}
+
+	public ConcesionarioService getConcesionarioService() {
+		return concesionarioService;
+	}
+
+	public void setConcesionarioService(ConcesionarioService concesionarioService) {
+		this.concesionarioService = concesionarioService;
+	}
+
+	public ExpedientestorService getStorService() {
+		return storService;
+	}
+
+	public void setStorService(ExpedientestorService storService) {
+		this.storService = storService;
+	}
+
+	public void setArchivoService(ArchivoService archivoService) {
+		this.archivoService = archivoService;
+	}
+
+	public AlfrescoWSService getAlfrescoWebServiceClient() {
+		return alfrescoWebServiceClient;
+	}
+
+	public void setAlfrescoWebServiceClient(AlfrescoWSService alfrescoWebServiceClient) {
+		this.alfrescoWebServiceClient = alfrescoWebServiceClient;
+	}
+	
+	public Integer getIdCarpetaBusqueda() {
+		return idCarpetaBusqueda;
+	}
+
+	public void setIdCarpetaBusqueda(Integer idCarpetaBusqueda) {
+		this.idCarpetaBusqueda = idCarpetaBusqueda;
+	}
+
+	public CarpetaBusqueda getCarpetaBusqueda() {
+		return carpetaBusqueda;
+	}
+
+	public void setCarpetaBusqueda(CarpetaBusqueda carpetaBusqueda) {
+		this.carpetaBusqueda = carpetaBusqueda;
+	}
+
+	public Character getAgrupacion() {
+		return agrupacion;
+	}
+
+	public void setAgrupacion(Character agrupacion) {
+		this.agrupacion = agrupacion;
+	}
+
+	public Integer getIdTipoGrid() {
+		return idTipoGrid;
+	}
+
+	public void setIdTipoGrid(Integer idTipoGrid) {
+		this.idTipoGrid = idTipoGrid;
+	}
+
+	public String getIdDoc() {
+		return idDoc;
+	}
+
+	public void setIdDoc(String idDoc) {
+		this.idDoc = idDoc;
+	}
+
+	public String getRutaAlfresco() {
+		return rutaAlfresco;
+	}
+
+	public void setRutaAlfresco(String rutaAlfresco) {
+		this.rutaAlfresco = rutaAlfresco;
+	}
+
+	public String getContDocumentosRecibidos() {
+		return contDocumentosRecibidos;
+	}
+
+	public void setContDocumentosRecibidos(String contDocumentosRecibidos) {
+		this.contDocumentosRecibidos = contDocumentosRecibidos;
+	}
+
+	public List<FilaBandejaUF> getListDocumentosRecibidos() {
+		log.debug("-> [Action] DojoAction - getListDocumentosRecibidos():String ");
+		Usuario objUsuario = null;
+		mapSession = ActionContext.getContext().getSession();
+		objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+		if (objUsuario == null) {
+			log.error("Expiro la sesion");
+			return null;
+		}
+		listDocumentosRecibidos = documentoService.getContDocUsuarioFinal(objUsuario, true,null);
+		return listDocumentosRecibidos;
+	}
+
+	public void setListDocumentosRecibidos(
+			List<FilaBandejaUF> listDocumentosRecibidos) {
+		this.listDocumentosRecibidos = listDocumentosRecibidos;
+	}
+
+	public DocumentoDAO getDocumentoDao() {
+		return documentoDao;
+	}
+
+	public void setDocumentoDao(DocumentoDAO documentoDao) {
+		this.documentoDao = documentoDao;
+	}
+
+	public Documento getObjDocumento() {
+		return objDocumento;
+	}
+
+	public void setObjDocumento(Documento objDocumento) {
+		this.objDocumento = objDocumento;
+	}
+
+	public Integer getiIdUpload() {
+		return iIdUpload;
+	}
+
+	public void setiIdUpload(Integer iIdUpload) {
+		this.iIdUpload = iIdUpload;
+	}
+
+	public String getArchivoPrincipal() {
+		return archivoPrincipal;
+	}
+
+	public void setArchivoPrincipal(String archivoPrincipal) {
+		this.archivoPrincipal = archivoPrincipal;
+	}
+
+	public Archivo getArchivo() {
+		return archivo;
+	}
+
+	public void setArchivo(Archivo archivo) {
+		this.archivo = archivo;
+	}
+
+	public String getPDF() {
+		return PDF;
+	}
+
+	public void setPDF(String pDF) {
+		PDF = pDF;
+	}
+
+	public Boolean getParaAprobar() {
+		return paraAprobar;
+	}
+
+	public void setParaAprobar(Boolean paraAprobar) {
+		this.paraAprobar = paraAprobar;
+	}
+
+	
+	public String getSTipoDerivacion() {
+		return sTipoDerivacion;
+	}
+
+	public void setSTipoDerivacion(String sTipoDerivacion) {
+		this.sTipoDerivacion = sTipoDerivacion;
+	}
+
+	public String getSOpcion() {
+		return sOpcion;
+	}
+
+	public void setSOpcion(String sOpcion) {
+		this.sOpcion = sOpcion;
+	}
+
+	public Integer getIddestinatario() {
+		return iddestinatario;
+	}
+
+	public void setIddestinatario(Integer iddestinatario) {
+		this.iddestinatario = iddestinatario;
+	}
+
+	public String getStrAcc() {
+		return strAcc;
+	}
+
+	public void setStrAcc(String strAcc) {
+		this.strAcc = strAcc;
+	}
+
+	public Boolean getProvieneDeMail() {
+		return provieneDeMail;
+	}
+
+	public void setProvieneDeMail(Boolean provieneDeMail) {
+		this.provieneDeMail = provieneDeMail;
+	}
+	
+	
+	
+}

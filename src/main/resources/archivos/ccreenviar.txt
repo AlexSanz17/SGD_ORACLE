@@ -1,0 +1,15 @@
+# Data del Documento
+# 1 - Nombre del tipo de documento
+# 2 - Numero del documento
+# 3 - Numero del expediente
+# 4 - Nombre del proceso
+# 5 - Nombres del usuario remitente
+# 6 - Apellidos del usuario remitente
+# 7 - URL del documento
+3:1:2
+(copia) Expediente: %s - Aviso de Documento Reenviado: %s - %s
+5:6:1:2:3:4:7
+(Ud. ha sido incluido en copia)
+Le informamos que el usuario %s %s le ha enviado una copia del documento %s - %s perteneciente al expediente %s, relacionado al proceso %s. 
+
+Puede ver el documento en %s.

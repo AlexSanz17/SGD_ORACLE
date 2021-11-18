@@ -1,0 +1,29 @@
+-- Incidenncia 0000266: MEJORA: Crear bandeja de Expedientes Archivados y con la opción para reabrir
+alter table expediente add fechaarchivar timestamp(6);
+
+Insert into GRIDCOLUMNA (IDGRIDCOLUMNA,FIELD,NAME,NORESIZE,WIDTH,HIDDEN,FORMATER,POSITION) values (33,'fechaarchivar','Fecha de Archivamiento',0,'150px',0,'formatterDate',13);
+Insert into GRID (IDGRID,NOMBRE,DESCRIPCION,CODIGO,ROL) values (18,'Expedientes Archivados',null,'18',5);
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,3, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,4, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,5, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,6, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,10, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,11, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,12, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,14, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+Insert into GRIDXGRIDCOLUMNA (IDGRID,IDGRIDCOLUMNA,ID) values (18,25, (SELECT MAX(ID)+1 FROM GRIDXGRIDCOLUMNA));
+
+insert into gridxgridcolumna(id, idgrid, idgridcolumna) values((select max(id)+1 from gridxgridcolumna), 18, 33);
+
+-- Incidencia 0000270
+alter table documento add estaenflujo CHAR(1);
+
+-- Incidencia 0000209 separacion de firmas
+ALTER TABLE DOCUMENTO ADD ("ENUMERADOR" NUMBER(38, 0));
+ALTER TABLE DOCUMENTO ADD CONSTRAINT DOCUMENTO_USUARIO_FK1 FOREIGN KEY ("ENUMERADOR") REFERENCES USUARIO ("IDUSUARIO") ENABLE;
+COMMENT ON COLUMN DOCUMENTO."ENUMERADOR" IS 'persona encargada de enumerar documento';
+ALTER TABLE DOCUMENTO ADD ("FIRMADO" CHAR(1 BYTE));
+ALTER TABLE DOCUMENTO ADD ("ENUMERADO" CHAR(1 BYTE));
+COMMENT ON COLUMN DOCUMENTO."FIRMADO" IS 'Se utilizapara controlar si un documento esta firmado.';
+COMMENT ON COLUMN DOCUMENTO."ENUMERADO" IS 'se utiliza para controlar si un documento esta enumerado.';
+alter table suministro modify nrosuministro varchar2(15);

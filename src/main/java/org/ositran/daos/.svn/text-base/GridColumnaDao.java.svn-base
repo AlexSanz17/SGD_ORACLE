@@ -1,0 +1,11 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.GridColumna;
+
+public interface GridColumnaDao {
+	
+	public List<GridColumna> getTodos();
+
+}

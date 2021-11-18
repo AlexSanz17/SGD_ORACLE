@@ -1,0 +1,12 @@
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Carpeta;
+import com.btg.osinergmin.siged.domain.Documento;
+
+public interface CarpetaService {
+	
+	public Carpeta guardar (Carpeta carpeta) ; 
+	public Documento moverDocumento (Integer idDocumento , Integer idCarpeta) ;  
+	public Carpeta findByIdcarpeta (Integer IdCarpeta) ;  
+	public void deleteCarpeta(Carpeta carpeta) ; 
+}

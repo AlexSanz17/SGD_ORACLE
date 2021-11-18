@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.20" id="1">
+    <property name="createdBy">Eclipse BIRT Designer Version 2.5.1.v20090903 Build &lt;2.5.1.v20090922-0630></property>
+    <property name="units">in</property>
+    <property name="iconFile">/templates/blank_report.gif</property>
+    <property name="layoutPreference">auto layout</property>
+    <property name="bidiLayoutOrientation">ltr</property>
+    <parameters>
+        <scalar-parameter name="idUnidad" id="27">
+            <property name="valueType">static</property>
+            <property name="dataType">integer</property>
+            <property name="distinct">true</property>
+            <property name="paramType">simple</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+    </parameters>
+    <data-sources>
+        <oda-data-source extensionID="org.eclipse.birt.report.data.oda.jdbc" name="Data Source" id="6">
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>contentBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+                <ex-property>
+                    <name>metadataBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+            </list-property>
+            <property name="odaDriverClass">oracle.jdbc.OracleDriver</property>
+            <property name="odaURL">jdbc:oracle:thin:@11.160.125.15:1521:DESA</property>
+            <property name="odaUser">siged_preprod</property>
+            <encrypted-property name="odaPassword" encryptionID="base64">ZmFjaWxpdG8=</encrypted-property>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set extensionID="org.eclipse.birt.report.data.oda.jdbc.JdbcSelectDataSet" name="Data Set" id="73">
+            <list-property name="parameters">
+                <structure>
+                    <property name="name">id</property>
+                    <property name="paramName">idUnidad</property>
+                    <property name="dataType">integer</property>
+                    <property name="position">1</property>
+                    <property name="isInput">true</property>
+                    <property name="isOutput">false</property>
+                </structure>
+            </list-property>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">NROEXPEDIENTE</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">USUARIO</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">RAZONSOCIAL</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">4</property>
+                        <property name="name">NOMBRE</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">5</property>
+                        <property name="name">NRODOCUMENTO</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">6</property>
+                        <property name="name">FECHACARGOFICIO</property>
+                        <property name="dataType">date-time</property>
+                    </structure>
+                    <structure>
+                        <property name="position">7</property>
+                        <property name="name">FECHAACCION</property>
+                        <property name="dataType">date-time</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">NROEXPEDIENTE</property>
+                    <property name="nativeName">NROEXPEDIENTE</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">USUARIO</property>
+                    <property name="nativeName">USUARIO</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">RAZONSOCIAL</property>
+                    <property name="nativeName">RAZONSOCIAL</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">NOMBRE</property>
+                    <property name="nativeName">NOMBRE</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">5</property>
+                    <property name="name">NRODOCUMENTO</property>
+                    <property name="nativeName">NRODOCUMENTO</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">6</property>
+                    <property name="name">FECHACARGOFICIO</property>
+                    <property name="nativeName">FECHACARGOFICIO</property>
+                    <property name="dataType">date-time</property>
+                </structure>
+                <structure>
+                    <property name="position">7</property>
+                    <property name="name">FECHAACCION</property>
+                    <property name="nativeName">FECHAACCION</property>
+                    <property name="dataType">date-time</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[select e.nroexpediente, u.usuario,c.razonsocial, un.nombre,
+ d.nrodocumento, ex.fechacargoficio,d.fechaaccion  
+ from
+    unidad un , documento d ,expedientesas ex, 
+    expediente e, usuario u , concesionario c,
+    tipodocumento td  
+   WHERE 
+    td.idtipodocumento=d.tipodocumento
+    and td.codigo='ITD' 
+    and ex.idunidad = un.idunidad
+    and c.idconcesionario=e.concesionario
+    and u.idusuario= ex.idusuario
+    and d.expediente = ex.idexpediente
+    and e.idexpediente= ex.idexpediente
+    ---- filtro
+    AND un.idunidad= ?]]></xml-property>
+        </oda-data-set>
+    </data-sets>
+    <styles>
+        <style name="crosstab-cell" id="4">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+        <style name="crosstab" id="5">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+    </styles>
+    <page-setup>
+        <simple-master-page name="Simple MasterPage" id="2">
+            <property name="orientation">landscape</property>
+            <property name="topMargin">1in</property>
+            <property name="leftMargin">0.3020833333333333in</property>
+            <property name="bottomMargin">1in</property>
+            <property name="rightMargin">1.0625in</property>
+        </simple-master-page>
+    </page-setup>
+    <body>
+        <table id="32">
+            <property name="width">9.614583333333334in</property>
+            <property name="dataSet">Data Set</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">NROEXPEDIENTE</property>
+                    <text-property name="displayName">NROEXPEDIENTE</text-property>
+                    <expression name="expression">dataSetRow["NROEXPEDIENTE"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">USUARIO</property>
+                    <text-property name="displayName">USUARIO</text-property>
+                    <expression name="expression">dataSetRow["USUARIO"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">RAZONSOCIAL</property>
+                    <text-property name="displayName">RAZONSOCIAL</text-property>
+                    <expression name="expression">dataSetRow["RAZONSOCIAL"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">NOMBRE</property>
+                    <text-property name="displayName">NOMBRE</text-property>
+                    <expression name="expression">dataSetRow["NOMBRE"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">FECHACARGOFICIO</property>
+                    <text-property name="displayName">FECHACARGOFICIO</text-property>
+                    <expression name="expression">dataSetRow["FECHACARGOFICIO"]</expression>
+                    <property name="dataType">date-time</property>
+                </structure>
+                <structure>
+                    <property name="name">FECHAACCION</property>
+                    <text-property name="displayName">FECHAACCION</text-property>
+                    <expression name="expression">dataSetRow["FECHAACCION"]</expression>
+                    <property name="dataType">date-time</property>
+                </structure>
+            </list-property>
+            <column id="54">
+                <property name="width">1.5416666666666667in</property>
+            </column>
+            <column id="55"/>
+            <column id="56">
+                <property name="width">1.9166666666666667in</property>
+            </column>
+            <column id="57"/>
+            <column id="58"/>
+            <column id="59">
+                <property name="width">2.375in</property>
+            </column>
+            <header>
+                <row id="33">
+                    <property name="fontFamily">"Verdana"</property>
+                    <property name="fontSize">7.5pt</property>
+                    <property name="fontWeight">bold</property>
+                    <cell id="34">
+                        <label id="40">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">N° Expediente</text-property>
+                        </label>
+                    </cell>
+                    <cell id="35">
+                        <label id="60">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Encargado</text-property>
+                        </label>
+                    </cell>
+                    <cell id="36">
+                        <label id="61">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Entidad</text-property>
+                        </label>
+                    </cell>
+                    <cell id="37">
+                        <label id="62">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Unidad Técnica</text-property>
+                        </label>
+                    </cell>
+                    <cell id="38">
+                        <label id="63">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Fecha del cargo de Oficio</text-property>
+                        </label>
+                    </cell>
+                    <cell id="39">
+                        <label id="64">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Recepción de descargos de la entidad</text-property>
+                        </label>
+                    </cell>
+                </row>
+            </header>
+            <detail>
+                <row id="65">
+                    <property name="fontFamily">"Verdana"</property>
+                    <property name="fontSize">8pt</property>
+                    <cell id="41">
+                        <data id="67">
+                            <property name="resultSetColumn">NROEXPEDIENTE</property>
+                        </data>
+                    </cell>
+                    <cell id="42">
+                        <data id="68">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">USUARIO</property>
+                        </data>
+                    </cell>
+                    <cell id="43">
+                        <data id="69">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">RAZONSOCIAL</property>
+                        </data>
+                    </cell>
+                    <cell id="44">
+                        <data id="70">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">NOMBRE</property>
+                        </data>
+                    </cell>
+                    <cell id="45">
+                        <data id="71">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">FECHACARGOFICIO</property>
+                        </data>
+                    </cell>
+                    <cell id="46">
+                        <data id="72">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">FECHAACCION</property>
+                        </data>
+                    </cell>
+                </row>
+            </detail>
+        </table>
+    </body>
+</report>

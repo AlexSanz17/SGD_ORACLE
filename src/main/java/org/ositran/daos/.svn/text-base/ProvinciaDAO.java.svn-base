@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Provincia;
+
+public interface ProvinciaDAO {
+
+   public List<Provincia> buscarTodo();
+
+   public List<Provincia> findByDepartamento(Integer iIdDepartamento);
+
+   public Provincia findObjById(Integer iIdProvincia);
+
+   public Provincia guardarObj(Provincia objProvincia, char cMode);
+}

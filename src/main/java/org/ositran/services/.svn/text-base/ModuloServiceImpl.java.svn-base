@@ -1,0 +1,96 @@
+package org.osinerg.services;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.log4j.Logger;
+import org.osinerg.daos.ModuloDAO;
+import org.osinerg.utils.Constantes;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Modulo;
+
+public class ModuloServiceImpl implements ModuloService {
+
+   private static Logger log = Logger.getLogger(ModuloServiceImpl.class);
+   private ModuloDAO dao;
+   private AuditoriaService srvAuditoria;
+
+   //////////////////////////////////
+   // Constructors                 //
+   //////////////////////////////////
+   public ModuloServiceImpl(ModuloDAO dao) {
+      setDao(dao);
+   }
+
+   //////////////////////////////////
+   // Methods                      //
+   //////////////////////////////////
+   public List<Modulo> findAll() {
+      return getDao().findAll();
+   }
+
+   public List<Modulo> findModulosActivos(){
+	   return getDao().findModuloActivos();
+   }
+   
+   public Map<Integer,String> findMapAll() {
+      List<Modulo> lstModulo = this.findAll();
+      Map<Integer,String> mapModulo = new LinkedHashMap<Integer,String>();
+
+      for (Modulo objModulo : lstModulo) {
+         mapModulo.put(objModulo.getIdmodulo(), objModulo.getNombre());
+      }
+
+      return mapModulo;
+   }
+
+   public Modulo findByIdModulo(Integer iIdModulo) {
+      return getDao().findByIdModulo(iIdModulo);
+   }
+
+   @Transactional
+   public void saveModulo(Modulo objModuloOld, Modulo objModuloNew, String sUsuarioSesion, String sTipoAuditoria) {
+      try {
+         srvAuditoria.aplicarAuditoria(objModuloOld, objModuloNew, sUsuarioSesion, Constantes.AUDITORIA_OPCION_GUARDAR, sTipoAuditoria);
+      } catch (ClassNotFoundException e) {
+         log.error(e.getMessage(), e);
+      }
+
+      objModuloNew = dao.saveModulo(objModuloNew);
+
+      log.debug("Modulo guardado con ID [" + objModuloNew.getIdmodulo() + "] Nombre [" + objModuloNew.getNombre() + "]");
+
+   }
+   
+   @Transactional
+   public void updateEstadoModulo(Integer IdModulo, Character estado){
+	   if(IdModulo==null || estado==null){
+		   log.error("fallo en update Estado Modulo");
+		   return;
+	   }
+	   Modulo obj= this.findByIdModulo(IdModulo);
+	   obj.setEstado(estado);
+	   obj= getDao().saveModulo(obj); 
+	   log.debug("Estado del Modulo con ID [" + obj.getIdmodulo()+ "] actualizado a [" + obj.getEstado() + "]");
+   }
+
+   //////////////////////////////////
+   // Getters and Setters          //
+   //////////////////////////////////
+   public ModuloDAO getDao() {
+      return dao;
+   }
+
+   public void setDao(ModuloDAO dao) {
+      this.dao = dao;
+   }
+
+   public AuditoriaService getSrvAuditoria() {
+      return srvAuditoria;
+   }
+
+   public void setSrvAuditoria(AuditoriaService srvAuditoria) {
+      this.srvAuditoria = srvAuditoria;
+   }
+}

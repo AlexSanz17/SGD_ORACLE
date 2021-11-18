@@ -1,0 +1,3442 @@
+package org.osinerg.actions.dojo;
+
+import org.osinerg.daos.UnidadDAO;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.struts2.ServletActionContext;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.osinerg.common.action.GenericAction;
+import org.osinerg.daos.CourierDAO;
+import org.osinerg.daos.EmpresadestinoDAO;
+import org.osinerg.daos.EstadoDAO;
+import org.osinerg.daos.NotificacionDAO;
+import org.osinerg.daos.ReemplazoDAO;
+import org.osinerg.daos.SalaDAO;
+import org.osinerg.daos.SubmotivoDAO;
+import org.osinerg.daos.UsuariostorDAO;
+import org.osinerg.services.AmbitoenvioService;
+import org.osinerg.services.ConcesionarioService;
+import org.osinerg.services.AuditoriaService;
+import org.osinerg.services.DepartamentoService;
+import org.osinerg.services.DocumentoService;
+import org.osinerg.services.DocumentoxclienteService;
+import org.osinerg.services.EtapaService;
+import org.osinerg.services.ListaService;
+import org.osinerg.services.MensajeriaService;
+import org.osinerg.services.MotivoService;
+import org.osinerg.services.NumeracionService;
+import org.osinerg.services.ParametroService;
+import org.osinerg.services.PlantillaService;
+import org.osinerg.services.ProcesoService;
+import org.osinerg.services.SalaService;
+import org.osinerg.services.SedeService;
+import org.osinerg.services.SupervisorService;
+import org.osinerg.services.TipodocumentoService;
+import org.osinerg.services.TiporesultadoService;
+import org.osinerg.services.TrazabilidaddocumentoService;
+import org.osinerg.services.TipoenvioService;
+import org.osinerg.services.UnidadService;
+import org.osinerg.services.UsuarioService;
+import org.osinerg.services.VocalService;
+import org.osinerg.utils.Constantes;
+
+import com.btg.osinergmin.siged.domain.AmbitoEnvio;
+import com.btg.osinergmin.siged.domain.Auditoria;
+import com.btg.osinergmin.siged.domain.Campo;
+import com.btg.osinergmin.siged.domain.Cliente;
+import com.btg.osinergmin.siged.domain.Concesionario;
+import com.btg.osinergmin.siged.domain.Courier;
+import com.btg.osinergmin.siged.domain.Departamento;
+import com.btg.osinergmin.siged.domain.Distrito;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Documentoxcliente;
+import com.btg.osinergmin.siged.domain.Empresadestino;
+import com.btg.osinergmin.siged.domain.Estado;
+import com.btg.osinergmin.siged.domain.Estadocargo;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Favorito;
+import com.btg.osinergmin.siged.domain.Lista;
+import com.btg.osinergmin.siged.domain.Mensajeria;
+import com.btg.osinergmin.siged.domain.Motivo;
+import com.btg.osinergmin.siged.domain.Notificacion;
+import com.btg.osinergmin.siged.domain.Numeracion;
+import com.btg.osinergmin.siged.domain.Parametro;
+import com.btg.osinergmin.siged.domain.Plantilla;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Provincia;
+import com.btg.osinergmin.siged.domain.Reemplazo;
+import com.btg.osinergmin.siged.domain.Rol;
+import com.btg.osinergmin.siged.domain.Sala;
+import com.btg.osinergmin.siged.domain.Sede;
+import com.btg.osinergmin.siged.domain.Submotivo;
+import com.btg.osinergmin.siged.domain.Supervisor;
+import com.btg.osinergmin.siged.domain.Tipodocumento;
+import com.btg.osinergmin.siged.domain.Tipoenvio;
+import com.btg.osinergmin.siged.domain.Tiporesultado;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Unidad;
+import com.btg.osinergmin.siged.domain.Unidadpeso;
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.btg.osinergmin.siged.domain.Vocal;
+import com.opensymphony.xwork2.ActionContext;
+import org.osinerg.daos.TiporesultadoDAO;
+import java.sql.Timestamp;
+import org.osinerg.daos.EstadocargoDAO;
+import org.osinerg.daos.ExpedienteDAO;
+import org.osinerg.daos.UnidadpesoDAO;
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.services.ClienteService;
+import org.osinerg.services.DistritoService;
+import org.osinerg.services.FavoritoService;
+import org.osinerg.services.ProvinciaService;
+import org.osinerg.services.RolService;
+import org.osinerg.services.TipoidentificacionService;
+import org.osinerg.siged.dto.ProcesoDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import static org.osinerg.utils.StringUtil.isEmpty;
+
+public class AutoCompletarAction extends GenericAction {
+
+    private static Logger log = LoggerFactory.getLogger(AutoCompletarAction.class);
+    
+    private Map<String, Object> mapSession;
+    
+    private int idProceso;
+    private int idSede;
+    private int tipoPlantilla;
+    
+    private Integer iIdExp;
+    private Integer iIdDoc;
+    private Integer iWithoutStor;
+    private Integer iIdCliente;
+    private Integer iIdPlantilla;
+    private Integer idDocumento;
+    private Integer iIdProceso;
+    private Integer iIdUsuario;
+    private Integer iIdUsuarioToOmit;
+    private Integer iIdUnidad;
+    private Integer idCliente;
+    
+    private String sTipoProceso;
+    private String sOpcion;
+    private String origenExpediente;
+    private String fecha;
+    private String tipoBusqueda;
+    private String sFiltroBusqueda;
+    private String mode;
+    private String sTipoDerivacion;
+    private String estado;
+    private String idusuario;
+    private String sNroExpediente;
+    private String sUsuario;
+    private String sModulo;
+    private String sNroDocumento;
+    private String sFechaDesde;
+    private String sFechaHasta;
+    private String sDiasReporte;
+    private String filtro1;
+    private String sNroIdentificacion;
+    private String sRazonSocial;
+    private String sAsunto;
+    private String sTipoIdentificacion;
+    private String idDependencia1;
+    private String idDependencia2;
+    private String idDepartamento;
+    private String idProvincia;
+        
+    private EstadoDAO estadoDao;
+    private NotificacionDAO notificacionDao;
+    private ReemplazoDAO reemplazoDao;
+    private TiporesultadoDAO tiporesultadoDao;
+    private ExpedienteDAO expedienteDao;
+    private UnidadDAO unidadDAO;
+    
+    private FavoritoService favoritoService;
+    private ParametroService srvParametro;
+    private UnidadService srvUnidad;
+    private TrazabilidaddocumentoService srvTrazabilidadDocumento;
+    private DocumentoService srvDocumento;
+    private PlantillaService plantillaService;
+    private UsuarioService srvUsuario;
+    private ProcesoService srvProceso;
+    private TipodocumentoService tipoDocumentoService;
+    private DepartamentoService departamentoService;
+    private TipoidentificacionService tipoIdentificacionService;
+    private DocumentoxclienteService documentoxclienteService;
+    private ClienteService clienteService;
+    private ProvinciaService provinciaService;
+    private DistritoService distritoService;
+    private SalaService salaService;
+    private SedeService sedeService;
+    private EtapaService etapaService;
+    private ListaService listaService;
+    private TipoenvioService tipoEnvioService;
+    private AmbitoenvioService ambitoService;
+    private TiporesultadoService tipoResultadoService;
+    private VocalService vocalService;
+    private RolService srvRol;
+    private AuditoriaService srvAuditoria;
+    private ConcesionarioService srvConcesionario;
+    
+    
+    public void autocompletarRol() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarRol():enviaDatos() ");
+    	
+        List<Rol> lstRol = srvRol.obtenerTodo();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Rol objRol : lstRol) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objRol.getIdrol().intValue()));
+            datos.put("label", objRol.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarUsuarioFinal() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarUsuarioFinal():enviaDatos() ");
+    	
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        List<Usuario> lstUsuario = srvUsuario.getUsuarios();
+
+        for (Usuario objUsuario : lstUsuario) {
+            Map<String, String> datos = new HashMap<String, String>();
+
+            datos.put("id", String.valueOf(objUsuario.getIdusuario().intValue()));
+            datos.put("label", objUsuario.getNombres() + " " + objUsuario.getApellidos());
+
+            l1.add(datos);
+        }
+
+        enviaDatos(l1);
+    }
+
+    public void procesoConcesionario() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - procesoConcesionario():enviaDatos() ");
+    	
+        List<Concesionario> lstConcesionario = srvConcesionario.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Concesionario objConcesionario : lstConcesionario) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objConcesionario.getIdConcesionario().intValue()));
+            datos.put("label", objConcesionario.getRazonSocial());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void obtenerProcesosMP() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerProcesosMP():enviaDatos() ");
+    	
+        List<Proceso> listaProcesos = srvProceso.getLstAutoComplete();
+        log.debug("Se encontraron " + listaProcesos.size() + " procesos.");
+
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        
+        if(mode!= null && mode.equals("todos")){
+        	Map<String, String> datosT = new HashMap<String, String>();
+        	datosT.put("id", Constantes.ID_AREA);
+        	datosT.put("label", Constantes.TODOS_AREA);
+        	l1.add(datosT);
+        }
+        
+        for (Proceso objProceso : listaProcesos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objProceso.getIdproceso().intValue()));
+            datos.put("label", objProceso.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void procesoMesaPartes() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - procesoMesaPartes():enviaDatos() ");
+    	
+        List<Proceso> listaProcesos = srvProceso.getLstAutoComplete();
+        log.debug("Se encontraron " + listaProcesos.size() + " procesos.");
+
+        String tipoProcesoPiloto = srvParametro.findByTipoUnico(Constantes.TIPO_PROCESO_PILOTO).getValor();
+        String tipoProcesoProduccion = srvParametro.findByTipoUnico(Constantes.TIPO_PROCESO_PRODUCCION).getValor();
+
+
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Proceso objProceso : listaProcesos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objProceso.getIdproceso().intValue()));
+            datos.put("label", objProceso.getNombre());
+            datos.put("proceso", objProceso.getNombre());
+            datos.put("areadestino", objProceso.getsUnidad());
+            datos.put("destinatario", objProceso.getsResNombres() + " " + objProceso.getsResApelidos());
+            datos.put("idresponsable", objProceso.getiIdResponsable().toString());
+            datos.put("tipoproceso", objProceso.getsTipoProceso().toLowerCase());
+            datos.put("permitesumilla", String.valueOf(objProceso.getPermitesumilla()));
+            datos.put("ambiente", String.valueOf((objProceso.getProduccion() == null) ? 'N' : objProceso.getProduccion()));
+            datos.put("nombreambiente", objProceso.getProduccion() == null || objProceso.getProduccion().toString().equals("N") ? tipoProcesoPiloto : tipoProcesoProduccion);
+            log.trace("proceso {} ambiente {} real {}", new Object[]{datos.get("proceso"), datos.get("ambiente"), objProceso.getProduccion()});
+
+            if (objProceso.getsTipoProceso().toLowerCase().equals(Constantes.PROCESO_STOR)) {
+                String sTipoDocumento = null;
+
+                if (objProceso.getCodigo().toLowerCase().equals(Constantes.PROCESO_STOR_CODIGO_APELACION)) {
+                    sTipoDocumento = Constantes.TIPO_DOCUMENTO_STOR_APELACION;
+                } else if (objProceso.getCodigo().toLowerCase().equals(Constantes.PROCESO_STOR_CODIGO_QUEJA)) {
+                    sTipoDocumento = Constantes.TIPO_DOCUMENTO_STOR_QUEJA;
+                } else if (objProceso.getCodigo().toLowerCase().equals(Constantes.PROCESO_STOR_CODIGO_MEDIDACAUTELAR)) {
+                    sTipoDocumento = Constantes.TIPO_DOCUMENTO_STOR_MEDIDACAUTELAR;
+                }
+                // log.debug("Codigo de Proceso ["+objProceso.getCodigo()+"] Tipo de Documento ["+sTipoDocumento+"]");
+                if (sTipoDocumento != null) {
+                    Tipodocumento tipoDocumento = tipoDocumentoService.buscarObjPor(sTipoDocumento);
+                    if (tipoDocumento != null) {
+                        datos.put("idtipodocumento", tipoDocumento.getIdtipodocumento().toString());
+                    }
+
+                }
+            }
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void procesoNuevoDocumentoN() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - procesoNuevoDocumentoN():enviaDatos() ");
+    	
+        log.debug("tipo de proceso listar [" + this.origenExpediente + "]");
+
+        List<Proceso> listaProcesos = srvProceso.getProcesoListxOrigen(this.origenExpediente);
+
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        for (Proceso objProceso : listaProcesos) {
+
+            Map<String, String> datos = new HashMap<String, String>();
+
+            datos.put("id", String.valueOf(objProceso.getIdproceso().intValue()));
+            datos.put("label", objProceso.getNombre());
+            datos.put("proceso", objProceso.getNombre());
+            datos.put("areadestino", objProceso.getResponsable().getUnidad().getNombre());
+            datos.put("destinatario", objProceso.getResponsable().getNombres() + " " + objProceso.getResponsable().getApellidos());
+            datos.put("idresponsable", objProceso.getResponsable().getIdusuario().toString());
+            datos.put("tipoproceso", objProceso.getTipoproceso().getNombre().toLowerCase());
+
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+
+    }
+
+    public void buscarCliente() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - buscarCliente():enviaDatos() ");
+    	
+        if (isEmpty(sFiltroBusqueda)) {
+            return;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("filtro de Busqueda [" + sFiltroBusqueda + "]");
+        }
+
+        List<Cliente> lstCliente = clienteService.findLstByCriteria(sFiltroBusqueda);
+
+        if (lstCliente == null) {
+            log.info("No se encontro ningun cliente");
+
+            return;
+        }
+
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        for (Cliente cliente : lstCliente) {
+            Map<String, String> datos = new HashMap<String, String>();
+
+            datos.put("id", cliente.getIdCliente().toString());
+            datos.put("label", cliente.getsNombre());
+            datos.put("tipoidentificacion", cliente.getsTipoIdentificacion());
+            datos.put("numeroidentificacion", cliente.getNumeroIdentificacion());
+
+            l1.add(datos);
+        }
+
+        enviaDatos(l1);
+    }
+
+    public void buscarPara() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - buscarPara():enviaDatos() ");
+    	
+        Integer id = null;
+        /**REN Metodo antiguo para buscar los destinatarios */
+        List<Usuario> lstUsuario = srvUsuario.findAllUF();
+        	
+        mapSession = ActionContext.getContext().getSession();
+        /**REN Metodo nuevo para buscar los destinatarios usando la jerarquia*/
+       /* Usuario user = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+        user = srvUsuario.findByIdUsuario(user.getIdusuario());
+       
+        List<Usuario> lstUsuario = srvUsuario.getDestinatariosXJerarquia(user);*/
+        
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        if (lstUsuario == null || lstUsuario.size() <= 0) {
+            log.info("No se encontro ningun usuario");
+
+            enviaDatos(l1);
+            return;
+        }
+        
+        for (Usuario usuario : lstUsuario) {
+            Map<String, String> datos = new HashMap<String, String>();
+
+            datos.put("id", usuario.getIdusuario().toString());
+            datos.put("label", usuario.getNombres() + " " + usuario.getApellidos());
+            datos.put("nombres", usuario.getNombres() + " " + usuario.getApellidos());
+            l1.add(datos);
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("mode [" + mode + "]");
+        }
+
+        if ("idconcopia".equalsIgnoreCase(mode)) {        	
+            mapSession = ActionContext.getContext().getSession();
+            Integer[] arrIdDoc = (Integer[]) mapSession.get("arrIdDoc");            
+            if (arrIdDoc != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Longitud de la variable arrIdDoc [" + arrIdDoc.length + "] Primer dato [" + arrIdDoc[0] + "]");
+                }
+
+                id = arrIdDoc[0];
+            }
+
+            if (id != null) {
+                Documento documento = srvDocumento.findByIdDocumento(id);
+                Proceso proceso = documento.getExpediente().getProceso();
+
+                for (Lista lista : proceso.getListaList()) {
+                    Map<String, String> datos = new HashMap<String, String>();
+
+                    datos.put("id", "LISTA_" + lista.getIdlista().toString());
+                    datos.put("label", lista.getNombre() + " (Lista)");
+                    datos.put("nombres", lista.getNombre() + " (Lista)");
+                    l1.add(datos);
+                }
+            }
+        }else if("copiaApoyo".equalsIgnoreCase(mode) || "delegar".equalsIgnoreCase(mode)){
+        	Proceso proceso = new Proceso();
+        	log.debug("mode [" + mode + "]"+"iIdProceso"+iIdProceso);
+        	if(iIdProceso != null){
+        		proceso = srvProceso.findByIdProceso(iIdProceso);
+        		for (Lista lista : proceso.getListaList()) {
+                    Map<String, String> datos = new HashMap<String, String>();
+
+                    datos.put("id", "LISTA_" + lista.getIdlista().toString());
+                    datos.put("label", lista.getNombre() + " (Lista)");
+                    datos.put("nombres", lista.getNombre() + " (Lista)");
+                    l1.add(datos);
+                }
+        	}
+        }
+        
+        enviaDatos(l1);
+    }
+
+    public void getFavorito() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - getFavorito():enviaDatos() ");
+    	
+        List<Favorito> lstFavorito = null;
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        Usuario usuarioLogeado = null;
+
+        mapSession = ActionContext.getContext().getSession();
+        usuarioLogeado = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+
+        if (log.isDebugEnabled()) {
+            log.debug("mode [" + mode + "]");
+            log.debug("Buscando favoritos del usuario logeado [" + usuarioLogeado.getUsuario() + "]");
+        }
+
+        lstFavorito = favoritoService.findLstBy(usuarioLogeado.getIdusuario(), Constantes.ESTADO_ACTIVO, mode);
+
+        if (lstFavorito != null && lstFavorito.size() > 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("El usuario [" + usuarioLogeado.getUsuario() + "] tiene [" + lstFavorito.size() + "] favorito(s)");
+            }
+
+            for (Favorito favorito : lstFavorito) {
+                Map<String, String> mapUsuario = new HashMap<String, String>();
+
+                mapUsuario.put("id", favorito.getId());
+                mapUsuario.put("label", favorito.getLabel());
+                mapUsuario.put("nombres", favorito.getLabel());
+                l1.add(mapUsuario);
+            }
+        }
+
+        enviaDatos(l1);
+    }
+
+    /**REN Busca un expediente para referenciarlo ----------------------------------------------------------------------------*/
+    public void buscarExpediente() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - buscarExpediente():enviaDatos() ");
+    	
+        if (log.isDebugEnabled()) {
+            log.debug("Nro de Identificacion [" + sNroIdentificacion + "]");
+            log.debug("Razon Social [" + sRazonSocial + "]");
+            log.debug("Nro de Expediente [" + sNroExpediente + "]");
+            log.debug("Asunto [" + sAsunto + "]");
+            log.debug("Proceso: " + idProceso);
+            log.debug("Fecha: " + fecha);
+            log.debug("tipoBusqueda: " + tipoBusqueda);
+        }
+        mapSession = ActionContext.getContext().getSession();
+        Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+        
+        sNroIdentificacion = (sNroIdentificacion == null) ? "" : sNroIdentificacion;
+        sRazonSocial = (sRazonSocial == null) ? "" : sRazonSocial;
+        sNroExpediente = (sNroExpediente == null) ? "" : sNroExpediente;
+        sAsunto = (sAsunto == null) ? "" : sAsunto;
+        Date fechaBuscar = null;
+        if (fecha != null && !fecha.equals("")) {
+            fechaBuscar = Constantes.FORAMATEADOR_FECHA.parse(fecha);
+        }
+        tipoBusqueda = (tipoBusqueda == null) ? "" : tipoBusqueda;
+        List<Expediente> lstExpediente = expedienteDao.findByCriteria(sNroIdentificacion, sRazonSocial, sNroExpediente, sAsunto, idProceso, fechaBuscar, tipoBusqueda, usuario.getIdusuario());
+        log.info("La busqueda de expediente retorno " + lstExpediente.size() + " resultados.");
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Expediente objExpediente : lstExpediente) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", objExpediente.getIdexpediente().toString());
+            datos.put("label", objExpediente.getNroexpediente());
+            datos.put("nroexpediente", objExpediente.getNroexpediente());
+            datos.put("unidad", objExpediente.getProceso().getResponsable().getUnidad().getNombre());
+            datos.put("idproceso", objExpediente.getProceso().getIdproceso().toString());
+            datos.put("tipoproceso", objExpediente.getProceso().getTipoproceso().getNombre().toLowerCase());
+            datos.put("responsable", objExpediente.getProceso().getResponsable().getNombres() + " " + objExpediente.getProceso().getResponsable().getApellidos());
+            datos.put("tipoidentificacion", objExpediente.getCliente().getTipoIdentificacion().getNombre());
+            datos.put("nroidentificacion", objExpediente.getCliente().getNumeroIdentificacion());
+            datos.put("sumilla", objExpediente.getSumilla() == null ? "" : objExpediente.getSumilla());
+            datos.put("asunto", objExpediente.getAsunto());
+            datos.put("proceso", objExpediente.getProceso().getNombre());
+            datos.put("codigo", objExpediente.getProceso().getCodigo());
+            datos.put("idpropietario", objExpediente.getIdpropietario().getIdusuario().toString());
+            /*if (objExpediente.getEstaenflujo() == null || objExpediente.getEstaenflujo() == 'S') {
+                datos.put("idpropietario", objExpediente.getDocumentoPrincipal().getPropietario().getIdusuario().toString());
+            } else {
+                datos.put("idpropietario", objExpediente.getIdpropietario().getIdusuario().toString());
+            }*/
+
+            if (datos.put("tipoidentificacion", objExpediente.getCliente().getTipoIdentificacion().getNombre()).equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                datos.put("razonsocial", objExpediente.getCliente().getRazonSocial());
+            } else {
+                datos.put("razonsocial", objExpediente.getCliente().getNombres() + " " + objExpediente.getCliente().getApellidoPaterno() + " " + objExpediente.getCliente().getApellidoMaterno());
+            }
+            if (objExpediente.getProceso().getTipoproceso().getNombre().equals(Constantes.TIPO_PROCESO_STOR)) {
+                if (objExpediente.getConcesionario() != null) {
+                    datos.put("ruc", objExpediente.getConcesionario().getRuc());
+                } else {
+                    datos.put("ruc", null);
+                }
+            } else {
+                datos.put("ruc", null);
+            }
+            datos.put("fecha", new SimpleDateFormat("yyyy-MM-dd").format(objExpediente.getFechacreacion()));
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void buscarExpedienteAbierto() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - buscarExpedienteAbierto():enviaDatos() ");
+    	
+        if (iIdCliente == null) {
+            log.error("No se recibio ningun cliente");
+            return;
+        }
+        log.debug("Cliente con ID [" + iIdCliente + "]");
+        iniciarFactorias();
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        List<Expediente> lstExpediente = expedienteDao.buscarLstPor(iIdCliente, Constantes.ESTADO_ACTIVO);
+        if (lstExpediente != null) {
+            log.debug("Numero de expedientes abiertos [" + lstExpediente.size() + "]");
+            List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+            for (Expediente objExpediente : lstExpediente) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", objExpediente.getIdexpediente().toString());
+                datos.put("label", objExpediente.getNroexpediente());
+                datos.put("nroexpediente", objExpediente.getNroexpediente());
+                datos.put("unidad", objExpediente.getsUnidad());
+                datos.put("proceso", objExpediente.getsProceso());
+                datos.put("asunto", objExpediente.getAsunto());
+
+                if (objExpediente.getsConcecionario() != null) {
+                    datos.put("concesionario", objExpediente.getsConcecionario());
+                } else {
+                    datos.put("concesionario", null);
+                }
+                datos.put("fecha", formatoFecha.format(objExpediente.getFechacreacion()));
+                l1.add(datos);
+            }
+            enviaDatos(l1);
+        }
+    }
+
+    public void gridAuditoria() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - gridAuditoria():enviaDatos() ");
+    	
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss aaa");
+        List<Auditoria> listaAuditoria = srvAuditoria.filtrarAuditoria(sNroExpediente, sUsuario, sModulo, sNroDocumento, sFechaDesde, sFechaHasta);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Auditoria objAuditoria : listaAuditoria) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", objAuditoria.getIdAuditoria().toString());
+            datos.put("label", objAuditoria.getTipoAuditoria());
+            datos.put("modulo", objAuditoria.getModulo());
+            datos.put("opcion", objAuditoria.getOpcion());
+            datos.put("campo", objAuditoria.getCampo());
+            datos.put("valor", objAuditoria.getNuevoValor());
+            datos.put("antiguo", objAuditoria.getAntiguoValor());
+            datos.put("actual", objAuditoria.getNuevoValor());
+            datos.put("fecha", formatoFecha.format(objAuditoria.getFechaAudioria()));
+            datos.put("usuario", objAuditoria.getUsuario());
+            if (objAuditoria.getExpediente() != null && objAuditoria.getDocumento() == null && objAuditoria.getProceso() == null) {
+                datos.put("expediente", objAuditoria.getExpediente().getNroexpediente());
+                datos.put("documento", "");
+                datos.put("proceso", "");
+            } else if (objAuditoria.getExpediente() != null && objAuditoria.getDocumento() != null && objAuditoria.getProceso() == null) {
+                datos.put("expediente", objAuditoria.getExpediente().getNroexpediente());
+                datos.put("documento", objAuditoria.getDocumento().getNumeroDocumento());
+                datos.put("proceso", "");
+            } else if (objAuditoria.getExpediente() == null && objAuditoria.getDocumento() == null && objAuditoria.getProceso() == null) {
+                datos.put("expediente", "");
+                datos.put("documento", "");
+                datos.put("proceso", "");
+            } else if (objAuditoria.getExpediente() == null && objAuditoria.getDocumento() == null && objAuditoria.getProceso() == null) {
+                datos.put("expediente", "");
+                datos.put("documento", "");
+                datos.put("proceso", "");
+            } else if (objAuditoria.getExpediente() == null && objAuditoria.getDocumento() == null && objAuditoria.getProceso() != null) {
+                datos.put("expediente", "");
+                datos.put("documento", "");
+                datos.put("proceso", objAuditoria.getProceso().getNombre());
+            }
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    /**REN Llena los datos del proceso en un map, usado para posteriores comprobaciones --------------------------------------*/
+    public void procesoNuevoDocumentoN2() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - procesoNuevoDocumentoN2():enviaDatos() ");
+    	
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+		mapSession = ActionContext.getContext().getSession();
+		Usuario objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		objUsuario = srvUsuario.findByIdUsuario(objUsuario.getIdusuario());
+        try {
+            //List<ProcesoDTO> listaProcesos = srvProceso.buscarProcesosActivosResumen();
+        	List<ProcesoDTO> listaProcesos = srvProceso.buscarProcesosDTOxUsuarioParticipante(objUsuario);
+
+            String tipoProcesoPiloto = srvParametro.findByTipoUnico(Constantes.TIPO_PROCESO_PILOTO).getValor();
+            String tipoProcesoProduccion = srvParametro.findByTipoUnico(Constantes.TIPO_PROCESO_PRODUCCION).getValor();
+
+
+            for (ProcesoDTO proceso : listaProcesos) {
+                Map<String, String> datos = new HashMap<String, String>();
+
+                datos.put("id", (proceso.getIdProceso() == null ? "" : proceso.getIdProceso().toString()) );
+                datos.put("label", proceso.getNombre());
+                datos.put("proceso", proceso.getNombre());
+                datos.put("areadestino", proceso.getUnidadNombre());
+                datos.put("destinatario", proceso.getResponsableNombres() + " " + proceso.getResponsableApellidos());
+                datos.put("idresponsable", (proceso.getResponsableIdUsuario() == null ? "" : proceso.getResponsableIdUsuario().toString()) );
+                datos.put("tipoproceso", proceso.getTipoNombre());
+                datos.put("permitesumilla", (proceso.getPermiteSumilla() ==null ? "" : proceso.getPermiteSumilla().toString()) );
+                //datos.put("unidad", (proceso.getUnidadId() == null ? "" : proceso.getUnidadId().toString()) );
+                datos.put("unidad", objUsuario.getUnidad().getIdunidad().toString() );
+                datos.put("ambiente", (proceso.getProduccion() == null ? "N" : proceso.getProduccion().toString()) );
+                datos.put("nombreambiente", ( (proceso.getProduccion() == null || proceso.getProduccion().equals('N')) ? tipoProcesoPiloto : tipoProcesoProduccion) );
+                datos.put("codigo", proceso.getCodigo());
+                
+                if (log.isDebugEnabled()) {
+                    log.debug("proceso [" + datos.get("proceso") + "] ambiente [" + datos.get("ambiente") + "] real [" + proceso.getProduccion() + "]");
+                }
+
+                l1.add(datos);
+            }
+        } catch (Exception e) {
+            log.error("Error al armar lista de procesos para autocompletar.", e);
+        }
+
+        enviaDatos(l1);
+    }
+
+    public void gridSupervisor() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - gridSupervisor():enviaDatos() ");
+    	
+        log.debug("**********************gridSupervisor*********************************");
+        iniciarFactorias();
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        SupervisorService supervisorService = serviceFactory.getSupervisorService();
+        List<Supervisor> superList = supervisorService.findAll();
+        log.debug("Lista de Supervisor con size [" + superList.size() + "]");
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Supervisor supervisor : superList) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(supervisor.getIdsupervisor().intValue()));
+            log.debug("ID [" + datos.get("id") + "]");
+            // log.debug(String.valueOf(supervisor.getIdsupervisor().intValue()));
+            datos.put("label", supervisor.getExpediente().getNroexpediente());
+            // log.debug(supervisor.getExpediente().getNroexpediente());
+            log.debug("Nro Expediente [" + datos.get("label") + "]");
+            datos.put("documento", supervisor.getDocumento().getNumeroDocumento());
+            log.debug("Nro Documento [" + datos.get("documento") + "]");
+            // log.debug(String.valueOf(supervisor.getDocumento().getIddocumento().intValue()));
+            datos.put("usuario", supervisor.getUsuario().getNombres() + " " + supervisor.getUsuario().getApellidos());
+            log.debug("Usuario [" + datos.get("usuario") + "]");
+            // log.debug(supervisor.getUsuario().getNombres());
+            datos.put("fechaSol", ((supervisor.getFechadsolicitud() != null) ? (formatoFecha.format(supervisor.getFechadsolicitud())) : ""));
+            log.debug("Fecha Solicitud [" + datos.get("fechaSol") + "]");
+            // log.debug("fechaSol: "+
+            // ((supervisor!=null&&supervisor.getFechadsolicitud()!=null)?(formatoFecha.format(
+            // supervisor.getFechadsolicitud())):"") );
+            datos.put("fechaEnt", ((supervisor.getFechadentrega() != null) ? (formatoFecha.format(supervisor.getFechadentrega())) : ""));
+            log.debug("Fecha Entrega [" + datos.get("fechaEnt") + "]");
+            // log.debug("fechaEnt:"+
+            // ((supervisor!=null&&supervisor.getFechadentrega()!=null)?(formatoFecha.format(supervisor.getFechadentrega())):""));
+            datos.put("fechaEvo", ((supervisor.getFechadevolucion() != null) ? formatoFecha.format(supervisor.getFechadevolucion()) : ""));
+            log.debug("Fecha Devolucion [" + datos.get("fechaEvo") + "]");
+            // log.debug("fechaEvo:"+((supervisor!=null&&supervisor.getFechadevolucion()!=null)?formatoFecha.format(supervisor.getFechadevolucion()):""));
+            datos.put("caja", supervisor.getCaja());
+            log.debug("Nro Caja [" + datos.get("caja") + "]");
+            // log.debug(supervisor.getCaja());
+            // datos.put("estado",supervisor.getEstado());
+            // log.debug(supervisor.getEstado());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void gridMensajeria() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - gridMensajeria():enviaDatos() ");
+    	
+        iniciarFactorias();
+        // int aviso=0;
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        MensajeriaService mensajeriaService = serviceFactory.getMensajeriaService();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        if (getEstado() != null) {
+            List<Mensajeria> lismensajeria = mensajeriaService.ViewEstado(getEstado());
+            for (Mensajeria objMensajeria : lismensajeria) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", String.valueOf(objMensajeria.getIdmensajeria()));
+                datos.put("label", objMensajeria.getIdusuario().getNombres() + " " + objMensajeria.getIdusuario().getApellidos());
+                datos.put("numinterno", objMensajeria.getNumerointerno());
+                datos.put("tipodoc", objMensajeria.getTipodocumento());
+                datos.put("numdoc", objMensajeria.getNumerodocumento());
+                datos.put("destinatario", objMensajeria.getDestinatario());
+                datos.put("direcciondestino", objMensajeria.getDirecciondestino());
+                datos.put("asunto", objMensajeria.getAsunto());
+                if (objMensajeria.getEstado() == 'A') {
+                    datos.put("estado", "PENDIENTE");
+                } else {
+                    datos.put("estado", "ENTREGADO");
+                }
+                if (objMensajeria.getEstadoingreso() == '0') {
+                    datos.put("etapa", "MENSAJERIA");
+                }
+                if (objMensajeria.getEstadoingreso() == '1') {
+                    datos.put("etapa", "ENVIADO");
+                }
+                if (objMensajeria.getEstadoingreso() == '2') {
+                    datos.put("etapa", "CARGO RECIBIDO");
+                }
+                if (objMensajeria.getEstadoingreso() == '3') {
+                    datos.put("etapa", "ENTREGADO");
+                }
+                datos.put("fecha", formatoFecha.format(objMensajeria.getFechaderivacion()));
+                datos.put("idusu", objMensajeria.getIdusuario().getIdusuario().toString());
+                l1.add(datos);
+            }
+        }
+        if (getIdusuario() != null) {
+            int Idusuario = Integer.parseInt(getIdusuario());
+            List<Mensajeria> lismensajeria = mensajeriaService.findidusuario(Idusuario);
+            for (Mensajeria objMensajeria : lismensajeria) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", String.valueOf(objMensajeria.getIdmensajeria()));
+                datos.put("label", objMensajeria.getIdusuario().getNombres() + " " + objMensajeria.getIdusuario().getApellidos());
+                datos.put("numinterno", objMensajeria.getNumerointerno());
+                datos.put("tipodoc", objMensajeria.getTipodocumento());
+                datos.put("numdoc", objMensajeria.getNumerodocumento());
+                datos.put("destinatario", objMensajeria.getDestinatario());
+                datos.put("direcciondestino", objMensajeria.getDirecciondestino());
+                datos.put("asunto", objMensajeria.getAsunto());
+                if (objMensajeria.getEstado() == 'A') {
+                    datos.put("estado", "PENDIENTE");
+                } else {
+                    datos.put("estado", "ENTREGADO");
+                }
+                if (objMensajeria.getEstadoingreso() == '0') {
+                    datos.put("etapa", "MENSAJERIA");
+                }
+                if (objMensajeria.getEstadoingreso() == '1') {
+                    datos.put("etapa", "ENVIADO");
+                }
+                if (objMensajeria.getEstadoingreso() == '2') {
+                    datos.put("etapa", "CARGO RECIBIDO");
+                }
+                if (objMensajeria.getEstadoingreso() == '3') {
+                    datos.put("etapa", "ENTREGADO");
+                }
+                datos.put("fecha", formatoFecha.format(objMensajeria.getFechaderivacion()));
+                datos.put("idusu", objMensajeria.getIdusuario().getIdusuario().toString());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void gridReporte() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - gridReporte():enviaDatos() ");
+    	
+        List<Item> listaItem = srvTrazabilidadDocumento.filtrarReporteDocumentos(sFechaDesde, sFechaHasta, sDiasReporte, idSede, idProceso);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        Integer i = 1;
+        for (Item objItem : listaItem) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", (i++).toString());
+            datos.put("label", objItem.getReporteDIG() != null ? objItem.getReporteDIG().toString() : "");
+            datos.put("hora", objItem.getHorarioReporte() != null ? objItem.getHorarioReporte().toString() : "");
+            datos.put("mp", objItem.getReporteMP() != null ? objItem.getReporteMP().toString() : "");
+            datos.put("dig", objItem.getReporteDIG() != null ? objItem.getReporteDIG().toString() : "");
+            datos.put("qas", objItem.getReporteQAS() != null ? objItem.getReporteQAS().toString() : "");
+            datos.put("folios", objItem.getReporteFolios() != null ? objItem.getReporteFolios().toString() : "");
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public String exportarExcel() {
+    	log.debug("-> [Action] AutoCompletarAction - exportarExcel():String ");
+    	
+        List<Item> listaItem = srvTrazabilidadDocumento.filtrarReporteDocumentos(sFechaDesde, sFechaHasta, sDiasReporte, idSede, idProceso);
+        HttpServletResponse response = ServletActionContext.getResponse();
+        StringBuilder html = obtenerExcel(listaItem);
+        String content;
+
+        try {
+            content = new String(html.toString().getBytes("UTF-8"), "UTF-8");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Cache-Control", "no-cache");
+            response.setHeader("Content-Type", "application/vnd.ms-excel");
+            response.addHeader("Content-Disposition", "inline; filename=\"ReporteExportacion.xls\"");
+            ServletOutputStream out;
+            out = response.getOutputStream();
+            out.write(content.getBytes());
+            out.flush();
+        } catch (IOException e1) {
+            log.error(e1.getMessage(), e1);
+        }
+
+        return null;
+    }
+
+    private StringBuilder obtenerExcel(List<Item> listaItem) {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerExcel():StringBuilder ");
+    	
+        StringBuilder cadena = new StringBuilder();
+        Integer cabecera = 0;
+        cadena.append("<html><table><tr></tr>");
+        for (Item objItem : listaItem) {
+            if (cabecera == 1) {
+                cadena.append("<tr><td WIDTH=15></td><td WIDTH=133>Hora</td><td WIDTH=133>Ingresados a MP</td><td WIDTH=133>Ingresados a DIG</td><td WIDTH=133>Ingresados a QAS</td><td WIDTH=50>Nro Folios</td></tr>");
+            }
+            cabecera = cabecera + 1;
+            cadena.append("<tr><td></td><td>");
+            cadena.append(objItem.getHorarioReporte() != null ? objItem.getHorarioReporte().toString() : "");
+            cadena.append("</td><td>");
+            cadena.append(objItem.getReporteMP() != null ? objItem.getReporteMP().toString() : "");
+            cadena.append("</td><td>");
+            cadena.append(objItem.getReporteDIG() != null ? objItem.getReporteDIG().toString() : "");
+            cadena.append("</td><td>");
+            cadena.append(objItem.getReporteQAS() != null ? objItem.getReporteQAS().toString() : "");
+            cadena.append("</td><td>");
+            cadena.append(objItem.getReporteFolios() != null ? objItem.getReporteFolios().toString() : "");
+            cadena.append("</td></tr>");
+            if (objItem.getHorarioReporte() != null && objItem.getHorarioReporte().equals("TOTAL")) {
+                cadena.append("<tr></tr>");
+                cabecera = 0;
+            }
+        }
+        cadena.append("</table></html>");
+        return cadena;
+    }
+
+    
+    public void dataDerivarTo() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - dataDerivarTo():void ");
+
+        log.debug("Tipo de Derivacion [" + sTipoDerivacion + "] Opcion [" + sOpcion + "]");
+        log.debug("en AutoComplit=" + getSTipoDerivacion() + " getSTipoDerivacion().equals(Constantes.DERIVAR_NORMAL): " + getSTipoDerivacion().equals(Constantes.DERIVAR_NORMAL));
+        setMapSession(ActionContext.getContext().getSession());
+        Integer[] arrIdDoc = (Integer[]) getMapSession().get("arrIdDoc");
+
+        // log.debug("  getSOpcion() :)"+getSOpcion()+"  idDoc:"+" iff :"+getSOpcion()!=null&&getSOpcion().equalsIgnoreCase(Constantes.RECHAZAR));
+        if (getSTipoDerivacion().equals(Constantes.DERIVAR_NORMAL)) {
+            int idDoc = 0;
+            Documento documento = null;
+            List<Usuario> lstD = null;
+            Proceso objProceso = null;
+
+            if (arrIdDoc == null) {
+                log.debug("arrIdDoc es null, posiblemente este metodo se este llamando para el caso de plantillas");
+                log.debug("Se recibio proceso con ID [" + iIdProceso + "]");
+                objProceso = srvProceso.findByIdProceso(iIdProceso);
+
+                lstD = srvUsuario.findByParticipacionProceso(objProceso);
+            } else {
+                log.debug("Longitud de arrIdDoc [" + arrIdDoc.length + "] Primer dato [" + arrIdDoc[0] + "]");
+                idDoc = arrIdDoc[0];
+                documento = srvDocumento.findDocExpedienteByIdDocumento(idDoc);
+                objProceso = srvProceso.findByIdProceso(documento.getExpediente().getProceso().getIdproceso());
+
+                lstD = srvUsuario.findByParticipacionProceso(objProceso);
+                log.debug("sOpcion {} idDoc {} iff {}", new Object[]{sOpcion, idDoc, getSOpcion() != null && getSOpcion().equalsIgnoreCase(Constantes.RECHAZAR)});
+            }
+
+            lstD = (lstD == null) ? new ArrayList<Usuario>() : lstD;
+
+            for (Usuario objUsuario : lstD) {
+                log.debug("Usuario participante [" + objUsuario.getUsuario() + "]");
+            }
+
+            log.info("Anexando participantes de Lista...");
+            log.debug("El proceso [" + objProceso.getNombre() + "] tiene [" + objProceso.getListaList().size() + "] lista(s)");
+
+            if (objProceso.getListaList() != null) {
+                for (Lista objLista : objProceso.getListaList()) {
+                    log.debug("Lista [" + objLista.getNombre() + "] tiene [" + objLista.getParticipanteListaList().size() + "] participante(s)");
+
+                    if (objLista.getParticipanteListaList() != null) {
+                        for (Usuario objUsuario : objLista.getParticipanteListaList()) {
+                            boolean contiene = false;
+                            if (objUsuario.getEstado().equals("A")) {
+                                for (Usuario usu : lstD) {
+                                    if (usu.getIdusuario().intValue() == objUsuario.getIdusuario().intValue()) {
+                                        contiene = true;
+                                        break;
+                                    }
+                                }
+                                if (!contiene) {
+                                    log.debug("Agregando usuario [" + objUsuario.getUsuario() + "]");
+                                    lstD.add(objUsuario);
+                                }
+                            }
+                            /*if (!lstD.contains(objUsuario)) {
+                            log.debug("Agregando usuario [" + objUsuario.getUsuario() + "]");
+                            lstD.add(objUsuario);
+                            }*/
+                        }
+                    }
+                }
+            }
+
+            if (getSOpcion() != null && getSOpcion().equalsIgnoreCase(Constantes.RECHAZAR)) {
+                Trazabilidaddocumento trazabilidaddocumento = srvTrazabilidadDocumento.findByMaxNroRegistro(idDoc, Constantes.ACCION_ARCHIVAR, null, null);
+                Usuario usuario = null;
+                if (trazabilidaddocumento.getAccion().getNombre().equalsIgnoreCase(Constantes.ACCION_APROBAR_QAS)) {
+                    usuario = srvUsuario.findByUsuario(Constantes.USUARIO_QAS, trazabilidaddocumento.getRemitente().getUnidad().getSede().getIdsede());
+                } else {
+                    usuario = trazabilidaddocumento.getRemitente();
+                }
+
+                log.debug(" usuario :)" + usuario != null ? usuario.getUsuario() : "nulllll ");
+                lstD = lstD == null ? new ArrayList<Usuario>() : lstD;
+                log.debug("despues lstD:" + lstD.size());
+
+                boolean incluir = true;
+                for (Usuario usuarioAux : lstD) {
+                    if (usuarioAux.equals(usuario)) {
+                        incluir = false;
+                    }
+                }
+                if (incluir) {
+                    log.debug("aun no esta en la lista ");
+                    lstD.add(usuario);
+                } else {
+                    log.debug("ya esta en la lista ");
+                }
+            }
+            loadDataDerivar(lstD);
+        } else if (getSTipoDerivacion().equals(Constantes.DERIVAR_MASIVO)) {
+            // Integer[] docs={1,2};
+            ArrayList<Object> arrayList = srvProceso.cargaUsuarioMasivo(arrIdDoc);
+            loadDataDerivarMasivo(arrayList);
+        }
+//		objTime.stop();
+//		log.debug("Tiempo tomado en dataDerivarTo [" + objTime.getElapsedTime() + "]");
+
+    }
+
+    public void obtenerUsuariosCC() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerUsuariosCC():enviaDatos() ");
+    	
+        List<Usuario> lstParticipanteCC = null;
+        lstParticipanteCC = srvUsuario.getUsuarios();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Usuario objUsuario : lstParticipanteCC) {
+            Map<String, String> reply = new HashMap<String, String>();
+            reply.put("id", "USUARIO_" + objUsuario.getIdusuario().toString());
+            String nombre = (objUsuario.getApellidos() != null && !objUsuario.getApellidos().equals("") && !objUsuario.getApellidos().equals(" ") ? objUsuario.getNombres() + " " + objUsuario.getApellidos() : objUsuario.getNombres());
+            reply.put("label", nombre);
+            l1.add(reply);
+        }
+        enviaDatos(l1);
+    }
+
+
+    public void derivarCC() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - derivarCC():enviaDatos() ");
+    	
+        mapSession = ActionContext.getContext().getSession();
+
+        Documento objDocumento = null;
+        Integer[] arrIdDoc = null;
+        List<Usuario> lstParticipanteCC = null;
+        Proceso objProceso = null;
+
+        arrIdDoc = (Integer[]) mapSession.get("arrIdDoc");
+        log.debug("Longitud de la variable arrIdDoc [" + arrIdDoc.length + "] Primer dato [" + arrIdDoc[0] + "]");
+
+        objDocumento = srvDocumento.findByIdDocumento(arrIdDoc[0]);
+        objProceso = objDocumento.getExpediente().getProceso();
+        log.debug("Trabajando con el proceso [" + objProceso.getNombre() + "] para el Documento con ID [" + objDocumento.getIdDocumento() + "]");
+
+        lstParticipanteCC = srvUsuario.getUsuarios();
+        log.debug("Anexando participantes de Lista...");
+        log.debug("El proceso [" + objProceso.getNombre() + "] tiene [" + objProceso.getListaList().size() + "] lista(s)");
+
+        for (Lista objLista : objProceso.getListaList()) {
+            log.debug("Lista [" + objLista.getNombre() + "] tiene [" + objLista.getParticipanteListaList().size() + "] participante(s)");
+
+            for (Usuario objUsuario : objLista.getParticipanteListaList()) {
+                boolean existe = false;
+
+                for (Usuario usuario : lstParticipanteCC) {
+                    if (usuario.getIdusuario().intValue() == objUsuario.getIdusuario().intValue()) {
+                        existe = true;
+                        break;
+                    }
+                }
+
+                if (!existe) {
+                    log.debug("Agregando usuario [" + objUsuario.getUsuario() + "]");
+                    lstParticipanteCC.add(objUsuario);
+                }
+            }
+        }
+
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        for (Usuario objUsuario : lstParticipanteCC) {
+            Map<String, String> reply = new HashMap<String, String>();
+
+            reply.put("id", "USUARIO_" + objUsuario.getIdusuario().toString());
+            String nombre = (objUsuario.getApellidos() != null && !objUsuario.getApellidos().equals("") && !objUsuario.getApellidos().equals(" ") ? objUsuario.getNombres() + " " + objUsuario.getApellidos() : objUsuario.getNombres());
+            reply.put("label", nombre);
+            l1.add(reply);
+        }
+
+        for (Lista objLista : objProceso.getListaList()) {
+            Map<String, String> reply = new HashMap<String, String>();
+
+            reply.put("id", "LISTA_" + objLista.getIdlista().toString());
+            reply.put("label", objLista.getNombre());
+            l1.add(reply);
+        }
+
+        enviaDatos(l1);
+    }
+
+    @SuppressWarnings("unused")
+	public void derivarCCMasivo() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - derivarCCMasivo():enviaDatos() ");
+    	
+        mapSession = ActionContext.getContext().getSession();
+        Documento objDocumento = null;
+        Integer[] arrIdDoc = null;
+        List<Usuario> lstParticipanteCC = null;
+        Proceso objProceso = null;
+        lstParticipanteCC = srvUsuario.getUsuarios();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Usuario objUsuario : lstParticipanteCC) {
+            Map<String, String> reply = new HashMap<String, String>();
+
+            reply.put("id", "USUARIO_" + objUsuario.getIdusuario().toString());
+            String nombre = (objUsuario.getApellidos() != null && !objUsuario.getApellidos().equals("") && !objUsuario.getApellidos().equals(" ") ? objUsuario.getNombres() + " " + objUsuario.getApellidos() : objUsuario.getNombres());
+            reply.put("label", nombre);
+            l1.add(reply);
+        }
+
+        enviaDatos(l1);
+    }
+
+    public void dataNotificarTo() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - dataNotificarTo():enviaDatos() ");
+    	
+        if (log.isDebugEnabled()) {
+            log.debug("idDocumento [" + idDocumento + "]");
+        }
+
+        Documento documento = srvDocumento.findByIdDocumento(idDocumento);
+        Proceso proceso = documento.getExpediente().getProceso();
+        List<Usuario> lstParticipante = srvProceso.findByIdProceso(proceso.getIdproceso()).getUsuarioList();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        for (Usuario participante : lstParticipante) {
+            Map<String, String> reply = new HashMap<String, String>();
+
+            reply.put("id", participante.getIdusuario().toString());
+            reply.put("label", participante.getNombres() + " " + participante.getApellidos());
+            l1.add(reply);
+        }
+
+        if (proceso.getListaList() != null && proceso.getListaList().size() > 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("El proceso [" + proceso.getNombre() + "] tiene [" + proceso.getListaList().size() + "] lista(s)");
+            }
+
+            for (Lista lista : proceso.getListaList()) {
+                if (lista.getParticipanteListaList() == null || lista.getParticipanteListaList().size() <= 0) {
+                    continue;
+                }
+
+                if (log.isDebugEnabled()) {
+                    log.debug("Lista [" + lista.getNombre() + "] tiene [" + lista.getParticipanteListaList().size() + "] participante(s)");
+                }
+
+                for (Usuario participanteXLista : lista.getParticipanteListaList()) {
+                    boolean existe = false;
+
+                    for (Map<String, String> entry : l1) {
+                        Integer id = Integer.valueOf(entry.get("id"));
+
+                        if (participanteXLista.getIdusuario().intValue() == id.intValue()) {
+                            existe = true;
+                            break;
+                        }
+                    }
+
+                    if (!existe) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Agregando usuario [" + participanteXLista.getUsuario() + "]");
+                        }
+
+                        Map<String, String> reply = new HashMap<String, String>();
+                        reply.put("id", participanteXLista.getIdusuario().toString());
+                        reply.put("label", participanteXLista.getNombres() + " " + participanteXLista.getApellidos());
+                        l1.add(reply);
+                    }
+                }
+            }
+        }
+
+        enviaDatos(l1);
+    }
+
+    private void loadDataDerivarMasivo(ArrayList<Object> lstD) {
+    	log.debug("-> [Action] AutoCompletarAction - loadDataDerivarMasivo():enviaDatos() ");
+    	
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (int i = 0; i < lstD.size(); i++) {
+            Object[] array = (Object[]) lstD.get(i);
+            Map<String, String> reply = new HashMap<String, String>();
+            reply.put("id", array[0].toString());
+            reply.put("label", array[1] + " " + array[2]);
+            l1.add(reply);
+        }
+        enviaDatos(l1);
+    }
+
+    private void loadDataDerivar(List<Usuario> lstD) {
+    	log.debug("-> [Action] AutoCompletarAction - loadDataDerivar():enviaDatos() ");
+    	
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Usuario objC : lstD) {
+            Map<String, String> reply = new HashMap<String, String>();
+            reply.put("id", objC.getIdusuario().toString());
+            String nombre = (objC.getApellidos() != null && !objC.getApellidos().equals("") && !objC.getApellidos().equals(" ") ? objC.getNombres() + " " + objC.getApellidos() : objC.getNombres());
+            reply.put("label", nombre);
+            //reply.put("label",objC.getNombres());
+            l1.add(reply);
+        }
+        enviaDatos(l1);
+    }
+
+    public void tipoDocumentoMesaPartes() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - tipoDocumentoMesaPartes():enviaDatos() ");
+    	
+        List<Tipodocumento> listaTipoDocumentos = tipoDocumentoService.findAll(iWithoutStor);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        for (Tipodocumento objTipoDocumento : listaTipoDocumentos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objTipoDocumento.getIdtipodocumento().intValue()));
+            datos.put("label", objTipoDocumento.getNombre());
+            datos.put("tiponumeracion", (Constantes.SIN_NUMERACION));
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+    
+    public void autocompletarTipoDocumentoTodos() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarTipoDocumentoTodos():enviaDatos() ");
+    	
+        List<Tipodocumento> listaTipoDocumentos = tipoDocumentoService.findAll(iWithoutStor);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        Map<String, String> datosT = new HashMap<String, String>();
+    	datosT.put("id", Constantes.ID_TIPO_DOCUMENTO);
+    	datosT.put("label", Constantes.TODOS_TIPO_DOCUMENTO);
+    	datosT.put("tiponumeracion", (Constantes.SIN_NUMERACION));
+    	l1.add(datosT);
+        for (Tipodocumento objTipoDocumento : listaTipoDocumentos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objTipoDocumento.getIdtipodocumento().intValue()));
+            datos.put("label", objTipoDocumento.getNombre());
+            datos.put("tiponumeracion", (Constantes.SIN_NUMERACION));
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+    
+    public void autocompletarPrioridadTodos() throws Exception{
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarPrioridadTodos():enviaDatos() ");
+
+    	List<Parametro> listaPrioridades = srvParametro.findAll(iWithoutStor);
+    	List<Map<String, String>> l1= new LinkedList<Map<String,String>>();
+    	Map<String, String> datosT = new HashMap<String, String>();
+    	datosT.put("id", Constantes.ID_PRIORIDAD);
+    	datosT.put("label", Constantes.TODOS_PRIORIDAD);
+    	l1.add(datosT);
+    	for (Parametro objParametro: listaPrioridades) {
+    		if((String.valueOf(objParametro.getTipo()).trim()).equals("prioridad")){
+    			Map<String, String> datos = new HashMap<String,String>();
+    			datos.put("id", String.valueOf(objParametro.getValor()));
+    			//datos.put("id", String.valueOf(objParametro.getIdparametro().intValue()));
+    			datos.put("label", objParametro.getDescripcion());			
+    			l1.add(datos);
+    		}    		 
+    	}
+    	enviaDatos(l1);
+    }
+
+    public void tipoDocumentoAdjuntarConMetadata() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - tipoDocumentoAdjuntarConMetadata():enviaDatos() ");
+    	
+        List<Tipodocumento> listaTipoDocumentos = tipoDocumentoService.findAll(iWithoutStor);
+        //Usuario usuario=(Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+
+        //Map parametros = ActionContext.getContext().getParameters() ;
+        //Integer unidadId  = new Integer ( ((String [])parametros.get("unidad"))[0] ) ;
+        //Unidad unidad =	unidadService.buscarObjPor(unidadId);
+
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        for (Tipodocumento objTipoDocumento : listaTipoDocumentos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objTipoDocumento.getIdtipodocumento().intValue()));
+            datos.put("label", objTipoDocumento.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+
+    }
+
+    /**REN Busca numeraciones del documento. Usado en "Subir con Metadata"*/
+    @SuppressWarnings("unchecked")
+    public void getNumeracion() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - getNumeracion():enviaDatosJson() ");
+    	
+    	log.debug("Buscando numeraci�n para un documento");
+        iniciarFactorias();
+        NumeracionService numeracionService = serviceFactory.getNumeracionService();
+        Map<String, Object> parametros = ActionContext.getContext().getParameters();
+        Integer unidadId = new Integer(((String[]) parametros.get("unidad"))[0]);
+        Integer tipodocumento = new Integer(((String[]) parametros.get("tipodocumento"))[0]);
+        UnidadService unidadService = serviceFactory.getUnidadService();
+//		Unidad unidad =	unidadService.buscarObjPor(unidadId);  
+        Unidad unidad = unidadService.findDependenciaByIdunidad(unidadId);
+        Numeracion num = numeracionService.findByIdbyUnidad(unidad, tipodocumento);
+
+        //if(num!=null){
+        JSONObject jsonObj = new JSONObject();
+        jsonObj.put("tiponumeracion", (num != null ? num.getTiponumeracion().toString() : Constantes.SIN_NUMERACION));
+        jsonObj.put("firmante", (num != null ? num.getFirmante().toString() : Constantes.SIN_NUMERACION));
+        jsonObj.put("destinatario", (num != null ? num.getDestinatario().toString() : Constantes.SIN_NUMERACION));
+        enviaDatosJson(jsonObj.toString());
+        //}
+
+    }
+
+    public void tipoDocumentoPlantilla() {
+    	log.debug("-> [Action] AutoCompletarAction - tipoDocumentoPlantilla():enviaDatos() ");
+    	
+        iniciarFactorias();
+        TipodocumentoService tipoDocumentoService = serviceFactory.getTipoDocumentoService();
+        List<Tipodocumento> listaTipoDocumentos = tipoDocumentoService.getTiposPlantilla();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        NumeracionService numeracionService = serviceFactory.getNumeracionService();
+        Numeracion num = null;
+//      UnidadService unidadService =  serviceFactory.getUnidadService();
+//      log.debug("iIdUnidad [" + iIdUnidad + "]");
+//      Unidad unidad =	unidadService.buscarObjPor(iIdUnidad);
+
+        Usuario usuario = (Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+        usuario = srvUsuario.findByIdUsuario(usuario.getIdusuario());
+
+        for (Tipodocumento objTipoDocumento : listaTipoDocumentos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", objTipoDocumento.getIdtipodocumento().toString());
+            datos.put("label", objTipoDocumento.getNombre());
+
+            num = numeracionService.findByIdbyUnidad(usuario.getUnidad(), objTipoDocumento.getIdtipodocumento());
+            //datos.put("tiponumeracion",objTipoDocumento.getTiponumeracion());
+            datos.put("tiponumeracion", num.getTiponumeracion().toString());
+            datos.put("firmante", (num != null ? num.getFirmante().toString() : Constantes.SIN_NUMERACION));
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void listaSedes() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - listaSedes():enviaDatos() ");
+    	
+        List<Sede> listaSedes = sedeService.obtenerTodo();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Sede objSede : listaSedes) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objSede.getIdsede().intValue()));
+            datos.put("label", objSede.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void listaDepartamentos() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - listaDepartamentos():enviaDatos() ");
+    	
+        List<Departamento> listaDepartamentos = departamentoService.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Departamento objDepartamento : listaDepartamentos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objDepartamento.getIddepartamento().intValue()));
+            datos.put("label", objDepartamento.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void listaProvincias() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - listaProvincias():enviaDatos() ");
+    	
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        if (!isEmpty(idDepartamento)) {
+            List<Provincia> listaProvincias = provinciaService.findLstBy(Integer.valueOf(idDepartamento));
+            for (Provincia obj : listaProvincias) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", String.valueOf(obj.getIdprovincia().intValue()));
+                datos.put("label", obj.getNombre());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void listaDistritos() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - listaDistritos():enviaDatos() ");
+    	
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        if (!isEmpty(idProvincia)) {
+            List<Distrito> listaDistritos = distritoService.findLstBy(Integer.valueOf(idProvincia));
+            for (Distrito obj : listaDistritos) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", String.valueOf(obj.getIddistrito().intValue()));
+                datos.put("label", obj.getNombre());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void listaMotivos() {
+    	log.debug("-> [Action] AutoCompletarAction - listaMotivos():enviaDatos() ");
+    	
+        // FIXME inyectar por spring, por alguna extraña razon no puedo
+        iniciarFactorias();
+        MotivoService motivoService = (MotivoService) beanFactory.getBean("motivoService");
+        List<Motivo> listaMotivos = motivoService.encontrarPorProceso(idProceso);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Motivo obj : listaMotivos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdmotivo().intValue()));
+            datos.put("label", obj.getDescripcion());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void listaSubMotivos() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - listaSubMotivos():enviaDatos() ");
+    	
+        iniciarFactorias();
+        SubmotivoDAO daoSubMotivo = (SubmotivoDAO) beanFactory.getBean("submotivoDAO");
+        List<Submotivo> listaSubMotivos = daoSubMotivo.findByMotivo(Integer.valueOf(idDependencia1));
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Submotivo obj : listaSubMotivos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdsubmotivo().intValue()));
+            datos.put("label", obj.getDescripcion());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarResponsableTecnico() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarResponsableTecnico():enviaDatos() ");
+    	
+        iniciarFactorias();
+        UsuariostorDAO usDao = (UsuariostorDAO) beanFactory.getBean("usuariostorDAO");
+        List<Usuario> lstRevTecs = usDao.getRevisoresTecnicosBySala(idDependencia1);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Usuario obj : lstRevTecs) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdusuario()));
+            datos.put("label", obj.getNombres() + " " + obj.getApellidos());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarAnalistaStor() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarAnalistaStor():enviaDatos() ");
+    	
+        iniciarFactorias();
+        SalaDAO salaDAO = (SalaDAO) beanFactory.getBean("salaDAO");
+        UsuariostorDAO usDao = (UsuariostorDAO) beanFactory.getBean("usuariostorDAO");
+        List<Sala> lstSalas = salaDAO.findAll();
+        log.info("CANTIDAD DE SALAS: " + lstSalas.size());
+        List<Usuario> lstAnalistas = null;
+        if (idDependencia2 != null && idDependencia2.equalsIgnoreCase("si")) {
+            log.info("SELECCIONAR ANALISTAS DE OTRA SALA");
+            for (Sala objSala : lstSalas) {
+                if (!objSala.getIdsala().toString().equalsIgnoreCase(idDependencia1)) {
+                    log.info("LISTANDO ANALISTAS DE LA SALA: " + objSala.getIdsala().toString());
+                    if (lstAnalistas == null) {
+                        lstAnalistas = usDao.getAnalistasBySala(objSala.getIdsala().toString());
+                    } else {
+                        List<Usuario> lstAnalistasAux = usDao.getAnalistasBySala(objSala.getIdsala().toString());
+                        log.info("ANALISTA ANTES DE FOR: " + lstAnalistas.size());
+                        for (int i = 0; i < lstAnalistasAux.size(); i++) {
+                            lstAnalistas.add(lstAnalistasAux.get(i));
+                        }
+                        log.info("ANALISTA ANTES DE FOR: " + lstAnalistas.size());
+                    }
+                }
+            }
+        } else {
+            log.info("SELECCIONAR ANALISTAS DE LA SALA SELECCIONADA");
+            lstAnalistas = usDao.getAnalistasBySala(idDependencia1);
+        }
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Usuario obj : lstAnalistas) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdusuario()));
+            datos.put("label", obj.getNombres() + " " + obj.getApellidos());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarSala() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarSala():enviaDatos() ");
+    	
+        iniciarFactorias();
+        SalaDAO daoSal = (SalaDAO) beanFactory.getBean("salaDAO");
+        List<Sala> listaSalas = daoSal.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Sala obj : listaSalas) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdsala()));
+            datos.put("label", obj.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarAmbitoenvio() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarAmbitoenvio():enviaDatos() ");
+    	
+        iniciarFactorias();
+        List<AmbitoEnvio> lstAmbito = ambitoService.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (AmbitoEnvio obj : lstAmbito) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", obj.getIdambitoenvio().toString());
+            datos.put("label", obj.getNomambitoenvio());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarEmpresadestino() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarEmpresadestino():enviaDatos() ");
+    	
+        iniciarFactorias();
+        EmpresadestinoDAO edDao = (EmpresadestinoDAO) beanFactory.getBean("empresadestinoDAO");
+        List<Empresadestino> lsempdes = edDao.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Empresadestino obj : lsempdes) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", obj.getCodigo());
+            datos.put("label", obj.getNombre());
+            datos.put("nombre", obj.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarCourrier() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarCourrier():enviaDatos() ");
+    	
+        iniciarFactorias();
+        CourierDAO crDao = (CourierDAO) beanFactory.getBean("courierDAO");
+        List<Courier> lsempdes = crDao.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Courier obj : lsempdes) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", obj.getCodigo());
+            datos.put("label", obj.getNombreCourrier());
+            datos.put("nombre", obj.getNombreCourrier());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarUnidadPeso() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarUnidadPeso():enviaDatos() ");
+    	
+        iniciarFactorias();
+        UnidadpesoDAO dao = (UnidadpesoDAO) beanFactory.getBean("unidadpesoDAO");
+        List<Unidadpeso> lstUnidadPeso = dao.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Unidadpeso obj : lstUnidadPeso) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", obj.getNombrepeso().trim());
+            datos.put("label", obj.getNombrepeso().trim());
+            datos.put("nombre", obj.getNombrepeso().trim());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarEstadoCargo() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarEstadoCargo():enviaDatos() ");
+    	
+        iniciarFactorias();
+        EstadocargoDAO dao = (EstadocargoDAO) beanFactory.getBean("estadocargoDAO");
+        List<Estadocargo> lstEstadoCargo = dao.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Estadocargo obj : lstEstadoCargo) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", obj.getNombreestado().trim());
+            datos.put("label", obj.getNombreestado().trim());
+            datos.put("nombre", obj.getNombreestado().trim());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void obtenerRevisorLegalStor() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerRevisorLegalStor():enviaDatos() ");
+    	
+        iniciarFactorias();
+        UsuariostorDAO usDao = (UsuariostorDAO) beanFactory.getBean("usuariostorDAO");
+        List<Usuario> lstRevLegs = usDao.getRevisoresLegalesBySala(idDependencia1);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Usuario obj : lstRevLegs) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdusuario()));
+            datos.put("label", obj.getNombres() + " " + obj.getApellidos());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void obtenerTipoResultadoResolucionJaru() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerTipoResultadoResolucionJaru():enviaDatos() ");
+    	
+        List<Tiporesultado> listTResultados = tiporesultadoDao.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Tiporesultado objTR : listTResultados) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objTR.getIdtiporesultado()));
+            datos.put("label", objTR.getResultado());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    // Este metodo devuelve todos los procesos donde el usuario logueado esta
+    // participando
+    // en caso se quisiera para un usuario especifico deberian crear su propio
+    // metodo
+    // no se modifica los querys en el dao para no quitarle generalidad
+    public void autocompletarProcesoParticipante() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarProcesoParticipante():void ");
+    	
+        log.debug("autocomplete filtro1=" + this.filtro1);
+        Usuario usuario = (Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+        this.autocompletarProcesoParticipantexUsuario(usuario, (this.filtro1 != null && (this.filtro1.equalsIgnoreCase("todos") || this.filtro1.equalsIgnoreCase("mio"))) ? true : false);
+    }
+
+    public void autocompletarProcesoParticipantexParametro() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarProcesoParticipantexParametro():void ");
+    	
+        iniciarFactorias();
+        Usuario usuario = srvUsuario.findByIdUsuario(Integer.valueOf(idDependencia1));
+        this.autocompletarProcesoParticipantexUsuario(usuario, false);
+    }
+
+    public void autocompletarProcesoParticipantexUsuario(Usuario usuario, boolean esTodos) {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarProcesoParticipantexUsuario():enviaDatos() ");
+    	
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        List<Proceso> listaProcesos;
+        listaProcesos = srvProceso.buscarProcesosxUsuarioParticipante(usuario);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Proceso obj : listaProcesos) {
+            List<Reemplazo> listaReemplazos = reemplazoDao.findByIdreemplazadoIdproceso(obj.getIdproceso(), usuario.getIdusuario());
+            Reemplazo reemplazo = null;
+            if (listaReemplazos.size() != 0) {
+                reemplazo = listaReemplazos.get(0);
+            }
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdproceso()));
+            datos.put("label", obj.getNombre());
+            datos.put("idresponsable", obj.getResponsable().getIdusuario().toString());
+            if (reemplazo != null) {
+                if (reemplazo.getFechainicialreemplazo() != null) {
+                    datos.put("fechainicio", formatoFecha.format(reemplazo.getFechainicialreemplazo()));
+                }
+                if (reemplazo.getFechafinalreemplazo() != null) {
+                    datos.put("fechafin", formatoFecha.format(reemplazo.getFechafinalreemplazo()));
+                }
+                datos.put("idreemplazo", reemplazo.getIdusuario().getIdusuario().toString());
+                Usuario usuarioTemporal = srvUsuario.findByIdUsuario(reemplazo.getIdusuario().getIdusuario());
+                datos.put("reemplazo", usuarioTemporal.getNombres() + " " + usuarioTemporal.getApellidos());
+                datos.put("estado", String.valueOf(reemplazo.getEstado()));
+            }
+            // datos.put("idreemplazante",aca llenamos el posible participante
+            // por proceso y por usuario que deberia ser unico);
+            l1.add(datos);
+        }
+        if (esTodos) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", Constantes.ID_TODOS_MIS_PROCESOS);
+            datos.put("label", Constantes.TODOS_MIS_PROCESOS);
+            l1.add(datos);
+            // this.iIdProceso =3 ;
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarProcesoPorUsuario() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarProcesoPorUsuario():enviaDatos() ");
+    	
+        if (iIdUsuario == null) {
+            log.debug("No se recibio ningun usuario");
+
+            return;
+        }
+
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        List<Proceso> lstProceso = null;
+        Usuario objParticipante = null;
+
+        log.debug("Procesos a buscar del usuario con ID [" + iIdUsuario + "]");
+
+        objParticipante = srvUsuario.findByIdUsuario(iIdUsuario);
+        lstProceso = srvProceso.findLstBy(objParticipante);
+        log.debug("El usuario [" + objParticipante.getUsuario() + "] participa en [" + (lstProceso == null ? "0" : lstProceso.size()) + "] proceso(s)");
+
+        if (lstProceso != null) {
+            for (Proceso objProceso : lstProceso) {
+                Map<String, String> datos = new HashMap<String, String>();
+
+                datos.put("id", String.valueOf(objProceso.getIdproceso()));
+                datos.put("label", objProceso.getNombre());
+
+                l1.add(datos);
+            }
+        }
+
+        enviaDatos(l1);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void enviaGridReemplazo() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - enviaGridReemplazo():void ");
+    	
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            Usuario usuario = (Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+            reemplazoDao.deleteByIdreemplazado(usuario.getIdusuario());
+            log.debug(idDependencia1);
+            Object obj = JSONValue.parse(idDependencia1);
+            JSONObject objeto = (JSONObject) obj;
+            JSONArray items = (JSONArray) objeto.get("items");
+            Iterator<JSONObject> iter = items.iterator();
+            while (iter.hasNext()) {
+                JSONObject item = iter.next();
+                log.debug("item {}", item);
+                Reemplazo reemplazo = new Reemplazo();
+                reemplazo.setEstado('A');
+                reemplazo.setFechafinalreemplazo(new Timestamp(formatoFecha.parse((String) item.get("fechafin")).getTime()));
+                reemplazo.setFechainicialreemplazo(new Timestamp(formatoFecha.parse((String) item.get("fechainicio")).getTime()));
+                reemplazo.setIdreemplazado(usuario.getIdusuario());
+                log.debug("item.get('idreemplazo') {}", item.get("idreemplazo"));
+                // Usuario
+                // usuariotemp=usuarioService.findByIdUsuario(Integer.valueOf(item.get("idreemplazo").toString()));
+                reemplazo.setIdproceso(Integer.valueOf(item.get("id").toString()));
+                log.debug("item {}", item);
+                reemplazoDao.saveReemplazo(reemplazo);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    // Este metodo solo devuelve los usuariosxproceso pero no incluye al usuario
+    // logueado
+    // Si quieren un metodo que saque todos los usuarios seria cuestion de hacer
+    // uno nuevo y comentar
+    // la linea que dice remove
+    public void autocompletarUsuarioxProceso() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarUsuarioxProceso():void ");
+    	
+        Usuario usuario = (Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+
+        if (iIdUsuarioToOmit != null) {
+            usuario = srvUsuario.findByIdUsuario(iIdUsuarioToOmit);
+
+            log.debug("Usuario a omitir [" + usuario.getUsuario() + "]");
+        }
+
+        autocompletarUsuarioxProcesoSinUsuario(usuario);
+    }
+
+    public void autocompletarUsuarioxProcesoSinUsuarioParametro() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarUsuarioxProcesoSinUsuarioParametro():void ");
+    	
+        Usuario usuario = srvUsuario.findByIdUsuario(Integer.valueOf(idDependencia2));
+        autocompletarUsuarioxProcesoSinUsuario(usuario);
+    }
+
+    @SuppressWarnings("unused")
+	public void autocompletarUsuarioxProcesoSinUsuario(Usuario usuario) throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarUsuarioxProcesoSinUsuario():enviaDatos() ");
+    	
+        Proceso proceso = srvProceso.findByIdProceso(Integer.decode(idDependencia1));
+        List<Usuario> listaUsuarios = srvUsuario.getUsuarios();
+        listaUsuarios.remove(usuario);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Usuario obj : listaUsuarios) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdusuario()));
+            datos.put("label", obj.getNombres() + " " + obj.getApellidos());
+            // XXX que es esto?
+            datos.put("fecha", "11/12/2005");
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    //erik
+    public void autocompletarUsuarioxProcesoConUsuario() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarUsuarioxProcesoConUsuario():enviaDatos() ");
+    	
+//		Measurement objTime = new Measurement();
+//		objTime.start();
+        String idProceso = ServletActionContext.getRequest().getParameter("idProceso");
+        String multiple = ServletActionContext.getRequest().getParameter("multiple");
+
+        Proceso proceso = srvProceso.findByIdProceso(Integer.decode(idProceso));
+        List<Usuario> listaUsuarios = srvUsuario.getUsuarios();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+
+        if (multiple == null) {
+
+            for (Usuario obj : listaUsuarios) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", String.valueOf(obj.getIdusuario()));
+                String nombre = (obj.getApellidos() != null && !obj.getApellidos().equals("") && !obj.getApellidos().equals(" ") ? obj.getNombres() + " " + obj.getApellidos() : obj.getNombres());
+                datos.put("label", nombre);
+                // XXX que es esto?
+                datos.put("fecha", "11/12/2005");
+                l1.add(datos);
+            }
+
+        } else {
+            if (multiple.equals("si")) {
+
+                for (Usuario objUsuario : listaUsuarios) {
+                    Map<String, String> reply = new HashMap<String, String>();
+
+                    reply.put("id", "USUARIO_" + objUsuario.getIdusuario().toString());
+                    String nombre = (objUsuario.getApellidos() != null && !objUsuario.getApellidos().equals("") && !objUsuario.getApellidos().equals(" ") ? objUsuario.getNombres() + " " + objUsuario.getApellidos() : objUsuario.getNombres());
+                    reply.put("label", nombre);
+
+                    boolean contiene = false;
+                    for (Map<String, String> entry : l1) {
+                        if (entry.containsValue(reply.get("id"))) {
+                            contiene = true;
+                            break;
+                        }
+                    }
+                    if (!contiene) {
+                        l1.add(reply);
+                    }
+                }
+
+                for (Lista objLista : proceso.getListaList()) {
+                    Map<String, String> reply = new HashMap<String, String>();
+                    reply.put("id", "LISTA_" + objLista.getIdlista().toString());
+                    reply.put("label", objLista.getNombre());
+
+                    boolean contieneLISTA = false;
+                    for (Map<String, String> entry : l1) {
+                        if (entry.containsValue(reply.get("id"))) {
+                            contieneLISTA = true;
+                            break;
+                        }
+                    }
+                    if (!contieneLISTA) {
+                        l1.add(reply);
+                    }
+                    Lista objListaAux = listaService.findByIdLista(objLista.getIdlista());
+                    for (Usuario usuario : objListaAux.getParticipanteListaList()) {
+                        if (usuario.getEstado().equals("A")) {
+                            log.debug("idUsuario {} nombres {} estado {}", new Object[]{usuario.getIdusuario(), usuario.getNombres(), usuario.getEstado()});
+                            reply = new HashMap<String, String>();
+                            reply.put("id", "USUARIO_" + usuario.getIdusuario().toString());
+                            String nombre = (usuario.getApellidos() != null && !usuario.getApellidos().equals("") && !usuario.getApellidos().equals(" ") ? usuario.getNombres() + " " + usuario.getApellidos() : usuario.getNombres());
+                            reply.put("label", nombre);
+
+                            boolean contieneUSUARIO = false;
+                            for (Map<String, String> entry : l1) {
+                                if (entry.containsValue(reply.get("id"))) {
+                                    contieneUSUARIO = true;
+                                    break;
+                                }
+                            }
+                            if (!contieneUSUARIO) {
+                                l1.add(reply);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+//		objTime.stop();
+//		log.debug("Tiempo tomado en autocompletarUsuarioxProcesoConUsuario [" + objTime.getElapsedTime() + "]");
+
+        enviaDatos(l1);
+    }
+
+    public void recibeNotificacionesLogueado() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - recibeNotificacionesLogueado():enviaDatos() ");
+    	
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+        Usuario usuario = (Usuario) ActionContext.getContext().getSession().get(Constantes.SESSION_USUARIO);
+        List<Notificacion> listaNotificaciones = notificacionDao.obtenerNotificacionesxUsuario(usuario.getIdusuario());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Notificacion obj : listaNotificaciones) {
+            Map<String, String> datos = new HashMap<String, String>();
+            if (obj.getIddocumento() != null) {
+                datos.put("id", String.valueOf(obj.getIdnotificacion()));
+                datos.put("label", obj.getAsunto());
+                datos.put("fechanotificacion", formatoFecha.format(obj.getFechanotificacion()));
+                datos.put("contenido", obj.getContenido());
+                datos.put("iddocumento", obj.getIddocumento().getIdDocumento().toString());
+                datos.put("tiponotificacion", String.valueOf(obj.getTiponotificacion()));
+                datos.put("estado", String.valueOf(obj.getEstado()));
+                l1.add(datos);
+            } else {
+                datos.put("id", String.valueOf(obj.getIdnotificacion()));
+                datos.put("label", obj.getAsunto());
+                datos.put("fechanotificacion", formatoFecha.format(obj.getFechanotificacion()));
+                datos.put("contenido", obj.getContenido());
+                datos.put("iddocumento", "");
+                datos.put("tiponotificacion", String.valueOf(obj.getTiponotificacion()));
+                datos.put("estado", String.valueOf(obj.getEstado()));
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void findClientesbyIdDocumento() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - findClientesbyIdDocumento():enviaDatos() ");
+    	
+        //Integer idDocumento = this.idDocumento;
+
+        List<Documentoxcliente> listaDocumentoxCliente = documentoxclienteService.findClientesbyIdDocumento(this.idDocumento);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        log.debug("sTipoIdentificacion [" + getSTipoIdentificacion() + "]");
+
+        if (listaDocumentoxCliente != null) {
+            log.debug("Nro de Documentos por cliente encontrados [" + listaDocumentoxCliente.size() + "]");
+            for (Documentoxcliente objDxC : listaDocumentoxCliente) {
+                Map<String, String> reply = new HashMap<String, String>();
+                reply.put("tipoidentificacion", objDxC.getCliente().getTipoIdentificacion().getNombre());
+                reply.put("id", objDxC.getCliente().getNumeroIdentificacion());
+                if (objDxC.getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                	
+			        reply.put("label", objDxC.getCliente().getTipoIdentificacion().getNombre() + " - " + objDxC.getCliente().getNumeroIdentificacion() + " - " + objDxC.getCliente().getRazonSocial());
+                } else if (objDxC.getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || objDxC.getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+                    String sNombreCompleto=objDxC.getCliente().getNombres() + (objDxC.getCliente().getApellidoPaterno()== null ? "" : " " + objDxC.getCliente().getApellidoPaterno());
+                    sNombreCompleto += objDxC.getCliente().getApellidoMaterno() == null ? "" : " " + objDxC.getCliente().getApellidoMaterno();
+                    reply.put("label", objDxC.getCliente().getTipoIdentificacion().getNombre() + " - " + objDxC.getCliente().getNumeroIdentificacion() + " - " + sNombreCompleto);
+                }
+                reply.put("idcliente", objDxC.getCliente().getIdCliente().toString());
+                String razonSocial = objDxC.getCliente().getRazonSocial();
+                reply.put("razonsocial", razonSocial == null ? "" : razonSocial);
+                reply.put("direccionp", objDxC.getCliente().getDireccionPrincipal() == null ? "" : objDxC.getCliente().getDireccionPrincipal());
+
+                if (objDxC.getCliente().getIdDistritoUP() != null) {
+                    reply.put("iddistrito", objDxC.getCliente().getIdDistritoUP().toString());
+                    reply.put("distrito", objDxC.getCliente().getSDistritoUP());
+                    if (objDxC.getCliente().getIdProvinciaUP() != null) {
+                        reply.put("idprovincia", objDxC.getCliente().getIdProvinciaUP().toString());
+                        reply.put("provincia", objDxC.getCliente().getSProvinciaUP());
+                        if (objDxC.getCliente().getIdDepartamentoUP() != null) {
+                            reply.put("iddepartamento", objDxC.getCliente().getIdDepartamentoUP().toString());
+                            reply.put("departamento", objDxC.getCliente().getSDepartamentoUP());
+                        } else {
+                            reply.put("departamento", "");
+                        }
+                    } else {
+                        reply.put("provincia", "");
+                    }
+                } else {
+                    reply.put("distrito", "");
+                }
+
+                l1.add(reply);
+            }
+        }
+        enviaDatos(l1);
+
+    }
+
+    public void obtenerDataClienteCxb() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerDataClienteCxb():enviaDatos() ");
+    	
+        List<Cliente> lstCliente = null;
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        log.debug("sTipoIdentificacion [" + getSTipoIdentificacion() + "]");
+
+        if (isEmpty(getSTipoIdentificacion())) {
+            lstCliente = clienteService.findByTipoIdentificacionList(null, null);
+        } else {
+            lstCliente = clienteService.findByTipoIdentificacionList(null, getSTipoIdentificacion());
+        }
+
+        if (lstCliente != null) {
+            log.debug("Nro de Clientes encontrados [" + lstCliente.size() + "]");
+            for (Cliente objC : lstCliente) {
+                Map<String, String> reply = new HashMap<String, String>();
+                reply.put("id", objC.getNumeroIdentificacion());
+                if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + objC.getRazonSocial());
+                } else if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+                	String sNombreCompleto=objC.getNombres() + (objC.getApellidoPaterno() == null ? "" : " " + objC.getApellidoPaterno());
+			        sNombreCompleto += objC.getApellidoMaterno() == null ? "" : " " + objC.getApellidoMaterno();
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + sNombreCompleto);
+                }
+                l1.add(reply);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void obtenerClienteOptimizado() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerClienteOptimizado():enviaDatos() ");
+    	
+        List<Cliente> lstCliente = null;
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        log.debug("sTipoIdentificacion [" + getSTipoIdentificacion() + "]");
+        if (isEmpty(getSTipoIdentificacion())) {
+            lstCliente = clienteService.findByTipoIdentificacionList(null, null);
+        } else {
+            lstCliente = clienteService.findByTipoIdentificacionList(null, getSTipoIdentificacion());
+        }
+        if (lstCliente != null) {
+            log.debug("Nro de Clientes encontrados [" + lstCliente.size() + "]");
+            for (Cliente objC : lstCliente) {
+                Map<String, String> reply = new HashMap<String, String>();
+                reply.put("tipoidentificacion", objC.getTipoIdentificacion().getNombre());
+                reply.put("id", objC.getNumeroIdentificacion());
+                if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + objC.getRazonSocial());
+                } else if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+                	String sNombreCompleto=objC.getNombres() + (objC.getApellidoPaterno() == null ? "" : " " + objC.getApellidoPaterno());
+                    sNombreCompleto += objC.getApellidoMaterno() == null ? "" : " " + objC.getApellidoMaterno();
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + sNombreCompleto);
+                }
+                l1.add(reply);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void obtenerClientePorTipoIdentificacion() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerClientePorTipoIdentificacion():enviaDatos() ");
+    	
+//		Measurement objTime = new Measurement();
+//		objTime.start();
+
+        List<Cliente> lstCliente = null;
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        log.debug("sTipoIdentificacion [" + getSTipoIdentificacion() + "]");
+
+//		Tipoidentificacion objTipoIdentificacion=tipoIdentificacionService.buscarObjPor(getSTipoIdentificacion());
+//		if(objTipoIdentificacion != null){
+//			log.debug("Tipo de Identificacion con ID [" + objTipoIdentificacion.getIdtipoidentificacion() + "] Nombre [" + objTipoIdentificacion.getNombre() + "]");
+
+        if (isEmpty(getSTipoIdentificacion())) {
+            lstCliente = clienteService.findByTipoIdentificacionList(null, null);
+        } else {
+            lstCliente = clienteService.findByTipoIdentificacionList(null, getSTipoIdentificacion());
+        }
+
+        if (lstCliente != null) {
+            log.debug("Nro de Clientes encontrados [" + lstCliente.size() + "]");
+            for (Cliente objC : lstCliente) {
+                Map<String, String> reply = new HashMap<String, String>();
+                reply.put("tipoidentificacion", objC.getTipoIdentificacion().getNombre());
+                reply.put("id", objC.getNumeroIdentificacion());
+                if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + objC.getRazonSocial());
+                } else if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+                	String sNombreCompleto=objC.getNombres() + (objC.getApellidoPaterno() == null ? "" : " " + objC.getApellidoPaterno());
+                    sNombreCompleto += objC.getApellidoMaterno() == null ? "" : " " + objC.getApellidoMaterno();
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + sNombreCompleto);
+                }
+                // log.debug("Nombre del Cliente ["+reply.get("label").toString()+"]");
+                reply.put("idcliente", objC.getIdCliente().toString());
+                String razonSocial = objC.getRazonSocial();
+                reply.put("razonsocial", razonSocial == null ? "" : razonSocial);
+                reply.put("representantelegal", objC.getRepresentanteLegal() == null ? "" : objC.getRepresentanteLegal());
+                String nombres = objC.getNombres();
+                reply.put("nombres", nombres == null ? "" : nombres);
+                String paterno = objC.getApellidoPaterno();
+                reply.put("apellidopaterno", paterno == null ? "" : paterno);
+                String materno = objC.getApellidoMaterno();
+                reply.put("apellidomaterno", materno == null ? "" : materno);
+                reply.put("direccionp", objC.getDireccionPrincipal() == null ? "" : objC.getDireccionPrincipal());
+
+                if (objC.getIdDistritoUP() != null) {
+                    reply.put("iddistrito", objC.getIdDistritoUP().toString());
+                    reply.put("distrito", objC.getSDistritoUP());
+                    if (objC.getIdProvinciaUP() != null) {
+                        reply.put("idprovincia", objC.getIdProvinciaUP().toString());
+                        reply.put("provincia", objC.getSProvinciaUP());
+                        if (objC.getIdDepartamentoUP() != null) {
+                            reply.put("iddepartamento", objC.getIdDepartamentoUP().toString());
+                            reply.put("departamento", objC.getSDepartamentoUP());
+                        } else {
+                            reply.put("departamento", "");
+                        }
+                    } else {
+                        reply.put("provincia", "");
+                    }
+                } else {
+                    reply.put("distrito", "");
+                }
+
+                reply.put("direcciona", objC.getDireccionAlternativa() == null ? "" : objC.getDireccionAlternativa());
+
+                if (objC.getIdDistritoUA() != null) {
+                    reply.put("iddistritoa", objC.getIdDistritoUA().toString());
+                    reply.put("distritoa", objC.getSDistritoUA());
+                    if (objC.getIdProvinciaUA() != null) {
+                        reply.put("idprovinciaa", objC.getIdProvinciaUA().toString());
+                        reply.put("provinciaa", objC.getSProvinciaUA());
+                        if (objC.getIdDepartamentoUA() != null) {
+                            reply.put("iddepartamentoa", objC.getIdDepartamentoUA().toString());
+                            reply.put("departamentoa", objC.getSDepartamentoUA());
+                        } else {
+                            reply.put("departamentoa", "");
+                        }
+                    } else {
+                        reply.put("provinciaa", "");
+                    }
+                } else {
+                    reply.put("distrito", "");
+                }
+                reply.put("telefono", objC.getTelefono() == null ? "" : objC.getTelefono());
+                reply.put("correo", objC.getCorreo() == null ? "" : objC.getCorreo());
+                l1.add(reply);
+            }
+        }
+//		objTime.stop();
+//		log.debug("Tiempo tomado en obtenerClientePorTipoIdentificacion [" + objTime.getElapsedTime() + "]");
+
+        enviaDatos(l1);
+    }
+
+    public void obtenerClientePorNombre() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - obtenerClientePorNombre():enviaDatos() ");
+    	
+        HttpServletRequest request = ServletActionContext.getRequest();
+        String idlike = new String(request.getParameter("label").getBytes("ISO-8859-1"), "UTF-8");
+        if (idlike != null && idlike.length() > 1 && idlike.endsWith("*")) {
+            idlike = idlike.substring(0, idlike.length() - 1);
+        }
+        log.debug(idlike);
+        List<Cliente> lstCliente = null;
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        lstCliente = clienteService.findLikeNroIdentificacionOrNombre(idlike);
+        if (lstCliente != null) {
+            log.debug("Nro de Clientes encontrados [" + lstCliente.size() + "]");
+            for (Cliente objC : lstCliente) {
+                Map<String, String> reply = new HashMap<String, String>();
+                reply.put("id", objC.getNumeroIdentificacion());
+                if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + objC.getRazonSocial());
+                } else if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+                	String sNombreCompleto=objC.getNombres() + (objC.getApellidoPaterno() == null ? "" : " " + objC.getApellidoPaterno());
+                    sNombreCompleto += objC.getApellidoMaterno() == null ? "" : " " + objC.getApellidoMaterno();
+                    reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + sNombreCompleto);
+                }
+                l1.add(reply);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    /**
+     * Devuelve los campos para un tipo de plantilla dado
+     *
+     * @author German Enriquez
+     */
+    public void getCamposPorPlantilla() {
+    	log.debug("-> [Action] AutoCompletarAction - getCamposPorPlantilla():enviaDatos() ");
+    	
+        log.debug("tipo de Plantilla [" + tipoPlantilla + "] idDocumento [" + idDocumento + "]");
+        List<Campo> campos = plantillaService.listCamposByTipoPlantilla(tipoPlantilla);
+        if (campos != null) {
+            log.debug("Se encontraron [" + campos.size() + "] campos");
+            List<Map<String, String>> salida = new ArrayList<Map<String, String>>();
+            Documento objDoc = srvDocumento.findByIdDocumento(idDocumento);
+            log.debug("El documento [" + objDoc.getIdDocumento() + "] es principal [" + objDoc.getPrincipal() + "]");
+
+            for (Campo campo : campos) {
+                Map<String, String> dato = new HashMap<String, String>();
+                String sDatoValor = "";
+                dato.put("idcampo", campo.getIdCampo().toString());
+                dato.put("tipo", campo.getTipo());
+                dato.put("descripcion", campo.getDescripcion());
+
+                if (campo.getValorDefecto() != null) {
+                    if (campo.getValorDefecto().equals("Propietario del Documento")) {
+                        sDatoValor = objDoc.getPropietario().getNombres() + " " + objDoc.getPropietario().getApellidos();
+                    } else if (campo.getValorDefecto().equals("Area del Propietario del Documento")) {
+                        sDatoValor = objDoc.getPropietario().getUnidad().getNombre();
+                    } else if (campo.getValorDefecto().equals("Cliente")) {
+                        if (objDoc.getExpediente().getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                            sDatoValor = objDoc.getExpediente().getClienterazonsocial();
+                        } else {
+                            sDatoValor = objDoc.getExpediente().getClientenombres() + " " + objDoc.getExpediente().getClienteapellidopaterno();
+                        }
+                    } else if (campo.getValorDefecto().equals("Concesionario")) {
+                        if (objDoc.getExpediente().getConcesionario() != null) {
+                            sDatoValor = objDoc.getExpediente().getConcesionario().getRazonSocial();
+                        }
+                    } else if (campo.getValorDefecto().equals("Proceso")) {
+                        sDatoValor = objDoc.getExpediente().getProceso().getNombre();
+                    } else if (campo.getValorDefecto().equals("Etapa")) {
+                        if (objDoc.getExpediente().getIdetapa() != null) {
+                            sDatoValor = objDoc.getExpediente().getIdetapa().getDescripcion();
+                        }
+                    } else if (campo.getValorDefecto().equals("Actividad")) {
+                        if (objDoc.getExpediente().getIdactividad() != null) {
+                            sDatoValor = objDoc.getExpediente().getIdactividad().getNombre();
+                        }
+                    } else if (campo.getValorDefecto().equals("Nro Expediente")) {
+                        sDatoValor = objDoc.getExpediente().getNroexpediente();
+                    } else if (campo.getValorDefecto().equals("Descripcion")) {
+                        sDatoValor = objDoc.getExpediente().getDescripcion();
+                    } else if (campo.getValorDefecto().equals("Asunto del Expediente")) {
+                        sDatoValor = objDoc.getExpediente().getAsunto();
+                    } else if (campo.getValorDefecto().equals("Contenido")) {
+                        sDatoValor = objDoc.getExpediente().getContenido();
+                    } else if (campo.getValorDefecto().equals("Observacion")) {
+                        sDatoValor = objDoc.getExpediente().getObservacion();
+                    } else if (campo.getValorDefecto().equals("Fecha Creacion")) {
+                        sDatoValor = objDoc.getExpediente().getFechacreacion().toString();
+                    } else if (campo.getValorDefecto().equals("Estado")) {
+                        sDatoValor = String.valueOf(objDoc.getExpediente().getEstado());
+                    } else if (campo.getValorDefecto().equals("Observacion de Rechazo")) {
+                        sDatoValor = objDoc.getExpediente().getObservacionrechazo();
+                    } else if (campo.getValorDefecto().equals("Nro Interno")) {
+                        sDatoValor = objDoc.getExpediente().getNrointerno();
+                    } else if (campo.getValorDefecto().equals("Responsable del Expediente")) {
+                        sDatoValor = objDoc.getExpediente().getIdpropietario().getNombres() + " " + objDoc.getExpediente().getIdpropietario().getApellidos();
+                    } else if (campo.getValorDefecto().equals("Area del Responsable del Expediente")) {
+                        sDatoValor = objDoc.getExpediente().getIdpropietario().getUnidad().getNombre();
+                    } else if (campo.getValorDefecto().equals("Responsable del Proceso")) {
+                        sDatoValor = objDoc.getExpediente().getProceso().getResponsable().getNombres() + " " + objDoc.getExpediente().getProceso().getResponsable().getApellidos();
+                    } else if (campo.getValorDefecto().equals("Area del Responsable del Proceso")) {
+                        sDatoValor = objDoc.getExpediente().getProceso().getResponsable().getUnidad().getNombre();
+                    }
+                }
+
+                dato.put("valor", sDatoValor == null ? "" : sDatoValor);
+
+                String sDatoDocumento = "";
+
+                if (campo.getValorDefecto() != null) {
+                    if (campo.getValorDefecto().equals("Tipo de Documento")
+                            || campo.getValorDefecto().equals("Firmante")
+                            || campo.getValorDefecto().equals("Fecha del Documento")
+                            || campo.getValorDefecto().equals("Asunto del Documento")
+                            || campo.getValorDefecto().equals("Autor")) {
+                        sDatoDocumento = campo.getValorDefecto();
+                    }
+                }
+
+                dato.put("datodocumento", sDatoDocumento);
+
+                salida.add(dato);
+            }
+            enviaDatos(salida);
+        }
+    }
+
+    public void getCamposGridEtapaProceso() {
+    	log.debug("-> [Action] AutoCompletarAction - getCamposGridEtapaProceso():enviaDatos() ");
+    	
+        log.debug("idProceso [" + idProceso + "]");
+        List<Map<String, String>> salida = new ArrayList<Map<String, String>>();
+        if (iIdProceso != null) {
+            List<Etapa> listaEtapas = etapaService.findEtapabyProceso(iIdProceso);
+            if (listaEtapas != null) {
+                log.debug("Se encontraron [" + listaEtapas.size() + "] campos");
+                for (Etapa etapa : listaEtapas) {
+                    Map<String, String> dato = new HashMap<String, String>();
+                    dato.put("id", etapa.getIdetapa().toString());
+                    dato.put("orden", etapa.getOrden() != null ? etapa.getOrden().toString() : "");
+                    dato.put("descripcion", etapa.getDescripcion());
+                    salida.add(dato);
+                }
+            }
+        }
+        enviaDatos(salida);
+    }
+
+    public void getCamposGridEstadoProceso() {
+    	log.debug("-> [Action] AutoCompletarAction - getCamposGridEstadoProceso():enviaDatos() ");
+    	
+        log.debug("idProceso [" + idProceso + "]");
+        List<Estado> listaEstados = estadoDao.findByIdProceso(iIdProceso);
+        List<Map<String, String>> salida = new ArrayList<Map<String, String>>();
+        if (iIdProceso != null) {
+            if (listaEstados != null) {
+                log.debug("Se encontraron [" + listaEstados.size() + "] campos");
+                for (Estado estado : listaEstados) {
+                    Map<String, String> dato = new HashMap<String, String>();
+                    dato.put("id", estado.getIdestado().toString());
+                    dato.put("descripcion", estado.getDescripcion() != null ? estado.getDescripcion().toString() : "");
+                    salida.add(dato);
+                }
+            }
+        }
+        enviaDatos(salida);
+    }
+
+    public void ProcesoClasificacion() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - ProcesoClasificacion():enviaDatos() ");
+    	
+        List<Parametro> parametros = srvParametro.findByTipo(Constantes.COMBO_PROCESOCLASIFICACION_PARAMETRO);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void tipoExpediente() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - tipoExpediente():enviaDatos() ");
+    	
+        List<Parametro> parametros = new ArrayList<Parametro>();
+        parametros.add(new Parametro("Todos", "Todos"));
+        parametros.addAll(srvParametro.getTipoExpediente());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void salaAYQ() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - salaAYQ():enviaDatos() ");
+    	
+        List<Parametro> parametros = new ArrayList<Parametro>();
+        parametros.add(new Parametro("Todas", "Todas"));
+        parametros.add(new Parametro("Sin sala asignada", "Sin sala asignada"));
+        parametros.addAll(srvParametro.getSalaAYQ());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void responsableAYQ() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - responsableAYQ():enviaDatos() ");
+    	
+        List<Parametro> parametros = new ArrayList<Parametro>();
+        parametros.add(new Parametro("Todos", "Todos"));
+        parametros.addAll(srvParametro.getResponsableAYQ());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void analistaAYQ() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - analistaAYQ():enviaDatos() ");
+    	
+        List<Parametro> parametros = new ArrayList<Parametro>();
+        parametros.add(new Parametro("Todos", "Todos"));
+        parametros.add(new Parametro("Sin analista asignado", "Sin analista asignado"));
+        parametros.addAll(srvParametro.getAnalistaAYQ());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void Clasificacion() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - Clasificacion():enviaDatos() ");
+    	
+        List<Parametro> parametros = srvParametro.findByTipo(Constantes.COMBO_CLASIFICAR_PARAMETRO);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void EstadoReporte() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - EstadoReporte():enviaDatos() ");
+    	
+        List<Parametro> parametros = new ArrayList<Parametro>();
+        parametros.add(new Parametro("Todos", "Todos"));
+        parametros.addAll(srvParametro.getEstados());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+
+                if (parametro.getValor().equalsIgnoreCase("" + Constantes.ESTADO_ACTIVO)) {
+
+                    datos.put("label", Constantes.EXPEDIENTE_ESTADO_ACTIVO);
+
+                } else if (parametro.getValor().equalsIgnoreCase("" + Constantes.ESTADO_INACTIVO)) {
+
+                    datos.put("label", Constantes.EXPEDIENTE_ESTADO_ARCHIVADO);
+
+                } else if (parametro.getValor().equalsIgnoreCase("" + Constantes.ESTADO_ANULADO)) {
+
+                    datos.put("label", Constantes.EXPEDIENTE_ESTADO_ANULADO);
+
+                } else {
+
+                    datos.put("label", parametro.getDescripcion());
+                }
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void ProcesoReporte() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - ProcesoReporte():enviaDatos() ");
+    	
+        List<Parametro> parametros = new ArrayList<Parametro>();
+        parametros.add(new Parametro("Todos", "Todos"));
+        parametros.addAll(srvParametro.getProceso());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+
+        enviaDatos(l1);
+    }
+
+    public void GrupoProcesos() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - GrupoProcesos():enviaDatos() ");
+    	
+        List<Parametro> parametros = new ArrayList<Parametro>();
+        parametros.add(new Parametro("0", "TODOS"));
+        parametros.addAll(srvParametro.getGrupoProceso());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro parametro : parametros) {
+            if (parametro != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", parametro.getValor());
+                datos.put("label", parametro.getDescripcion());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    public void autoCompletarUnidad() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autoCompletarUnidad():enviaDatos() ");
+    	
+        List<Unidad> unidades = srvUnidad.obtenerLstTodo();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Unidad unidad : unidades) {
+            if (unidad != null) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", unidad.getIdunidad().toString());
+                datos.put("label", unidad.getNombre());
+                l1.add(datos);
+            }
+        }
+        enviaDatos(l1);
+    }
+
+    private String completaDataJSON(String jsonString) {
+        String resultado = " { 'identifier': 'id', " + "    'label': 'label',  " + " 	 'items': " + jsonString + "}";
+        return resultado;
+    }
+
+    private void enviaDatos(List<Map<String, String>> l1) {
+        try {
+            String jsonString = JSONValue.toJSONString(l1);
+            jsonString = completaDataJSON(jsonString);
+            HttpServletResponse response;
+            response = ServletActionContext.getResponse();
+            response.setHeader("Cache-Control", "no-cache"); // HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0
+            response.setDateHeader("Expires", 0); // prevents caching at the
+            // proxy server
+            response.setContentType("text/x-json;charset=UTF-8");
+            PrintWriter out;
+            out = response.getWriter();
+            out.print(jsonString);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    private void enviaDatosJson(String objeto) {
+        try {
+
+            String jsonString = " { 'identifier': 'tiponumeracion', 'items':[ " + objeto + "] }";
+
+            HttpServletResponse response;
+            response = ServletActionContext.getResponse();
+            response.setHeader("Cache-Control", "no-cache"); // HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0
+            response.setDateHeader("Expires", 0); // prevents caching at the
+            // proxy server
+            response.setContentType("text/x-json;charset=UTF-8");
+            PrintWriter out;
+            out = response.getWriter();
+            out.print(jsonString);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public void getTipoDocumentoWithoutPlantilla() {
+    	log.debug("-> [Action] AutoCompletarAction - getTipoDocumentoWithoutPlantilla():enviaDatos() ");
+    	
+        Boolean bIsEdit = false;
+        Integer iIdTD = null;
+        Plantilla objPlantilla = null;
+
+        if (iIdPlantilla != null) {
+            objPlantilla = plantillaService.findByIdplantilla(iIdPlantilla);
+            iIdTD = objPlantilla.getTipo();
+            bIsEdit = true;
+        } else {
+            bIsEdit = false;
+        }
+
+        iniciarFactorias();
+
+        TipodocumentoService srvTipoDocumento = serviceFactory.getTipoDocumentoService();
+        List<Tipodocumento> lstTipoDocumento = srvTipoDocumento.findAllLstWithoutPlantilla(bIsEdit, iIdTD);
+        List<Map<String, String>> mapResult = new LinkedList<Map<String, String>>();
+
+        for (Tipodocumento objTipoDocumento : lstTipoDocumento) {
+            Map<String, String> datos = new HashMap<String, String>();
+
+            datos.put("id", objTipoDocumento.getIdtipodocumento().toString());
+            datos.put("label", objTipoDocumento.getNombre());
+
+            mapResult.add(datos);
+        }
+
+        enviaDatos(mapResult);
+    }
+
+    public void autocompletarTipoEnvio() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarTipoEnvio():enviaDatos() ");
+    	
+        List<Tipoenvio> lstTipoenvio = tipoEnvioService.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Tipoenvio objTipoenvio : lstTipoenvio) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objTipoenvio.getIdtipoenvio().intValue()));
+            datos.put("label", objTipoenvio.getTipoenvio2());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarEtapasporProceso() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarEtapasporProceso():enviaDatos() ");
+    	
+        List<Etapa> lstEtapa = etapaService.findEtapabyProceso(idProceso);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Etapa objEtapa : lstEtapa) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objEtapa.getIdetapa().intValue()));
+            datos.put("label", objEtapa.getDescripcion());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    /*Autocompletars para la pantalla de Stor*/
+    public void autocompletarSalaStor() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarSalaStor():enviaDatos() ");
+    	
+        List<Sala> lstSala = salaService.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Sala objSala : lstSala) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objSala.getIdsala().intValue()));
+            datos.put("label", objSala.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarEstadoStor() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarEstadoStor():enviaDatos() ");
+    	
+        List<Estado> lstEstado = estadoDao.findByTipo(Constantes.PROCESO_STOR);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Estado objEstado : lstEstado) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objEstado.getIdestado().intValue()));
+            datos.put("label", objEstado.getDescripcion());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarAreaDestino() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarAreaDestino():enviaDatos() ");
+    	
+		List<Unidad> lstUnidad = this.unidadDAO.findAll();
+        log.debug("(autocompletarAreaDestino) Nº unidades->" + lstUnidad.size());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Unidad objUnidad : lstUnidad) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objUnidad.getIdunidad().intValue()));
+            datos.put("label", objUnidad.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarAreaTodos() throws Exception {	
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarAreaTodos():enviaDatos() ");
+    	
+        List<Unidad> lstUnidad = this.unidadDAO.findAll();
+        log.debug("(autocompletarAreaDestino) Nº unidades->" + lstUnidad.size());
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+      
+        	Map<String, String> datosT = new HashMap<String, String>();
+        	datosT.put("id", Constantes.ID_AREA);
+        	datosT.put("label", Constantes.TODOS_AREA);
+        	l1.add(datosT);
+        	
+        for (Unidad objUnidad : lstUnidad) {        	
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objUnidad.getIdunidad().intValue()));
+            datos.put("label", objUnidad.getNombre());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+    
+    public void autocompletarResultadoStor() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarResultadoStor():enviaDatos() ");
+    	
+        List<Tiporesultado> lstResultado = tipoResultadoService.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Tiporesultado objResultado : lstResultado) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objResultado.getIdtiporesultado().intValue()));
+            datos.put("label", objResultado.getResultado());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void autocompletarVocalStor() throws Exception {
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarVocalStor():enviaDatos() ");
+    	
+        List<Vocal> lstVocal = vocalService.findAll();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Vocal objVocal : lstVocal) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(objVocal.getIdvocal().intValue()));
+            StringBuilder nombreVocal = new StringBuilder(objVocal.getNombres()).append(" ").append(objVocal.getApellidopaterno()).append(" ").append(objVocal.getApellidomaterno());
+            datos.put("label", nombreVocal.toString());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+
+    public void listaMonedas() {
+    	log.debug("-> [Action] AutoCompletarAction - listaMonedas():enviaDatos() ");
+    	
+        iniciarFactorias();
+        List<Parametro> listaMonedas = srvParametro.findByTipo(Constantes.PARAMETRO_TIPO_MONEDA);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro obj : listaMonedas) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", String.valueOf(obj.getIdparametro().intValue()));
+            datos.put("label", obj.getDescripcion());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+    
+    public void getRolesPorUsuario(){
+    	log.debug("-> [Action] AutoCompletarAction - getRolesPorUsuario():enviaDatos() ");
+    	
+		if(sUsuario!=null){
+			iniciarFactorias();
+			RolService rolService=(RolService) serviceFactory.getBean("rolService");
+			List<Rol> roles=rolService.getRolesPorUsuario(sUsuario);
+			if(roles!=null){
+				List<Map<String,String>> salida=new LinkedList<Map<String,String>>();
+				for(Rol rol : roles){
+					Map<String,String> data=new HashMap<String,String>();
+					data.put("id",rol.getIdrol().toString());
+					data.put("label",rol.getDescripcion());
+					salida.add(data);
+				}
+				enviaDatos(salida);
+			}
+		}
+	}
+    
+    public void getPrioridades() {
+    	log.debug("-> [Action] AutoCompletarAction - getPrioridades():enviaDatos() ");
+    	
+        iniciarFactorias();
+        List<Parametro> listaPrioridades = srvParametro.getPrioridades();
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        for (Parametro obj : listaPrioridades) {
+            Map<String, String> datos = new HashMap<String, String>();
+            datos.put("id", obj.getValor());
+            datos.put("label", obj.getDescripcion());
+            l1.add(datos);
+        }
+        enviaDatos(l1);
+    }
+    
+    /**REN Metodos para las Query Read Store --------------------------------------------------------------------------------*/
+    
+    public void autocompletarQRSTipoDocumento() throws Exception{
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarQRSTipoDocumento():enviaDatos() ");
+    	
+    	HttpServletRequest request = ServletActionContext.getRequest();
+        String like = new String(request.getParameter("label").getBytes("ISO-8859-1"), "UTF-8");
+        if (like != null && like.length() > 1 && like.endsWith("*")) {
+            like = like.substring(0, like.length() - 1);
+        }
+        log.debug(like);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        if(like == null || like.trim().equals("")){
+        	log.debug("Tipo documento like en blanco");
+        }else{
+        	List<Tipodocumento> tiposDocumento = tipoDocumentoService.findByNombreLike(like);
+        	for (Tipodocumento objTipoDocumento : tiposDocumento) {
+                Map<String, String> datos = new HashMap<String, String>();
+                datos.put("id", String.valueOf(objTipoDocumento.getIdtipodocumento().intValue()));
+                datos.put("label", objTipoDocumento.getNombre());
+                l1.add(datos);
+            }
+        }
+    	enviaDatos(l1);
+    }
+    
+    public void autocompletarQRSCliente() throws Exception{
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarQRSTipoDocumento():enviaDatos() ");
+    	
+    	HttpServletRequest request = ServletActionContext.getRequest();
+        String like = new String(request.getParameter("label").getBytes("ISO-8859-1"), "UTF-8");
+        if (like != null && like.length() > 1 && like.endsWith("*")) {
+            like = like.substring(0, like.length() - 1);
+        }
+        log.debug(like);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        if(like == null || like.trim().equals("")){
+        	log.debug("Cliente like en blanco");
+        }else{
+        	List<Cliente> lstCliente = clienteService.findByNombreRazonLike(like);
+        	if (lstCliente != null) {
+                log.debug("Nro de Clientes encontrados [" + lstCliente.size() + "]");
+                for (Cliente objC : lstCliente) {
+                    Map<String, String> reply = new HashMap<String, String>();
+                    reply.put("id", String.valueOf(objC.getIdCliente()));
+                    if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                        reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + objC.getRazonSocial());
+                    } else if (objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || objC.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+                    	String sNombreCompleto=objC.getNombres() + (objC.getApellidoPaterno() == null ? "" : " " + objC.getApellidoPaterno());
+    			        sNombreCompleto += objC.getApellidoMaterno() == null ? "" : " " + objC.getApellidoMaterno();
+                        reply.put("label", objC.getTipoIdentificacion().getNombre() + " - " + objC.getNumeroIdentificacion() + " - " + sNombreCompleto);
+                    }
+                    l1.add(reply);
+                }
+            }
+        }
+        enviaDatos(l1);
+    }
+    
+    public void autocompletarQRSUsuarios() throws Exception{
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarQRSTipoDocumento():enviaDatos() ");
+    	
+    	HttpServletRequest request = ServletActionContext.getRequest();
+        String like = new String(request.getParameter("label").getBytes("ISO-8859-1"), "UTF-8");
+        if (like != null && like.length() > 1 && like.endsWith("*")) {
+            like = like.substring(0, like.length() - 1);
+        }
+        log.debug(like);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        if(like == null || like.trim().equals("")){
+        	log.debug("Usuario like en blanco");
+        }else{
+        	List<Usuario> lstUsuario = srvUsuario.findByApellidosNombresLike(like);
+        	if (lstUsuario != null) {
+                log.debug("Nro de Usuarios encontrados [" + lstUsuario.size() + "]");
+                for (Usuario objU : lstUsuario) {
+                    Map<String, String> reply = new HashMap<String, String>();
+                    reply.put("id", String.valueOf(objU.getIdusuario()));
+                    reply.put("label", objU.getNombreCompleto());
+                    l1.add(reply);
+                }
+            }
+        }
+        enviaDatos(l1);
+    }
+    
+    public void autocompletarQRSAreas() throws Exception{
+    	log.debug("-> [Action] AutoCompletarAction - autocompletarQRSTipoDocumento():enviaDatos() ");
+    	
+    	HttpServletRequest request = ServletActionContext.getRequest();
+        String like = new String(request.getParameter("label").getBytes("ISO-8859-1"), "UTF-8");
+        if (like != null && like.length() > 1 && like.endsWith("*")) {
+            like = like.substring(0, like.length() - 1);
+        }
+        log.debug(like);
+        List<Map<String, String>> l1 = new LinkedList<Map<String, String>>();
+        if(like == null || like.trim().equals("")){
+        	log.debug("Usuario like en blanco");
+        }else{
+        	List<Unidad> lstUnidad = srvUnidad.findByNombreLike(like);
+        	
+        	if (lstUnidad != null) {
+                log.debug("Nro de Unidades encontradas [" + lstUnidad.size() + "]");
+                for (Unidad objU : lstUnidad) {
+                    Map<String, String> reply = new HashMap<String, String>();
+                    reply.put("id", String.valueOf(objU.getIdunidad()));
+                    reply.put("label", objU.getNombre());
+                    l1.add(reply);
+                }
+            }
+        }
+        enviaDatos(l1);
+    }
+    
+    /*GET SET*/
+
+    public String getIdDepartamento() {
+        return idDepartamento;
+    }
+
+    public void setIdDepartamento(String idDepartamento) {
+        this.idDepartamento = idDepartamento;
+    }
+
+    public String getIdProvincia() {
+        return idProvincia;
+    }
+
+    public void setIdProvincia(String idProvincia) {
+        this.idProvincia = idProvincia;
+    }
+
+    public String getIdDependencia1() {
+        return idDependencia1;
+    }
+
+    public void setIdDependencia1(String idDependencia1) {
+        this.idDependencia1 = idDependencia1;
+    }
+
+    public String getIdDependencia2() {
+        return idDependencia2;
+    }
+
+    public void setIdDependencia2(String idDependencia2) {
+        this.idDependencia2 = idDependencia2;
+    }
+
+    public Integer getIIdExp() {
+        return iIdExp;
+    }
+
+    public void setIIdExp(Integer idExp) {
+        iIdExp = idExp;
+    }
+
+    public Map<String, Object> getMapSession() {
+        return mapSession;
+    }
+
+    public void setMapSession(Map<String, Object> mapSession) {
+        this.mapSession = mapSession;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setIdusuario(String idusuario) {
+        this.idusuario = idusuario;
+    }
+
+    public String getIdusuario() {
+        return idusuario;
+    }
+
+    public static void main(String[] args) {
+        /*
+         * SimpleDateFormat s1=new SimpleDateFormat("dd/MM/yyyy");
+         * SimpleDateFormat s2=new SimpleDateFormat("dd/MM/yyyy HH:mm");
+         * SimpleDateFormat s3=new SimpleDateFormat("HH:mm"); SimpleDateFormat
+         * s4=new SimpleDateFormat("HH");
+         */
+        Calendar calendar = Calendar.getInstance();
+        Date date = new Date();
+        calendar.setTime(date);
+        /*
+         * DateFormat df=DateFormat.getDateInstance(); DateFormat
+         * df2=DateFormat.getDateInstance(DateFormat.LONG,Locale.ROOT);
+         * log.debug("hour="+df2.format(date));
+         * log.debug("hour="+date.getHours());
+         * log.debug(""+calendar.HOUR);
+         * log.debug(""+calendar.HOUR_OF_DAY);
+         * log.debug(""+calendar.AM);
+         * log.debug(""+calendar.AM_PM);
+         */
+    }
+
+    public String getSNroExpediente() {
+        return sNroExpediente;
+    }
+
+    public void setSNroExpediente(String sNroExpediente) {
+        this.sNroExpediente = sNroExpediente;
+    }
+
+    public String getSUsuario() {
+        return sUsuario;
+    }
+
+    public void setSUsuario(String sUsuario) {
+        this.sUsuario = sUsuario;
+    }
+
+    public String getSModulo() {
+        return sModulo;
+    }
+
+    public void setSModulo(String sModulo) {
+        this.sModulo = sModulo;
+    }
+
+    public String getSFechaDesde() {
+        return sFechaDesde;
+    }
+
+    public void setSFechaDesde(String sFechaDesde) {
+        this.sFechaDesde = sFechaDesde;
+    }
+
+    public String getSFechaHasta() {
+        return sFechaHasta;
+    }
+
+    public void setSFechaHasta(String sFechaHasta) {
+        this.sFechaHasta = sFechaHasta;
+    }
+
+    public String getSNroDocumento() {
+        return sNroDocumento;
+    }
+
+    public void setSNroDocumento(String sNroDocumento) {
+        this.sNroDocumento = sNroDocumento;
+    }
+
+    public String getFiltro1() {
+        return filtro1;
+    }
+
+    public void setFiltro1(String filtro1) {
+        this.filtro1 = filtro1;
+    }
+
+    public String getSNroIdentificacion() {
+        return sNroIdentificacion;
+    }
+
+    public void setSNroIdentificacion(String sNroIdentificacion) {
+        this.sNroIdentificacion = sNroIdentificacion;
+    }
+
+    public String getSRazonSocial() {
+        return sRazonSocial;
+    }
+
+    public void setSRazonSocial(String sRazonSocial) {
+        this.sRazonSocial = sRazonSocial;
+    }
+
+    public String getSAsunto() {
+        return sAsunto;
+    }
+
+    public void setSAsunto(String sAsunto) {
+        this.sAsunto = sAsunto;
+    }
+
+    public String getSTipoIdentificacion() {
+        return sTipoIdentificacion;
+    }
+
+    public void setSTipoIdentificacion(String sTipoIdentificacion) {
+        this.sTipoIdentificacion = sTipoIdentificacion;
+    }
+
+    public Integer getIWithoutStor() {
+        return iWithoutStor;
+    }
+
+    public void setIWithoutStor(Integer iWithoutStor) {
+        this.iWithoutStor = iWithoutStor;
+    }
+
+    public String getsTipoProceso() {
+        return sTipoProceso;
+    }
+
+    public void setsTipoProceso(String sTipoProceso) {
+        this.sTipoProceso = sTipoProceso;
+    }
+
+    public Integer getiIdCliente() {
+        return iIdCliente;
+    }
+
+    public void setiIdCliente(Integer iIdCliente) {
+        this.iIdCliente = iIdCliente;
+    }
+
+    public String getSOpcion() {
+        return sOpcion;
+    }
+
+    public void setSOpcion(String opcion) {
+        sOpcion = opcion;
+    }
+
+    public void setPlantillaService(PlantillaService plantillaService) {
+        this.plantillaService = plantillaService;
+    }
+
+    public UsuarioService getSrvUsuario() {
+        return srvUsuario;
+    }
+
+    public void setSrvUsuario(UsuarioService srvUsuario) {
+        this.srvUsuario = srvUsuario;
+    }
+
+    public int getTipoPlantilla() {
+        return tipoPlantilla;
+    }
+
+    public void setTipoPlantilla(int tipoPlantilla) {
+        this.tipoPlantilla = tipoPlantilla;
+    }
+
+    public Integer getiIdPlantilla() {
+        return iIdPlantilla;
+    }
+
+    public void setiIdPlantilla(Integer iIdPlantilla) {
+        this.iIdPlantilla = iIdPlantilla;
+    }
+
+    public Integer getIdDocumento() {
+        return idDocumento;
+    }
+
+    public void setIdDocumento(Integer idDocumento) {
+        this.idDocumento = idDocumento;
+    }
+
+    public DocumentoService getSrvDocumento() {
+        return srvDocumento;
+    }
+
+    public void setSrvDocumento(DocumentoService srvDocumento) {
+        this.srvDocumento = srvDocumento;
+    }
+
+    public int getIdProceso() {
+        return idProceso;
+    }
+
+    public void setIdProceso(int idProceso) {
+        this.idProceso = idProceso;
+    }
+
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
+    }
+
+    public Integer getIIdDoc() {
+        return iIdDoc;
+    }
+
+    public void setIIdDoc(Integer idDoc) {
+        iIdDoc = idDoc;
+    }
+
+    public String getSTipoDerivacion() {
+        return sTipoDerivacion;
+    }
+
+    public void setSTipoDerivacion(String sTipoDerivacion) {
+        this.sTipoDerivacion = sTipoDerivacion;
+    }
+
+    public void setExpedienteDao(ExpedienteDAO expedienteDao) {
+        this.expedienteDao = expedienteDao;
+    }
+
+    public Integer getiIdUsuario() {
+        return iIdUsuario;
+    }
+
+    public void setiIdUsuario(Integer iIdUsuario) {
+        this.iIdUsuario = iIdUsuario;
+    }
+
+    public ProcesoService getSrvProceso() {
+        return srvProceso;
+    }
+
+    public void setSrvProceso(ProcesoService srvProceso) {
+        this.srvProceso = srvProceso;
+    }
+
+    public Integer getiIdUsuarioToOmit() {
+        return iIdUsuarioToOmit;
+    }
+
+    public void setiIdUsuarioToOmit(Integer iIdUsuarioToOmit) {
+        this.iIdUsuarioToOmit = iIdUsuarioToOmit;
+    }
+
+    public Integer getiIdProceso() {
+        return iIdProceso;
+    }
+
+    public void setiIdProceso(Integer iIdProceso) {
+        this.iIdProceso = iIdProceso;
+    }
+
+    public void setTipoDocumentoService(TipodocumentoService tipoDocumentoService) {
+        this.tipoDocumentoService = tipoDocumentoService;
+    }
+
+    public void setDepartamentoService(DepartamentoService departamentoService) {
+        this.departamentoService = departamentoService;
+    }
+
+    public void setTipoIdentificacionService(
+            TipoidentificacionService tipoIdentificacionService) {
+        this.tipoIdentificacionService = tipoIdentificacionService;
+    }
+
+    public void setClienteService(ClienteService clienteService) {
+        this.clienteService = clienteService;
+    }
+
+    public void setProvinciaService(ProvinciaService provinciaService) {
+        this.provinciaService = provinciaService;
+    }
+
+    public void setDistritoService(DistritoService distritoService) {
+        this.distritoService = distritoService;
+    }
+
+    public Integer getiIdUnidad() {
+        return iIdUnidad;
+    }
+
+    public void setiIdUnidad(Integer iIdUnidad) {
+        this.iIdUnidad = iIdUnidad;
+    }
+
+    public RolService getSrvRol() {
+        return srvRol;
+    }
+
+    public void setSrvRol(RolService srvRol) {
+        this.srvRol = srvRol;
+    }
+
+    public ConcesionarioService getSrvConcesionario() {
+        return srvConcesionario;
+    }
+
+    public void setSrvConcesionario(ConcesionarioService srvConcesionario) {
+        this.srvConcesionario = srvConcesionario;
+    }
+
+    public AuditoriaService getSrvAuditoria() {
+        return srvAuditoria;
+    }
+
+    public void setSrvAuditoria(AuditoriaService srvAuditoria) {
+        this.srvAuditoria = srvAuditoria;
+    }
+
+    public ParametroService getSrvParametro() {
+        return srvParametro;
+    }
+
+    public void setSrvParametro(ParametroService srvParametro) {
+        this.srvParametro = srvParametro;
+    }
+
+    public UnidadService getSrvUnidad() {
+        return srvUnidad;
+    }
+
+    public void setSrvUnidad(UnidadService srvUnidad) {
+        this.srvUnidad = srvUnidad;
+    }
+
+    public NotificacionDAO getNotificacionDao() {
+        return notificacionDao;
+    }
+
+    public void setNotificacionDao(NotificacionDAO notificacionDao) {
+        this.notificacionDao = notificacionDao;
+    }
+
+    public ReemplazoDAO getReemplazoDao() {
+        return reemplazoDao;
+    }
+
+    public void setReemplazoDao(ReemplazoDAO reemplazoDao) {
+        this.reemplazoDao = reemplazoDao;
+    }
+
+    public TiporesultadoDAO getTiporesultadoDao() {
+        return tiporesultadoDao;
+    }
+
+    public void setTiporesultadoDao(TiporesultadoDAO tiporesultadoDao) {
+        this.tiporesultadoDao = tiporesultadoDao;
+    }
+
+    public TipodocumentoService getTipoDocumentoService() {
+        return tipoDocumentoService;
+    }
+
+    public TipoidentificacionService getTipoIdentificacionService() {
+        return tipoIdentificacionService;
+    }
+
+    public TrazabilidaddocumentoService getSrvTrazabilidadDocumento() {
+        return srvTrazabilidadDocumento;
+    }
+
+    public void setSrvTrazabilidadDocumento(
+            TrazabilidaddocumentoService srvTrazabilidadDocumento) {
+        this.srvTrazabilidadDocumento = srvTrazabilidadDocumento;
+    }
+
+    public PlantillaService getPlantillaService() {
+        return plantillaService;
+    }
+
+    public ExpedienteDAO getExpedienteDao() {
+        return expedienteDao;
+    }
+
+    public DepartamentoService getDepartamentoService() {
+        return departamentoService;
+    }
+
+    public ProvinciaService getProvinciaService() {
+        return provinciaService;
+    }
+
+    public DistritoService getDistritoService() {
+        return distritoService;
+    }
+
+    public String getTipoBusqueda() {
+        return tipoBusqueda;
+    }
+
+    public void setTipoBusqueda(String tipoBusqueda) {
+        this.tipoBusqueda = tipoBusqueda;
+    }
+
+    public String getsDiasReporte() {
+        return sDiasReporte;
+    }
+
+    public void setsDiasReporte(String sDiasReporte) {
+        this.sDiasReporte = sDiasReporte;
+    }
+
+    public String getsFiltroBusqueda() {
+        return sFiltroBusqueda;
+    }
+
+    public void setsFiltroBusqueda(String sFiltroBusqueda) {
+        this.sFiltroBusqueda = sFiltroBusqueda;
+    }
+
+    public SedeService getSedeService() {
+        return sedeService;
+    }
+
+    public void setSedeService(SedeService sedeService) {
+        this.sedeService = sedeService;
+    }
+
+    public int getIdSede() {
+        return idSede;
+    }
+
+    public void setIdSede(int idSede) {
+        this.idSede = idSede;
+    }
+
+    public EtapaService getEtapaService() {
+        return etapaService;
+    }
+
+    public void setEtapaService(EtapaService etapaService) {
+        this.etapaService = etapaService;
+    }
+
+    public EstadoDAO getEstadoDao() {
+        return estadoDao;
+    }
+
+    public void setEstadoDao(EstadoDAO estadoDao) {
+        this.estadoDao = estadoDao;
+    }
+
+    public ListaService getListaService() {
+        return listaService;
+    }
+
+    public void setListaService(ListaService listaService) {
+        this.listaService = listaService;
+    }
+
+    public FavoritoService getFavoritoService() {
+        return favoritoService;
+    }
+
+    public void setFavoritoService(FavoritoService favoritoService) {
+        this.favoritoService = favoritoService;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public TipoenvioService getTipoEnvioService() {
+        return tipoEnvioService;
+    }
+
+    public void setTipoEnvioService(TipoenvioService tipoEnvioService) {
+        this.tipoEnvioService = tipoEnvioService;
+    }
+
+    public DocumentoxclienteService getDocumentoxclienteService() {
+        return documentoxclienteService;
+    }
+
+    public void setDocumentoxclienteService(DocumentoxclienteService documentoxclienteService) {
+        this.documentoxclienteService = documentoxclienteService;
+    }
+
+    public AmbitoenvioService getAmbitoService() {
+        return ambitoService;
+    }
+
+    public void setAmbitoService(AmbitoenvioService ambitoService) {
+        this.ambitoService = ambitoService;
+    }
+
+    public SalaService getSalaService() {
+        return salaService;
+    }
+
+    public void setSalaService(SalaService salaService) {
+        this.salaService = salaService;
+    }
+
+    public TiporesultadoService getTipoResultadoService() {
+        return tipoResultadoService;
+    }
+
+    public void setTipoResultadoService(TiporesultadoService tipoResultadoService) {
+        this.tipoResultadoService = tipoResultadoService;
+    }
+
+    public VocalService getVocalService() {
+        return vocalService;
+    }
+
+    public void setVocalService(VocalService vocalService) {
+        this.vocalService = vocalService;
+    }
+
+    public Integer getIdCliente() {
+        return idCliente;
+    }
+
+    public void setIdCliente(Integer idCliente) {
+        this.idCliente = idCliente;
+    }
+
+    public UnidadDAO getUnidadDAO() {
+        return unidadDAO;
+    }
+
+    public void setUnidadDAO(UnidadDAO unidadDAO) {
+        this.unidadDAO = unidadDAO;
+    }
+
+}

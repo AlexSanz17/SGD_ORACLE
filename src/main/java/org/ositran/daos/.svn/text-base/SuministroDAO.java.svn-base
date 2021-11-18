@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Suministro;
+
+public interface SuministroDAO{
+
+	public void saveSuministro(Suministro objSum);
+
+	public List<Suministro> findByExpediente(Integer idExpediente);
+
+	public List<String> findByIdDocumento(Integer idDocumento);
+	
+	public Suministro getSuministro(int idSuministro);
+}

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Sistema de Gesti&oacute;n Documentaria - Filtro de B&uacute;squeda Avanzada B&aacute;sico</title>
+        <script language="JavaScript">
+            dojo.addOnLoad(function(){
+
+            	new dijit.form.FilteringSelect({
+            		id : "objF.areaOrigenC3",
+        			jsId : "objF.areaOrigenC3",
+        			name            : "objF.areaOrigen",
+        			store : new dojo.data.ItemFileReadStore({
+        				url : "autocompletarAreaTodos.action"
+        			}),
+        			searchAttr : "label",
+        			labelAttr : "label",
+        			value: 0,
+        			autoComplete : false,
+        			hasDownArrow : true,
+        			highlightMatch : "all",
+        			invalidMessage : "Seleccione el Area"
+        		}, "CON1_area");
+
+        		new dijit.form.FilteringSelect({
+        			id : "objF.tipoDocumentoC3",
+        			jsId : "objF.tipoDocumentoC3",
+        			name            : "objF.tipoDocumento",
+        			store : new dojo.data.ItemFileReadStore({
+        				url : "autocompletarTipoDocumentoTodos.action"
+        			}),
+        			searchAttr : "label",
+        			labelAttr : "label",
+        			value: 0,
+        			autoComplete : false,
+        			hasDownArrow : true,
+        			highlightMatch : "all",
+        			invalidMessage : "Seleccione el tipo de documento"
+        		}, "CON1_tipodocumento");
+            });
+        </script>
+    </head>
+    <body>
+        <div dojoType="dijit.form.Form" id="frmConsulta3" jsId="frmConsulta3">
+            <table width="100%">
+              <tr>
+				<td width="20%" >&Aacute;rea Remitente</td>
+				<td width="30%" ><input type="text" id="CON1_area" style="width:200px"/></td>
+				<td width="25%">Tipo Documento </td>
+				<td width="30%"><input type="text" id="CON1_tipodocumento" width="30%" /></td>
+			 </tr>
+
+			 <tr>
+				<td width="20%">Nro documento </td>
+				<td width="25%"> <div dojoType="dijit.form.TextBox"
+                       name="objF.nroDocumento"
+                       style="width:200px"
+                       trim="true" /></td>
+                <td width="25%">Asunto Documento </td>
+				<td width="30%"> <div dojoType="dijit.form.TextBox"
+                       name="objF.asuntoDocumento"
+                       style="width:200px"
+                       trim="true" /></td>
+			 </tr>
+
+               <tr>
+               <td>Fecha De Recepci&oacute;n del Documento :</td>
+               <td colspan="3">
+                  Desde :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objF.fechaDocumentoDesde"
+                         jsId="objF.fechaDocumentoDesde"
+                         name="objF.fechaDocumentoDesde"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Documento (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objF.fechaDocumentoHasta').constraints.min = this.getValue();" />
+                  Hasta :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objF.fechaDocumentoHasta"
+                         jsId="objF.fechaDocumentoHasta"
+                         name="objF.fechaDocumentoHasta"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Documento (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objF.fechaDocumentoDesde').constraints.max = this.getValue();" />
+               </td>
+            </tr>
+            <tr>
+              <td>Acci&oacute;n :</td>
+               <td colspan="3">
+                    <select name="objF.accion" dojoType="dijit.form.FilteringSelect">
+                                 	<option value="0" selected style="color:black;">Todos</option>
+                                 	<option value="1">Bandeja Recibidos</option>
+                                 	<option value="2">Informativos Recibidos</option>
+                     </select>
+               </td>
+            </tr>
+                <tr>
+                    <td colspan="4" style="padding-top:10px;">
+                        <button dojoType=dijit.form.Button type="button" iconClass="siged16 sigedSearch16" onClick="doConsulta3('frmConsulta3')" showLabel="true">Buscar</button>
+                        <button dojoType=dijit.form.Button type="button" onClick="resetFormConsulta3('frmConsulta3')" iconClass="siged16 sigedEraser16" showLabel="true">Limpiar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4"><div id="showErrorConsulta3" style="color:red;font-weight:bold;">&nbsp;</div></td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

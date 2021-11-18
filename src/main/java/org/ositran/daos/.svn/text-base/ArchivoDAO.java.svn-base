@@ -1,0 +1,32 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Archivo;
+
+public interface ArchivoDAO {
+
+   public Archivo buscarObjPor(Integer iIdDocumento, String sNombre);
+
+   public Archivo buscarObjPorId(Integer iIdArchivo);
+
+   List<Archivo> buscarPorAutor(Integer idAutor, Integer idDocumento);
+   
+   public Archivo guardarObj(Archivo objArchivo);
+
+   public List<Archivo> checkEstadoDigitalizacion(Integer iIdDoc);
+
+   public List<Archivo> findByCriteria(Integer iIdDoc, String strNombre, SearchMode sm);
+
+   public List<Archivo> findByIdDocumentoOrderDesc(Integer iIdExpediente, Integer iIdDocumento, String sRol);
+
+   public List<Archivo> findByEstado(char estado);
+
+   public List<Archivo> findByIdDocumento(Integer iIdDoc);
+
+   public int updateEstado(Integer iIdArchivo, Character cEstado);
+
+   List<Archivo> findlstByExpediente(Integer idExpediente);
+   
+   public Archivo findByArchivoPrincipalIdDocumento(Integer iIdDoc);
+}

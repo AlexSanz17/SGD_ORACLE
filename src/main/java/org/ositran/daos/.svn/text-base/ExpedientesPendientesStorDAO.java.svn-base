@@ -1,0 +1,19 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import com.btg.osinergmin.siged.domain.ExpedientesPendientesStor;
+
+
+public interface ExpedientesPendientesStorDAO {
+
+	@PersistenceContext(unitName = "sigedPU")
+	public abstract void setEm(EntityManager em);
+	
+	public abstract List<ExpedientesPendientesStor> listarTodo();
+	
+	public abstract List<ExpedientesPendientesStor> generarLista(String fechaDesde, String fechaHasta);
+}

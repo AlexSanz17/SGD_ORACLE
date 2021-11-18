@@ -1,0 +1,24 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Unidad;
+
+public interface UnidadDAO {
+
+	public List<Unidad> findAll();
+
+	public Unidad findByIdunidad(int idunidad);
+
+	public Unidad findDependenciaByIdunidad(int idunidad);
+	
+	public Unidad guardarObj(Unidad objUnidad);
+	
+	public Unidad encontrarPorNombre(String nombre);
+	
+	public List<Unidad> findAllUnidadSAS();
+
+	public List<Unidad> buscarUnidadesFuncionales();
+	
+	List<Unidad> findByNombreLike(String like);
+}

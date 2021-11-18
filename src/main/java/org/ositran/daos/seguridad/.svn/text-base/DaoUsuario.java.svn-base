@@ -1,0 +1,11 @@
+package org.osinerg.daos.seguridad;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.seguridad.UsuarioSeguridad;
+
+public interface DaoUsuario{
+	
+	public List<UsuarioSeguridad> getTodos();
+	
+}

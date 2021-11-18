@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.20" id="1">
+    <property name="createdBy">Eclipse BIRT Designer Version 2.5.1.v20090903 Build &lt;2.5.1.v20090922-0630></property>
+    <property name="units">in</property>
+    <list-property name="propertyBindings">
+        <structure>
+            <property name="name">queryText</property>
+            <property name="id">27</property>
+            <expression name="value" type="javascript">"SELECT distinct c.razonsocial as ENTIDAD, "+
+"fnc_cant_resxent_f(c.idconcesionario) AS FUNDADO, "+
+"fnc_cant_resxent_inf(c.idconcesionario) AS INFUNDADO, "+
+"fnc_cant_resxent_inproc(c.idconcesionario) AS IMPROCEDENTE "+
+"FROM concesionario c,expediente e,documento d,resueltoxdocumento rp "+
+"WHERE "+
+"c.idconcesionario=e.concesionario AND  "+
+"d.expediente= e.idexpediente  and  "+
+"rp.iddocumento= d.iddocumento  AND "+
+"rp.idresuelto not in (1,2,3)  "+
+" and (   " +
+"             ("+params["fechaDesde"].value+" is null and "+params["fechaHasta"].value+" is null )  " +
+"        or ( ("+params["fechaDesde"].value+" is null and "+params["fechaHasta"].value+" is not null) and d.fechadocumento &lt; to_date("+params["fechaHasta"].value+") )  " +
+"       or ( ("+params["fechaDesde"].value+" is not null and "+params["fechaHasta"].value+" is null) and d.fechadocumento > to_date("+params["fechaDesde"].value+") ) " +
+"       or ( ("+params["fechaDesde"].value+" is not null and "+params["fechaHasta"].value+" is not null) and d.fechadocumento between to_date("+params["fechaDesde"].value+") and to_date("+params["fechaHasta"].value+")  ) "+
+" )"</expression>
+        </structure>
+        <structure>
+            <property name="name">queryTimeOut</property>
+            <property name="id">27</property>
+        </structure>
+    </list-property>
+    <property name="iconFile">/templates/simple_listing.gif</property>
+    <property name="cheatSheet">org.eclipse.birt.report.designer.ui.cheatsheet.simplelisting</property>
+    <property name="layoutPreference">auto layout</property>
+    <property name="bidiLayoutOrientation">ltr</property>
+    <parameters>
+        <scalar-parameter name="fechaDesde" id="39">
+            <property name="valueType">static</property>
+            <property name="isRequired">false</property>
+            <property name="dataType">string</property>
+            <property name="distinct">true</property>
+            <property name="paramType">simple</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+        <scalar-parameter name="fechaHasta" id="40">
+            <property name="valueType">static</property>
+            <property name="isRequired">false</property>
+            <property name="dataType">string</property>
+            <property name="distinct">true</property>
+            <property name="paramType">simple</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+        <scalar-parameter name="mes" id="41">
+            <property name="valueType">static</property>
+            <property name="isRequired">false</property>
+            <property name="dataType">string</property>
+            <property name="distinct">true</property>
+            <property name="paramType">simple</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+        <scalar-parameter name="anio" id="42">
+            <property name="valueType">static</property>
+            <property name="isRequired">false</property>
+            <property name="dataType">string</property>
+            <property name="distinct">true</property>
+            <property name="paramType">simple</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+        <scalar-parameter name="tipoRecurso" id="43">
+            <property name="valueType">static</property>
+            <property name="isRequired">false</property>
+            <property name="dataType">string</property>
+            <property name="distinct">true</property>
+            <property name="paramType">simple</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+    </parameters>
+    <data-sources>
+        <oda-data-source extensionID="org.eclipse.birt.report.data.oda.jdbc" name="Oracle Data Source" id="26">
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>contentBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+                <ex-property>
+                    <name>metadataBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+            </list-property>
+            <property name="odaDriverClass">oracle.jdbc.OracleDriver</property>
+            <property name="odaURL">jdbc:oracle:thin:@11.160.125.15:1521:DESA</property>
+            <property name="odaUser">siged_preprod</property>
+            <encrypted-property name="odaPassword" encryptionID="base64">ZmFjaWxpdG8=</encrypted-property>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set extensionID="org.eclipse.birt.report.data.oda.jdbc.JdbcSelectDataSet" name="cantidadRecursosxFundadoInfundadoImprocedente" id="27">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">ENTIDAD</property>
+                    <text-property name="displayName">ENTIDAD</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">FUNDADO</property>
+                    <text-property name="displayName">FUNDADO</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">INFUNDADO</property>
+                    <text-property name="displayName">INFUNDADO</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">IMPROCEDENTE</property>
+                    <text-property name="displayName">IMPROCEDENTE</text-property>
+                </structure>
+            </list-property>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">ENTIDAD</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">FUNDADO</property>
+                        <property name="dataType">decimal</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">INFUNDADO</property>
+                        <property name="dataType">decimal</property>
+                    </structure>
+                    <structure>
+                        <property name="position">4</property>
+                        <property name="name">IMPROCEDENTE</property>
+                        <property name="dataType">decimal</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Oracle Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">ENTIDAD</property>
+                    <property name="nativeName">ENTIDAD</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">FUNDADO</property>
+                    <property name="nativeName">FUNDADO</property>
+                    <property name="dataType">decimal</property>
+                    <property name="nativeDataType">2</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">INFUNDADO</property>
+                    <property name="nativeName">INFUNDADO</property>
+                    <property name="dataType">decimal</property>
+                    <property name="nativeDataType">2</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">IMPROCEDENTE</property>
+                    <property name="nativeName">IMPROCEDENTE</property>
+                    <property name="dataType">decimal</property>
+                    <property name="nativeDataType">2</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[SELECT DISTINCT c.razonsocial AS ENTIDAD,
+fnc_cant_resxent_f(c.idconcesionario) as FUNDADO, 
+fnc_cant_resxent_inf(c.idconcesionario) as INFUNDADO, 
+fnc_cant_resxent_inproc(c.idconcesionario) as IMPROCEDENTE
+FROM concesionario c,expediente e,documento d,resueltoxdocumento rp
+WHERE 
+c.idconcesionario=e.concesionario AND 
+e.idexpediente=d.expediente and 
+rp.iddocumento= d.iddocumento and
+rp.idresuelto not in (1,2,3)]]></xml-property>
+        </oda-data-set>
+    </data-sets>
+    <styles>
+        <style name="crosstab-cell" id="24">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+        <style name="crosstab" id="25">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+    </styles>
+    <page-setup>
+        <simple-master-page name="Simple MasterPage" id="2">
+            <property name="topMargin">1in</property>
+            <property name="leftMargin">1.25in</property>
+            <property name="bottomMargin">1in</property>
+            <property name="rightMargin">1.25in</property>
+        </simple-master-page>
+    </page-setup>
+    <body>
+        <table id="4">
+            <property name="fontFamily">"Verdana"</property>
+            <property name="fontSize">8pt</property>
+            <property name="textAlign">center</property>
+            <property name="width">100%</property>
+            <property name="dataSet">cantidadRecursosxFundadoInfundadoImprocedente</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">ENTIDAD</property>
+                    <text-property name="displayName">ENTIDAD</text-property>
+                    <expression name="expression">dataSetRow["ENTIDAD"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">FUNDADO</property>
+                    <text-property name="displayName">FUNDADO</text-property>
+                    <expression name="expression">dataSetRow["FUNDADO"]</expression>
+                    <property name="dataType">decimal</property>
+                </structure>
+                <structure>
+                    <property name="name">INFUNDADO</property>
+                    <text-property name="displayName">INFUNDADO</text-property>
+                    <expression name="expression">dataSetRow["INFUNDADO"]</expression>
+                    <property name="dataType">decimal</property>
+                </structure>
+                <structure>
+                    <property name="name">IMPROCEDENTE</property>
+                    <text-property name="displayName">IMPROCEDENTE</text-property>
+                    <expression name="expression">dataSetRow["IMPROCEDENTE"]</expression>
+                    <property name="dataType">decimal</property>
+                </structure>
+            </list-property>
+            <property name="pageBreakInterval">50</property>
+            <column id="20"/>
+            <column id="21"/>
+            <column id="22"/>
+            <column id="23"/>
+            <header>
+                <row id="5">
+                    <cell id="6">
+                        <property name="backgroundColor">#31619C</property>
+                        <label id="30">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="fontSize">7.5pt</property>
+                            <property name="fontWeight">bold</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">ENTIDAD</text-property>
+                        </label>
+                    </cell>
+                    <cell id="7">
+                        <property name="backgroundColor">#31619C</property>
+                        <label id="33">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="fontSize">7.5pt</property>
+                            <property name="fontWeight">bold</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">FUNDADO</text-property>
+                        </label>
+                    </cell>
+                    <cell id="8">
+                        <property name="backgroundColor">#31619C</property>
+                        <label id="35">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="fontSize">7.5pt</property>
+                            <property name="fontWeight">bold</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">INFUNDADO</text-property>
+                        </label>
+                    </cell>
+                    <cell id="9">
+                        <property name="backgroundColor">#31619C</property>
+                        <label id="37">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="fontSize">7.5pt</property>
+                            <property name="fontWeight">bold</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">IMPROCEDENTE</text-property>
+                        </label>
+                    </cell>
+                </row>
+            </header>
+            <detail>
+                <row id="10">
+                    <cell id="11">
+                        <data id="31">
+                            <property name="backgroundColor">#FFFFFF</property>
+                            <property name="resultSetColumn">ENTIDAD</property>
+                        </data>
+                    </cell>
+                    <cell id="12">
+                        <data id="34">
+                            <property name="backgroundColor">#FFFFFF</property>
+                            <property name="resultSetColumn">FUNDADO</property>
+                        </data>
+                    </cell>
+                    <cell id="13">
+                        <data id="36">
+                            <property name="backgroundColor">#FFFFFF</property>
+                            <property name="resultSetColumn">INFUNDADO</property>
+                        </data>
+                    </cell>
+                    <cell id="14">
+                        <data id="38">
+                            <property name="backgroundColor">#FFFFFF</property>
+                            <property name="resultSetColumn">IMPROCEDENTE</property>
+                        </data>
+                    </cell>
+                </row>
+            </detail>
+        </table>
+    </body>
+</report>

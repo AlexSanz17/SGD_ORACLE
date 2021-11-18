@@ -1,0 +1,21 @@
+package org.osinerg.daos;
+/*DUMMY*/
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import com.btg.osinergmin.siged.domain.FilaRDetalleProceso;
+
+public interface FilaRDetalleProcesoDAO {
+
+	@PersistenceContext(unitName = "sigedPU")
+	public abstract void setEm(EntityManager em);
+
+	public abstract List<FilaRDetalleProceso> reporteInicialDetallado();
+
+	public abstract List<FilaRDetalleProceso> generarReporteDetalle(
+			String procesoClasif, String procesoElegido, String estado,
+			String fechaDesde, String fechaHasta);
+
+}

@@ -1,0 +1,11 @@
+package org.osinerg.services;
+
+
+import com.btg.osinergmin.siged.domain.Resolucionjaru;
+
+public interface ResolucionjaruService {
+
+	public Resolucionjaru saveOrUpdateResolucionJaru(Resolucionjaru resolucionjaru);
+	
+	public Resolucionjaru findByIdExpedienteStor(Integer idExpediente);
+}

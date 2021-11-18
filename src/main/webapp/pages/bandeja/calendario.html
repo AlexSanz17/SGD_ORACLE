@@ -1,0 +1,383 @@
+<head>
+<title>Tramite Documentario</title>
+<link rel="stylesheet" type="text/css" href="../../css/estilo.css">
+<script language="javascript" src="../../js/form.js"> </script>
+<script language="Javascript" src="../../js/general.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="../../css/calendar-green.css">
+<script type="text/javascript" src="../../js/calendar.js"></script>
+<script type="text/javascript" src="../../js/calendar-es.js"></script>
+<script type="text/javascript" src="../../js/calendar-setup.js"></script>
+
+<script language="JavaScript">
+function Abrir_ventana (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=650, height=400, top=50, left=200";
+window.open(pagina,"",opciones);
+}
+
+function Abrir_pagina (pagina) {
+var opciones="location=mainFrame";
+window.open(pagina,"",opciones);
+}
+
+function putTextOnTextBox(textToPut){
+document.all.reciveTheText.value = textToPut;
+}
+function regresar(){ 
+   history.back();
+}
+</script>
+
+ <script type="text/javascript">
+
+function poorman_toggle(id)
+{
+	var tr = document.getElementById(id);
+	if (tr==null) { return; }
+	var bExpand = tr.style.display == '';
+	tr.style.display = (bExpand ? 'none' : '');
+}
+function poorman_changeimage(id, sMinus, sPlus)
+{
+	var img = document.getElementById(id);
+	if (img!=null)
+	{
+	    var bExpand = img.src.indexOf(sPlus) >= 0;
+		if (!bExpand)
+			img.src = sPlus;
+		else
+			img.src = sMinus;
+	}
+}
+
+function Toggle_repHeader2()
+{
+    poorman_changeimage('repHeader2_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader1()
+{
+    poorman_changeimage('repHeader1_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow1');
+}
+function Toggle_repHeader3()
+{
+    poorman_changeimage('repHeader3_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader3()
+{
+    poorman_changeimage('repHeader3_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow3');
+}
+function Toggle_repHeader4()
+{
+    poorman_changeimage('repHeader4_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader4()
+{
+    poorman_changeimage('repHeader4_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow4');
+}
+function Toggle_repHeader5()
+{
+    poorman_changeimage('repHeader5_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader5()
+{
+    poorman_changeimage('repHeader5_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow5');
+}
+function Toggle_repHeader6()
+{
+    poorman_changeimage('repHeader6_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader6()
+{
+    poorman_changeimage('repHeader6_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow6');
+}
+</script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+body {
+	background-color: #ffffff;
+}
+
+.barra {
+           scrollbar-3dlight-color:#CCCCCC;
+           scrollbar-arrow-color:#568BBF;
+           scrollbar-base-color:#C3D5E9;
+           scrollbar-darkshadow-color:#666666;
+           scrollbar-face-color:;
+           scrollbar-highlight-color:#669BCD;
+           scrollbar-shadow-color:#999999;
+		   }
+		   
+-->
+
+</style>
+
+</head>
+
+<body  class="barra" topmargin="0" leftmargin="0" rigthmargin="0" > 
+  <form>
+<table width="100%">
+  <tr> 
+    <td height="14" colspan="3"> </td>
+  </tr>
+<!-- <tr> 
+    <td height="14" colspan="3"> <table width="95%"  border="1"  style="border-style:solid" align="center" bordercolor="#669BCD" bgcolor="#BFD9F1">
+        <tr> 
+          <td height="25"> <table width="98%" height="25" align="center" >
+              <tr> 
+                <td width="1%"></td>
+                <td width="16%" align="center"><font color="#993300">GENERAL</font></td>
+                <td width="3%"></td>
+                <td width="20%" align="center"> <a href="pruebaArch.html">OTROS DATOS</a></td>
+                <td width="3%"></td>
+                <td width="16%" height="20" align="center"> <a href="pruebaAdjunto.html">CONTENIDO 
+                  ADJUNTO</a></td>
+                <td width="1%"></td>
+              </tr>
+              <tr></tr>
+            </table></td>
+        </tr>
+      </table></td>
+  </tr>-->
+  
+  <tr>
+		<td height="20"colspan="3" class="titulo">
+				<table width="99%" border="0" height="30" align="center" bgcolor="#A2C0DC">
+          <tr> 
+            <td width="68%" align="left" class="titulo">Seguimiento</td>
+            <td width="32%" align="right" class="titulo">04 de Septiembre de 2008</td>
+          </tr>
+        </table>
+		</td>
+	</tr>
+	
+	 <tr>
+		<td height="20"colspan="3" class="titulo">
+				<table width="99%" border="0" height="30" align="center" bgcolor="#FFFFFF">
+          <tr> 
+            <td width="68%" align="left" class="titulo">
+			 <img src="../../images/regresar.bmp" border="0" onClick="regresar()" alt="Regresar"/>
+			  <img src="../../images/dia.bmp" border="0" onClick="location.href='../../pages/bandeja/calendario.html'" alt="Dia"/>
+			   <img src="../../images/semanal.bmp"  border="0" onClick="location.href='../../pages/bandeja/calendarioSemanal.html'" alt="Semana Laboral"/> 
+			   <!--<img src="../../images/cita.bmp"  border="0" onClick="location.href='../../pages/bandeja/calendario.html'" alt="Nueva Cita"/>--></td>
+            <td width="32%" align="right" class="titulo"></td>
+          </tr>
+        </table>
+		</td>
+	</tr>
+  
+  
+ 
+  <tr>
+		<td height="20"colspan="3" class="titulo">
+		<table width="99%" border="0" height="30" align="center" bgcolor="#A2C0DC">
+          <tr> 
+            <td width="68%" align="center" class="titulo">Jueves, 04 de Setiembre 
+            </td>
+             </tr>
+        </table>
+		</td>
+	</tr>
+	
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+		<table width="99%" border="0" height="20" align="center" bgcolor="#FFFFFF">
+          <tr> 
+            <td width="68%" align="center" class="titulo"></td>
+             </tr>
+        </table>
+		</td>
+	</tr>
+  
+  
+  <tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				<td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">08:00 am</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">09:00 am</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">10:00 am</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">11:00 am</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">12:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">01:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">02:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">03:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">04:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">05:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">06:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">07:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+	<tr>
+		<td height="20"colspan="3" class="titulo">
+			<table width="99%" border="0" height="35" align="center" bgcolor="#A2C0DC">
+			  <tr> 
+				
+            <td width="8%" align="left" class="titulo" bgcolor="#8DB1D5">08:00 pm</td>
+				<td width="92%" align="left" class="titulo" bgcolor="#D2DFEF">&nbsp;</td>
+			  </tr>
+			 </table>
+		</td>
+		
+	</tr>
+  <tr> 
+    <td height="14"  colspan="3"></td>
+  </tr>
+  
+  
+</table>
+</form>
+
+</body>
+</html:html>

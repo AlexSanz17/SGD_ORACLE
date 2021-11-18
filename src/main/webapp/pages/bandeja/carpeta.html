@@ -1,0 +1,185 @@
+<head>
+<title>Tramite Documentario</title>
+<link rel="stylesheet" type="text/css" href="../../css/estilo.css">
+<script language="javascript" src="../../js/form.js"> </script>
+<script language="Javascript" src="../../js/general.js"></script>
+<script language="JavaScript" src="../../js/dtreeCarpeta.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="../../css/calendar-green.css">
+<script type="text/javascript" src="../../js/calendar.js"></script>
+<script type="text/javascript" src="../../js/calendar-es.js"></script>
+<script type="text/javascript" src="../../js/calendar-setup.js"></script>
+
+<script language="JavaScript">
+function Abrir_ventana (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=700, top=50, left=200";
+window.open(pagina,"",opciones);
+}
+
+function Abrir_pagina (pagina) {
+var opciones="location=mainFrame";
+window.open(pagina,"",opciones);
+}
+
+function regresar(){ 
+   window.close() 
+}
+</script>
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><style type="text/css">
+<!--
+body {
+	background-color: #ffffff;
+}
+-->
+</style>
+<style>
+	a, A:link, a:visited, a:active
+		{color: #000000;text-decoration: none; font-family: Tahoma, Verdana; font-size: 11px}
+	A:hover
+		{color: #ff0000; text-decoration: none; font-family: Tahoma, Verdana; font-size: 11px}
+</style>
+<style TYPE="text/css">
+.tipo0{
+padding: 6px;
+position: absolute;
+width: 200px;
+border: 2px solid black;
+background-color: menu;
+font-family: Verdana;
+line-height: 20px;
+cursor: default;
+visibility: hidden;
+}
+.tipo1{
+padding: 6px;
+cursor: default;
+position: absolute;
+width: 165px;
+background-color: Menu;
+color: MenuText;
+border: 0 solid white;
+visibility: hidden;
+border: 2 outset ButtonHighlight;
+}
+a.menuitem {font-size: 0.7em; font-family: Arial, Serif; text-decoration: none;}
+a.menuitem:link {color: #000000; }
+a.menuitem:hover {color: #ffffff; background: #0A246A;}
+a.menuitem:visited {color: #868686;}
+</style>
+</head>
+
+<body topmargin="0" leftmargin="0" rigthmargin="0" > 
+  <table width="103%">
+    <tr> 
+      <td height="14" colspan="2"> </td>
+    </tr>
+    <tr> 
+      <td height="13" colspan="2" class="header" ><div align="left">Crear Nueva 
+        Carpeta</div></td>
+    </tr>
+
+    <tr> 
+      <td height="13" colspan="2" class="header" ></td>
+    </tr>
+
+
+    <tr> 
+      <td height="14" colspan="2">
+	  <table width="85%"  border="1" align="center" bordercolor="#669BCD" bgcolor="#BFD9F1">
+	   <tr>
+       <td height="70">
+	  <table width="98%" height="50" align="center" >
+              <tr> 
+                <td width="10%" ></td>
+                <td width="72%" height="5" ></td>
+                <td width="15%" ></td>
+                <td width="3%" ></td>
+              </tr>
+              <tr> 
+                <td ></td>
+                <td height="24" align="left">Nombre :</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr> 
+                <td ></td>
+                <td height="24" colspan="2" align="left"><input class="cajaMontoTotal" name="textfield" type="text" size="40" maxlength="80"></td>
+                <td></td>
+              </tr>
+              <tr> 
+                <td ></td>
+                <td align="left" height="24">Contenido de la Carpeta :</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr> 
+                <td ></td>
+                <td colspan="2" align="left"><select name="select" class="cajaMontoTotal" >
+                    <option value="0" selected>Todos</option>
+                    <option value="1" >Elementos de Bandejas</option>
+                    <option value="2">Elementos de Calendario</option>
+                    <option value="3">Elementos de Notas</option>
+					<option value="4">Elementos de Diario</option>
+                    <option value="5">Elementos de Tareas</option>
+                  </select></td>
+                <td></td>
+              </tr>
+              <tr> 
+                <td height="1" ></td>
+              </tr>
+            </table>
+	</td>
+      </tr>
+  </table>
+ </td>
+ </tr>
+	
+<tr> 
+   <td width="44%" height="14"  colspan="2"></td>
+</tr>
+
+
+  <tr> 
+      <td height="14" colspan="2"> </td>
+    </tr>
+	  <tr> 
+      <td height="13" colspan="2" class="header" ><div align="left">\\\\\\\\\\\\\</div></td>
+    </tr>
+      
+    <tr align="center"> 
+      <td colspan="2"  align="center">&nbsp;</td>
+    </tr>
+	
+	 <tr>
+       <td width="200" style="height:auto" valign="top"  bgcolor="#ffffff"> <script language="JavaScript">
+		d = new dTree('d');
+
+		d.add(0,-1,'Tr&aacute;mite Documentario');
+		d.add(1,0,'Bandeja','', 'Doc Enviados','mainframe');
+		    d.add(2,1,'Enviados','','','mainFrame');
+			d.add(3,1,'Por Enviar','','','mainFrame');
+			d.add(4,1,'Recibidos','','','mainFrame');
+		d.add(10,0,'Cartas','','Doc por Enviar','mainFrame','../../images/recibido.gif');
+		d.add(20,0,'Informes','','Doc Recibidos','mainFrame','../../images/page2.gif');
+		d.add(30,0,'Oficios','','Cartas','mainFrame','../../images/borrador.gif');
+		document.write(d);
+		//-->
+    	</script></td>
+	</tr>
+	
+	
+		 <tr align="center"> 
+      <td colspan="2"  align="center">&nbsp;</td>
+    </tr>
+	<tr> 
+      <td colspan="2" align="center">
+         <input type="button" name="busca" value="Aceptar" class="button" onClick="regresar()"/>  &nbsp;&nbsp;
+		  <input type="button" name="nuevo" value="Cancelar" class="button" onClick="regresar()"/>  &nbsp;&nbsp; 
+		 </td>
+</tr>
+	
+</table>
+
+
+</body>
+</html:html>

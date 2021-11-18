@@ -1,0 +1,14 @@
+package org.osinerg.services;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.btg.osinergmin.siged.domain.Usuario;
+
+
+public interface LoginService{
+	
+	public boolean loginSeguridad(String usuario,String rol,HttpServletRequest request);
+	
+	public void asignarRol(Usuario usuario,String rol,HttpServletRequest request);
+
+}

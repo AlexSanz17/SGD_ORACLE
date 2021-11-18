@@ -1,0 +1,14 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.AmbitoEnvio;
+
+public interface AmbitoenvioDAO {
+
+   public AmbitoEnvio findId(Integer id);
+   
+   public List<AmbitoEnvio> findAll();
+   
+
+}

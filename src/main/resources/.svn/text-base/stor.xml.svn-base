@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+   <package name="stor" extends="struts-default">
+      <action name="doStor_*" method="{1}" class="storAction">
+      	 <result name="successSTOR">pages/bandeja/informacionPrincipal.jsp</result>
+         <result name="input">pages/bandeja/pruebaArch.jsp</result>
+         <result name="ap_calexp">pages/stor/CalificarExpediente.jsp</result>         
+         <result name="ap_asiganal">pages/stor/AsignarAnalista.jsp</result>
+         <result name="ap_analexp">pages/stor/AnalisisExpediente.jsp</result>
+         <result name="ap_revtecnica">pages/stor/RevisionTecnica.jsp</result>
+         <result name="ap_vbfinal">pages/stor/ReformulacionTecnicaLegal.jsp</result>
+         <result name="ap_vbrst">pages/stor/VBResolucionST.jsp</result>
+         <result name="ap_regresol">pages/stor/RegistrarResolucion.jsp</result>
+         <result name="ap_regnot">pages/stor/RegistrarNotificaciones.jsp</result>
+         <result name="ap_decamsala">pages/stor/DecidirCambioSala.jsp</result>
+         <result name="ap_calanalext">pages/stor/CalificarAnalisisExterno.jsp</result>
+         <result name="observacion">pages/stor/VentanaObservacion.jsp</result>
+         <result name="rechazar">pages/stor/Rechazar.jsp</result>
+         <result name="anular">pages/stor/AnularExpediente.jsp</result>
+         <result name="cambiosala">pages/stor/CambioSala.jsp</result>
+         <result name="editar_expediente">pages/stor/DatosExpediente.jsp</result>
+         <result name="editar_resumen_expediente">pages/stor/ResumenDatosExpediente.jsp</result>
+         <!--<result name="editar_Completoexpediente">pages/stor/DatosCompletosExpedienteOtros.jsp</result>-->
+         <result name="error">error.html</result>
+         <result name="mc_calexp">pages/stor/CalificarExpediente.jsp</result>
+         <result name="mc_asiganal">pages/stor/AsignarAnalista.jsp</result>
+         <result name="mc_analexp">pages/stor/AnalisisExpedienteMC.jsp</result>
+         <result name="mc_revtecnica">pages/stor/RevisionTecnica.jsp</result>
+         <result name="mc_vbfinal">pages/stor/ReformulacionTecnicaLegal.jsp</result>
+         <result name="mc_vbrst">pages/stor/VBResolucionST.jsp</result>
+         <result name="mc_regresol">pages/stor/RegistrarResolucion.jsp</result>
+         <result name="mc_regnot">pages/stor/RegistrarNotificaciones.jsp</result>
+         <result name="mc_decamsala">pages/stor/DecidirCambioSala.jsp</result>
+         <result name="mc_calanalext">pages/stor/CalificarAnalisisExterno.jsp</result>
+         <result name="q_calexp">pages/stor/CalificarExpediente.jsp</result>
+         <result name="q_asiganal">pages/stor/AsignarAnalista.jsp</result>
+         <result name="q_analexp">pages/stor/AnalisisExpedienteMC.jsp</result>
+         <result name="q_revtecnica">pages/stor/RevisionTecnica.jsp</result>
+         <result name="q_vbfinal">pages/stor/ReformulacionTecnicaLegal.jsp</result>
+         <result name="q_vbrst">pages/stor/VBResolucionST.jsp</result>
+         <result name="q_regresol">pages/stor/RegistrarResolucion.jsp</result>
+         <result name="q_regnot">pages/stor/RegistrarNotificaciones.jsp</result>
+         <result name="q_decamsala">pages/stor/DecidirCambioSala.jsp</result>
+         <result name="q_calanalext">pages/stor/CalificarAnalisisExterno.jsp</result>
+         <result name="ver_datos_expediente">pages/stor/DatosExpedienteOtros.jsp</result>
+         <result name="ver_resumen_expediente">pages/stor/ResumenDatosExpedienteOtros.jsp</result>
+         <result name="requerimientos">pages/stor/Requerimientos.jsp</result>
+         <result>pages/stor/aprobar.jsp</result>
+         <result name="error">error.html</result>
+         <result name="archivar" type="redirectAction">
+            <param name="actionName">Archivar_inicio</param>
+            <param name="idDocumento">${idDocumento}</param>
+         </result>
+          <result name="complementaria">pages/bandeja/informacionComplementaria.jsp</result>
+         
+      </action>
+      
+
+   </package>
+</struts>

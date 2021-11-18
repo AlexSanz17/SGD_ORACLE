@@ -1,0 +1,283 @@
+<head>
+<title>Tramite Documentario</title>
+<link rel="stylesheet" type="text/css" href="../../css/estilo.css">
+<script language="javascript" src="../../js/form.js"> </script>
+<script language="Javascript" src="../../js/general.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="../../css/calendar-green.css">
+<script type="text/javascript" src="../../js/calendar.js"></script>
+<script type="text/javascript" src="../../js/calendar-es.js"></script>
+<script type="text/javascript" src="../../js/calendar-setup.js"></script>
+
+<script language="JavaScript">
+function Abrir_ventana (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=440, height=350, top=50, left=200";
+window.open(pagina,"",opciones);
+}
+
+function Abrir_pagina (pagina) {
+var opciones="location=mainFrame";
+window.open(pagina,"",opciones);
+}
+function Abrir_ventanaDerivar (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, width=900, height=640, top=20, left=70";
+window.open(pagina,"",opciones);
+}
+function Abrir_ventanaSeguimiento (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, width=650, height=320, top=50, left=200";
+window.open(pagina,"",opciones);
+}
+
+function Abrir_ventanaObservacion (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, width=650, height=290, top=50, left=200";
+window.open(pagina,"",opciones);
+}
+
+function ejecAprob(){
+if (confirm("Desea enviar estos documentos")){
+location.href="../../enviar.html"
+}
+}
+function ejecRech(){
+if (confirm("Desea rechazar el expediente EXP001")){
+location.href="../../rechazar.html"
+}
+}
+
+function ejecutar(){
+if (confirm("Desea aprobar el expediente EXP001")){
+location.href="../../blank.html"
+}
+}
+</script>
+
+ <script type="text/javascript">
+
+function poorman_toggle(id)
+{
+	var tr = document.getElementById(id);
+	if (tr==null) { return; }
+	var bExpand = tr.style.display == '';
+	tr.style.display = (bExpand ? 'none' : '');
+}
+function poorman_changeimage(id, sMinus, sPlus)
+{
+	var img = document.getElementById(id);
+	if (img!=null)
+	{
+	    var bExpand = img.src.indexOf(sPlus) >= 0;
+		if (!bExpand)
+			img.src = sPlus;
+		else
+			img.src = sMinus;
+	}
+}
+
+function Toggle_repHeader2()
+{
+    poorman_changeimage('repHeader2_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader1()
+{
+    poorman_changeimage('repHeader1_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow1');
+}
+function Toggle_repHeader3()
+{
+    poorman_changeimage('repHeader3_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader3()
+{
+    poorman_changeimage('repHeader3_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow3');
+}
+
+</script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+body {
+	background-color: #ffffff;
+}
+
+.barra {
+           scrollbar-3dlight-color:#CCCCCC;
+           scrollbar-arrow-color:#568BBF;
+           scrollbar-base-color:#C3D5E9;
+           scrollbar-darkshadow-color:#666666;
+           scrollbar-face-color:;
+           scrollbar-highlight-color:#669BCD;
+           scrollbar-shadow-color:#999999;
+		   }
+
+div.falso {
+	position: absolute;
+	top: -29px;
+	left: 335px;
+	z-index: 0;
+	width: 14px;
+	height: 3px;
+ }
+ 
+input.file {
+ position: relative; 
+ text-align: left;
+ filter:alpha(opacity: 0); 
+ opacity: 0; 
+ z-index: 1; 
+ top: -29px;
+	left: 305px;
+ }
+
+		   
+-->
+
+</style>
+
+</head>
+
+<body  class="barra" topmargin="0" leftmargin="0" rigthmargin="0" > 
+  
+<table width="100%">
+  <tr> 
+    <td height="14" colspan="3"> </td>
+  </tr>
+<!-- <tr> 
+    <td height="14" colspan="3"> <table width="95%"  border="1"  style="border-style:solid" align="center" bordercolor="#669BCD" bgcolor="#BFD9F1">
+        <tr> 
+          <td height="25"> <table width="98%" height="25" align="center" >
+              <tr> 
+                <td width="1%"></td>
+                <td width="16%" align="center"><font color="#993300">GENERAL</font></td>
+                <td width="3%"></td>
+                <td width="20%" align="center"> <a href="pruebaArch.html">OTROS DATOS</a></td>
+                <td width="3%"></td>
+                <td width="16%" height="20" align="center"> <a href="pruebaAdjunto.html">CONTENIDO 
+                  ADJUNTO</a></td>
+                <td width="1%"></td>
+              </tr>
+              <tr></tr>
+            </table></td>
+        </tr>
+      </table></td>
+  </tr>-->
+  
+ <tr>
+		<td height="20"colspan="3" class="titulo">
+				<table width="99%" border="0" height="20" align="center" bgcolor="#A2C0DC">
+					<tr>
+					   
+            <td align="left" class="titulo">Solicitud de Mensajer&iacute;a</td>
+					</tr>
+				</table>
+		</td>
+	</tr>
+  
+  
+  
+  <!--<tr align="center"> 
+    <td width="3%" align="center">&nbsp;</td>
+    <td colspan="2" align="left"> <img src="../../images/guardar.gif" width="15" height="15" border="0" alt="Guardar"/> 
+      &nbsp;&nbsp; <img src="../../images/regresar.gif" width="15" height="15" border="0" alt="Regresar"/> 
+      &nbsp;&nbsp; <img src="../../images/enviar.gif" width="15" height="15" border="0" alt="Enviar"/> 
+	  &nbsp;&nbsp; <img src="../../images/reenviar.gif" width="15" height="15" border="0" alt="Reenviar"/> 
+      &nbsp;&nbsp; <img src="../../images/imprimir.gif" width="15" height="15" border="0" alt="Imprimir"/> 
+      &nbsp;&nbsp; <img src="../../images/salir.gif" width="15" height="15" border="0" alt="Cerrar"/> 
+      &nbsp;&nbsp;
+	   </tr>-->
+ 
+  <tr align="center"> 
+    <td width="2%" align="center">&nbsp;</td>
+    <td width="98%" col
+	2 align="left"><img onClick="javascript:ejecAprob()"  src="../../images/enviar.bmp" border="0" alt="Enviar"/> 
+     &nbsp;&nbsp; 
+	</td>
+  </tr>
+  
+  <tr> 
+  <tr id="repHeader1">
+      <td height="10" colspan="3">
+	     <table cellpadding="1" cellspacing="1" class="tableForm" width="95%" align="center">
+		 <tr onMouseOver="overMouse(this)" onMouseOut="outMouse(this)" class="altRow2" style="cursor:hand" > 
+		   
+          <td height="15"> Listado de Expedientes</td>
+         </tr>
+	    </table>
+    </td>
+	 </tr>
+  
+ <tr align="center" id="trRow1"> 
+     <td  colspan="3">
+		<table cellpadding="1" cellspacing="1" class="tableForm" width="95%" align="center">
+        <tr style="cursor:hand" > 
+          <td width="8%"><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td width="63%"><div class="file-input" align="left"><a href="../../plantilla/primerDocumento.xls" target="_blank">PrimerDocumento.xls</a></div></td>
+          <td width="29%"><div align="center"></div></td>
+        </tr>
+        <tr style="cursor:hand" > 
+          <td><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td><div class="file-input" align="left"><a href="../../plantilla/segundoDocumento.doc" target="_blank">SegundoDocumento.doc</a></div></td>
+          <td><div align="center"></div></td>
+        </tr>
+        <tr style="cursor:hand" > 
+          <td><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td><div class="file-input" align="left"><a href="../../plantilla/tercerDocumento.rar" target="_blank">TercerDocumento.rar</a></div></td>
+          <td><div align="center"></div></td>
+        </tr>
+		<tr style="cursor:hand" > 
+          <td width="8%"><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td width="63%"><div class="file-input" align="left"><a href="../../plantilla/primerDocumento.xls" target="_blank">PrimerDocumento.xls</a></div></td>
+          <td width="29%"><div align="center"></div></td>
+        </tr>
+        <tr style="cursor:hand" > 
+          <td><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td><div class="file-input" align="left"><a href="../../plantilla/segundoDocumento.doc" target="_blank">SegundoDocumento.doc</a></div></td>
+          <td><div align="center"></div></td>
+        </tr>
+        <tr style="cursor:hand" > 
+          <td><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td><div class="file-input" align="left"><a href="../../plantilla/tercerDocumento.rar" target="_blank">TercerDocumento.rar</a></div></td>
+          <td><div align="center"></div></td>
+        </tr>
+		<tr style="cursor:hand" > 
+          <td width="8%"><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td width="63%"><div class="file-input" align="left"><a href="../../plantilla/primerDocumento.xls" target="_blank">PrimerDocumento.xls</a></div></td>
+          <td width="29%"><div align="center"></div></td>
+        </tr>
+        <tr style="cursor:hand" > 
+          <td><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td><div class="file-input" align="left"><a href="../../plantilla/segundoDocumento.doc" target="_blank">SegundoDocumento.doc</a></div></td>
+          <td><div align="center"></div></td>
+        </tr>
+        <tr style="cursor:hand" > 
+          <td><div align="center"><input name="doc" type="checkbox" value=""></div></td>
+          <td><div class="file-input" align="left"><a href="../../plantilla/tercerDocumento.rar" target="_blank">TercerDocumento.rar</a></div></td>
+          <td><div align="center"></div></td>
+        </tr>
+      </table>
+	  </td>
+  </tr>
+  <tr> 
+    <td height="14"  colspan="3"></td>
+  </tr>
+  
+   
+  
+    
+   <tr> 
+    <td height="14"  colspan="3"></td>
+  </tr>
+</table>
+
+
+</body>
+</html:html>

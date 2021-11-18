@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<%@ page contentType="text/html" pageEncoding="UTF-8" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+   <head>
+      <title>SIGED - Nuevo Documento Usuario Final</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <meta http-equiv="cache-control" content="no-cache" />
+       <META HTTP-EQUIV="Expires" CONTENT="-1">
+           
+      <style type="text/css">
+		@import "js/dojo/dijit/themes/soria/soria.css";	
+		@import "js/dojo/dojox/grid/resources/soriaGrid.css";	
+		@import "css/estilo.css";	
+		@import "css/sigedIconos.css";
+	</style>     
+      <script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/dojo/dijit/dijit.js"></script>
+      <script type="text/javascript">
+          dojo.require("dijit.form.Button");
+	      dojo.require("dijit.form.FilteringSelect");
+	      dojo.require("dijit.form.Form");
+	      dojo.require("dijit.form.TextBox");
+	      dojo.require("dojo.data.ItemFileWriteStore");
+	      dojo.require("dojo.rpc.JsonService");
+	      dojo.require("dojox.grid.DataGrid");
+         
+         var AUTOR_DEFAULTID        = "<s:property  value='#session._USUARIO.nombres' escape='false' /> <s:property  value='#session._USUARIO.apellidos' escape='false' />";
+         var DOCUMENTO_ID           = "<s:property value='idDocumento' />";
+         var DOCUMENTO_ID_INF         = "<s:property value='idINFDocumento' />";
+
+         var ND_NUMERODOCUMENTO     = "<s:property value='documento.tipoDocumento.nombre' escape='false' /> - <s:property value='documento.numeroDocumento' escape='false' />";
+         var FIRMANTE_DEFAULTID     = "<s:property value='#session._USUARIO.idusuario' />";
+         
+         var UNIDAD_USUARIO     = "<s:property value='#session._USUARIO.idUnidadPerfil' />";
+         var UNIDAD_TRAMITE     = 1;
+         
+         var FLAG_TRAMITE           = "<s:property value='#session._USUARIO.flagUsuarioTramite' />";
+         var CODIGO_CI  			= "<s:property value='@org.ositran.utils.Constantes@CODIGO_COMUNICACIONES_INT' />";
+         var CODIGO_COMUNICACIONES_DE  			= "<s:property value='@org.ositran.utils.Constantes@CODIGO_COMUNICACIONES_DE' />";
+         var CODIGO_COMUNICACIONES_TUPA			= "<s:property value='@org.ositran.utils.Constantes@CODIGO_COMUNICACIONES_TUPA' />";
+         var TIPO_DOCUMENTO_CARTA_CLIENTE   =  "<s:property value='@org.ositran.utils.Constantes@TIPO_DOCUMENTO_CARTA_CLIENTE' />";
+         var TIPO_DOCUMENTO_OFICIO_CLIENTE   = "<s:property value='@org.ositran.utils.Constantes@TIPO_DOCUMENTO_OFICIO_CLIENTE' />";
+
+         var ID_PROCESO_DOCUMENTOS_EXTERNOS    = "<s:property value='@org.ositran.utils.Constantes@ID_PROCESO_DOCUMENTOS_EXTERNOS ' />";
+         var TIPO_INFORME_CONJUNTO = "<s:property value='@org.ositran.utils.Constantes@TIPO_INFORME_CONJUNTO' />";
+         var JEFE_USUARIOLOGEADO_ID = "<s:property value='#session._USUARIO.jefe.idusuario' />";
+         var CLIENTE_OSINERGMIN_ID  = "<s:property value='@org.ositran.utils.Constantes@CLIENTE_OSINERGMIN_ID' />";
+        // var CRITERIOS_CONFIDENCIAL_MATERIA_EXCEPTUADA = "<s:property value='@org.ositran.utils.Constantes@CRITERIOS_CONFIDENCIAL_MATERIA_EXCEPTUADA' />";
+         var ROL_USUARIOLOGEADO_ID  = "<s:property value='#session._USUARIO.rol.idrol' />";
+         var USUARIOLOGEADO_ID      = "<s:property value='#session._USUARIO.idusuario' />";
+		 var EXPEDIENTE_REFERENCIA = "<s:property value='idExpediente' />";
+		 var ORIGEN_EXPEDIENTE = "<s:property value='origenExpediente' />";
+		 var DOCUMENTO_REFERENCIA = "<s:property value='documento.tipoDocumento.nombre' escape='false'/> - <s:property value='documento.numeroDocumento' escape='false'/>";
+		 var fsProcesoFocused = 0;
+		 var strBusquedaExpedienteAbierto;
+		 var iExpedientesAbiertos = 0;
+		 var bIsPosting = false;
+		 var defIdProceso="";
+		 var defIdUsuarioFinal=0;
+		 var g_sumilla = "";
+		 var nombreProceso = "";
+		 var unidadActual = null;
+		 var storeDestinatariosClientes =null;
+		 var storeDestinatariosUsuarios =null;
+		 var storeCopias = null;
+		 var storeFirmante=null;
+		 //var idPropietario = "";
+
+         function llenarCamposReferencia(){
+
+         	dijit.byId("sNroExpediente").attr("value", "<s:property value='expediente.nroexpediente' />");
+        	if(dijit.byId("objDocumento.expediente.idexpediente")){
+        		dijit.byId("objDocumento.expediente.idexpediente").setValue("<s:property value='expediente.id' />");
+			}
+        	else if(dijit.byId("objDD.iIdExpediente")){
+        		dijit.byId("objDD.iIdExpediente").setValue("<s:property value='expediente.id' />");
+        	}
+
+        	fsProcesoFocused = 0;
+        	expedienteNuevo = false;
+        	//idPropietario = "<s:property value='expediente.id' />";
+        	dijit.byId("objDocumento.expediente.proceso.idproceso").setValue("<s:property value='expediente.proceso.idproceso' />");
+        	dijit.byId("objDocumento.expediente.proceso.idproceso").attr("readOnly", true);
+        	dijit.byId("objDD.asuntoExpediente").setValue("<s:property value='expediente.getAsuntoHTML()' escape='false'/>");
+			dijit.byId("objDD.asuntoExpediente").attr("readOnly", true);
+
+			dijit.byId("objDD.observacionExpediente").setValue("<s:property value='expediente.getObservacionHTML()' escape='false'/>");
+			dijit.byId("objDD.observacionExpediente").attr("readOnly", true);
+
+        	dojo.query("input[name='sTipoIdentificacion']").forEach(function(node) {
+        	      console.log("Nodo [" + node.name + "] ID [" + node.id + "] VALUE [" + node.value + "] CHECKED [" + node.checked + "]");
+        	      dijit.byId(node.id).attr("checked", false);
+        	      dijit.byId(node.id).attr("readOnly", true);
+
+        	      if (node.value == "<s:property value='expediente.cliente.tipoIdentificacion.nombre' />") {
+        	         dijit.byId(node.id).attr("checked", true);
+        	      }
+        	   });
+
+        	if (!Siged.String.isEmpty(ROL_USUARIOLOGEADO_ID) || ("<s:property value='expediente.proceso.codigo' />" != CODIGO_CI && Siged.String.isEmpty(ROL_USUARIOLOGEADO_ID))) {
+        		hideTBODY("tbNuevoCliente");
+        	    updateStore("<s:property value='expediente.cliente.tipoIdentificacion.nombre' />", "cliente");
+        	    dijit.byId("objDocumento.expediente.cliente.numeroIdentificacion").setValue("<s:property value='expediente.cliente.numeroIdentificacion' />");
+        	    dijit.byId("objDocumento.expediente.cliente.numeroIdentificacion").attr("readOnly", true);
+        	    fillDataCliente("<s:property value='expediente.cliente.numeroIdentificacion' />");
+			}
+         }
+      </script>
+      <script type="text/javascript" src="js/busquedaExpediente.js"></script>
+      <script type="text/javascript" src="js/siged/upload.js"></script>
+      <script type="text/javascript" src="js/siged/siged.string.js"></script>
+      <script type="text/javascript" src="js/siged/siged.documento.numeracion.js"></script>
+      <script type="text/javascript" src="js/siged/NuevoDocumento.js"></script>
+      
+     <script type="text/javascript" src="js/jquery.js"></script>
+      <script type="text/javascript">
+         if (dojo.isIE) {
+            console.debug("Eliminando en navegador Internet Explorer");
+            destroyWidgetsFromBusquedaExpediente();
+         }
+      </script>
+   </head>
+   <body>
+      <div class="margen5PX">
+         <button dojoType="dijit.form.Button" id="btn">Adjuntar</button>
+         <button dojoType="dijit.form.Button"
+                 type="button"
+                 id="btnRegistrarDocumentoTop"
+                 jsId="btnRegistrarDocumentoTop"
+                 iconClass="siged16 sigedSave16"
+                 onClick="submitForm"
+                 showLabel="true">Registrar Documento</button>
+         <div id="divShowFile2"></div>
+      </div>
+      <form dojoType="dijit.form.Form" id="frmNuevoDocumento" jsId="frmNuevoDocumento" action="NuevoDocumentoEnviarArchivo.action" method="post">
+        <input type="hidden" id="listReferenciados" name="listReferenciados"/>
+        <input type="hidden" id="raiz" name="raiz"/>
+
+         <table width="100%" border="0">
+            <tr>
+               <td>
+                  <div id="showErrorDocumento" class="margen5PX" style="color:red;font-weight:bold;">&nbsp;</div>
+               </td>
+            </tr>
+            <tr>
+               <td>
+                  <div class="marcoForm margen5PX">
+                     <table width="100%">
+                        <tr>
+                           <td width="20%" class="titulo">DATOS DEL EXPEDIENTE</td>
+                           <td width="80%" colspan="2"></td>
+                        </tr>
+                        <tr>
+                           <td colspan="3">
+                              <input id="objDD.iIdExpediente" style="display:none;" />
+                              <s:hidden id="objDD.iIdResponsable" name="objDD.iIdResponsable" />
+                              <input type="hidden" id="objDocumento.expediente.sumilla" />
+                           </td>
+                        </tr>
+                        <tr>
+                           <td width="20%">Nro Expediente</td>
+                           <td class="label" colspan="2" width="80%">
+                              <input id="sNroExpediente" />
+                              <button dojoType="dijit.form.Button"
+                                      id="btnBusquedaExpediente"
+                                      jsId="btnBusquedaExpediente"
+                                      iconClass="siged16 sigedSearch16"
+                                      onClick="showBusquedaExpediente"
+                                      showLabel="false">B&uacute;squeda de Expediente</button>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td>Proceso</td>
+                           <td class="label" colspan="2">
+                              <input id="idproceso" style="display:none;" />
+                              <div id="fsProceso"></div>
+
+                              <span id="ambienteProceso" style="font-weight:bold;">&nbsp;</span>
+                           </td>
+                        </tr>
+                        <tbody id="tbProceso" style="display:none;">
+                           <tr id="trEnviarA">
+                              <td><!-- Enviar a -->&nbsp;</td>
+                              <td class="label" colspan="2">
+                                 <input id="fsUsuarioFinal" name="objDD.iIdDestinatario" type="hidden"/>
+                              </td>
+                           </tr>
+
+                           <tr>
+                              <td>Asunto del Expediente</td>
+                              <td class="label" colspan="2">
+                                 <div id="objDD.asuntoExpediente"/>
+                              </td>
+                           </tr>
+
+  			   <tr>
+                              <td>Observaciones del Expediente</td>
+                              <td class="label" colspan="2">
+                                 <div id="objDD.observacionExpediente"/>
+                              </td>
+                           </tr>
+
+                           <tr id="trApoyo" style="display:none;">
+                           	  <td>Apoyo</td>
+                           	  <td><button dojoType="dijit.form.Button" onClick="mostrarUsuariosProceso()">Agregar</button></td>
+                           </tr>
+                           <tr>
+                           	  <td>&nbsp;</td>
+                           	  <td><div id="apoyoNuevoDocUF" name="apoyoNuevoDocUF"></div></td>
+                           </tr>
+                           
+                        </tbody>
+                        <tbody id="tbDocumento" style="display:none;" border="1">
+                           <tr>
+                              <td colspan="3"><hr /></td>
+                           </tr>
+                           <tr>
+                              <td colspan="3" class="titulo">DOCUMENTO</td>
+                           </tr>
+                           <tr>
+                              <td>Tipo Documento</td>
+                              <td class="label" colspan="2">
+                                 <input dojoType="dijit.form.TextBox"
+                                        id="idtipodocumento"
+                                        jsId="idtipodocumento"
+                                        name="idtipodocumento"
+                                        style="display:none; " />
+                                 <div id="fsTipoDocumento" name="fsTipoDocumento" style="width:300px;"></div>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td>Asunto del Documento</td>
+                              <td class="label" colspan="2">
+                                 <div dojoType="dijit.form.ValidationTextBox"
+                                      id="objDD.strAsunto"
+                                      jsId="objDD.strAsunto"
+                                      name="objDD.strAsunto"
+                                      invalidMessage="Ingrese un Asunto"
+                                      regExp=".{1,300}"
+                                      required="true"
+                                      style="width:500px"
+                                      trim="true" />
+                              </td>
+                           </tr>
+                         
+                           <tr>
+                              <td>Fecha Documento</td>
+                              <td class="label" colspan="2">
+                                 <div dojoType="dijit.form.DateTextBox"
+                                      id="objDD.strFechaDocumento"
+                                      jsId="objDD.strFechaDocumento"
+                                      name="objDD.strFechaDocumento"
+                                      constraints="{datePattern:'dd/MM/yyyy'}"
+                                      invalidMessage="Ingrese fecha de Documento dd/MM/yyyy"
+                                      required="true"
+                                      trim="true">
+                                    <script type="dojo/method" event="postCreate">
+                                       var fechadocumento_year = parseInt("<s:date name='fecha' format='yyyy' />", 10);
+                                       var fechadocumento_month = parseInt("<s:date name='fecha' format='MM' />", 10);
+                                       var fechadocumento_day = parseInt("<s:date name='fecha' format='dd' />", 10);
+
+                                       console.debug("fechadocumento year [%d] month [%d] day [%d]", fechadocumento_year, fechadocumento_month, fechadocumento_day);
+
+                                       if (!isNaN(fechadocumento_year) && !isNaN(fechadocumento_month) && !isNaN(fechadocumento_day)) {
+                                       this.attr("value", new Date(fechadocumento_year, fechadocumento_month - 1, fechadocumento_day));
+                                       }
+                                    </script>
+                                 </div>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td>Documentos referenciados</td>
+                              <td class="label" colspan="2">
+                                 <div id="objDD.strReferencia" />
+                              </td>
+                           </tr>
+                           <tr>
+                              <td style="color:red;">Documento Confidencial</td>
+                              <td class="label" colspan="2" style="color:red;">
+                                 <select name="objDD.confidencial" id="objDD.confidencial" dojoType="dijit.form.FilteringSelect" />
+                                 	<option value="N" selected style="color:black;">No Confidencial</option>
+                                 	<option value="S">Confidencial</option>
+                                 </select>
+                              </td>
+                           </tr>
+	                </tbody>  
+                         <tbody id="tbFolios" style="display:none;">               
+                            <tr>
+                              <td>Nro Folios</td>
+                              <td class="label" colspan="2">
+                                 <div dojoType="dijit.form.ValidationTextBox" 
+                                      id="objDD.iNroFolios" 
+                                      regExp= ".{1,5}"
+                                      jsId="objDD.iNroFolios"
+                                      name="objDD.iNroFolios"
+                                      style="width:70px;" />
+                              </td>
+                           </tr>
+
+                        </tbody>
+                        <tbody id="tbObservacion" style="display:none;">
+                           <tr>
+                              <td colspan="3"><hr /></td>
+                           </tr>
+                           <tr>
+                              <td>Observaciones del Documento</td>
+                              <td class="label" colspan="2">
+                                 <div dojoType="dijit.form.Textarea"
+                                      id="objDocumento.observacion"
+                                      jsId="objDocumento.observacion"
+                                      name="objDD.strObservacion"
+                                      style="width:400px;" />
+                              </td>
+                           </tr>
+                            
+                            
+                            
+                            
+                        </tbody>               
+                                                                            
+                        <tbody id="tbNumeracionDocumento" style="display:none;">
+                           <tr>
+                              <td colspan="3"><hr /></td>
+                           </tr>
+                           <tr>
+                              <td colspan="3" class="titulo">NUMERACION DEL DOCUMENTO DEL AREA</td>
+                           </tr>
+                           <tr id="trFirmante">
+                              <td>Firmante</td>
+                              <td class="label" colspan="2">
+                                 <div id="fsFirmante"></div>
+                              </td>
+                           </tr>
+                           <tr id="trNroDocumento">
+                              <td>Nro. Documento</td>
+                              <td class="label" colspan="2">
+                                 <div id="divChkEnumerarDocumento" style="float:left;display: none">
+                                    <input id="chkEnumerarDocumento"/>
+                                    <label for="chkEnumerarDocumento">Enumerar</label>
+                                 </div>
+                                 <div id="divNroDocumento">
+                                    <div dojoType="dijit.form.ValidationTextBox"
+                                         id="objDD.strNroDocumento"
+                                         jsId="objDD.strNroDocumento"
+                                         name="objDD.strNroDocumento"
+                                         invalidMessage="Ingrese un Nro de Documento"
+                                         regExp=".{1,40}"
+                                         required="false"
+                                         trim="true"></div>
+                                    <input dojoType="dijit.form.TextBox"
+                                           id="objDD.tipoNumeracion"
+                                           jsId="objDD.tipoNumeracion"
+                                           name="objDD.tipoNumeracion"
+                                           style="display:none;" />
+                                 </div>
+                              </td>
+                           </tr>
+                           <tr id="trDestinatario1">
+                              <td><%--A --%></td>
+                              <td class="label" colspan="2">
+                                 <div id="fsDestinatario"></div>
+                              </td>
+                           </tr>
+						   <tr id="trDestinatario2">
+								<td><%-- Destinatarios --%></td>
+								<td><div id="fsNroIdentificacion1" name="fsNroIdentificacion1" /></td>
+							</tr>
+                           <tr id="trDestinatario3">
+                              <td></td>
+                              <td class="label" colspan="2">
+                                 <div id="destinatarios"></div>
+                              </td>
+                           </tr>
+                           <tr id="trConCopia1">
+                              <td><%-- Otros destinatarios Cc --%></td>
+                              <td class="label" colspan="2">
+                                 <div id="fsConCopia"></div>
+                              </td>
+                           </tr>
+							<tr id="trConCopia2">
+								<td><%--Con Copia A --%></td>
+								<td><div id="fsNroIdentificacion2" name="fsNroIdentificacion2" /></td>
+							</tr>
+                           <tr id="trConCopia3">
+                              <td></td>
+                              <td class="label" colspan="2">
+                                 <div id="copias"></div>
+                              </td>
+                           </tr>
+                        </tbody>
+                       
+                        <tbody id="tbCliente" style="display:none;" >
+                           <tr>
+                              <td colspan="3"><hr /></td>
+                           </tr>
+                           <tr>
+                              <td colspan="3" class="titulo">INSTITUCION</td>
+                           </tr>
+                            
+                           <tr>
+                              <td>Tipo</td>
+                              <td class="label" colspan="2">
+                                 <input dojoType="dijit.form.TextBox"
+                                        id="idtipoinstitucion"
+                                        jsId="idtipoinstitucion"
+                                        name="idtipoinstitucion"
+                                        style="display:none; " />
+                                 <div id="fsTipoInstitucion" name="fsTipoInstitucion" style="width:200px;"></div>
+                              </td>
+                              <td colspan="1"> </td>
+                           </tr>
+                            
+                         
+                            
+                            <tr>
+                              <td>Institución</td>
+                              <td class="label" colspan="2">
+                             
+                                 <div id="fsCliente" name="fsCliente" style="width:200px;"></div>
+                              </td>
+                              <td colspan="1"> </td>
+                           </tr>
+                            
+                            <tr> 
+                              <td>Persona Remitente</td>
+                             <td class="label" colspan="2">
+                                 <div dojoType="dijit.form.ValidationTextBox"
+                                      id="objDD.remitente"
+                                      jsId="objDD.remitente"
+                                      name="objDD.remitente"
+                                      invalidMessage="Ingrese el remitente"
+                                      regExp=".{1,300}"
+                                      required="true"
+                                      style="width:300px"
+                                      trim="true" />
+                              </td>
+                           </tr>
+                            
+                            <tr> 
+                              <td>Cargo Remitente</td>
+                              <td class="label" colspan="2">
+                                 <div dojoType="dijit.form.ValidationTextBox"
+                                      id="objDD.cargoRemitente"
+                                      jsId="objDD.cargoRemitente"
+                                      name="objDD.cargoRemitente"
+                                      invalidMessage="Ingrese el cargo del remitente"
+                                      regExp=".{1,300}"
+                                      required="true"
+                                      style="width:300px"
+                                      trim="true" />
+                              </td>
+                           </tr>					
+                        </tbody>
+                        <tbody id="tbAdjuntos" style="display:none;" >
+                           <tr>
+                              <td colspan="3"><hr /></td>
+                           </tr>
+                           <tr>
+                              <td colspan="3" class="titulo">ADJUNTOS</td>
+                           </tr>
+                            
+                           <tr>
+                              <td>Tipo</td>
+                              <td class="label" colspan="2">
+                                 <div id="fsTipoAdjunto" name="fsTipoAdjunto" style="width:200px;"></div>
+                              </td>
+                              <td colspan="1"> </td>
+                           </tr>
+                           <tr>
+                               <td> Orig/Copia  
+                               <td class="label" colspan="2">    
+                                       <input type="radio"
+                                                dojoType="dijit.form.RadioButton"
+                                                name="objDD.idTipoCopiaOriginal"
+                                                onClick="changeSomeFields(this.value)"
+                                                value="0" />Copia &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                         <input type="radio"
+                                                dojoType="dijit.form.RadioButton"
+                                                name="objDD.idTipoCopiaOriginal" checked
+                                                onClick="changeSomeFields(this.value)"
+                                                value="1" />Original
+                                 </td>
+                              <td colspan="1"> </td> 
+                           </tr>
+                           <tr> 
+                              <td>Nro</td>
+                              <td class="label" colspan="2">
+                                 <div dojoType="dijit.form.ValidationTextBox"
+                                      id="objDD.nro"
+                                      jsId="objDD.nro"
+                                      name="objDD.nro"
+                                      invalidMessage="Ingrese el nro de copias/originales"
+                                      regExp=".{1,5}"
+                                      required="true"
+                                      style="width:70px"
+                                      trim="true" />
+                              </td>
+                           </tr>
+                            
+                           <tr>
+                                 <td> &nbps;&nbps;
+                                 <td colspan="2">
+	                                             <div dojoType="dojox.grid.DataGrid"
+								                       id="gridAdjuntos"
+								                       jsId="gridAdjuntos"
+								                       rowsPerPage="20"
+								                       rowSelector="10px"
+								                       style="width:250%;height:150px;"></div>
+								                  <div dojoType="dijit.form.TextBox"
+								                       type="text"
+								                       id="objDD.idGridTipoAdjunto"
+								                       jsId="objDD.idGridTipoAdjunto"
+								                       name="objDD.idGridTipoAdjunto"
+								                       style="display:none;"></div>
+								                  <div dojoType="dijit.form.TextBox"
+								                      type="text"
+								                       id="objDD.idGridTipoCopiaOriginal"
+								                       jsId="objDD.idGridTipoAdjunto"
+								                       name="objDD.idGridTipoAdjunto"
+								                       style="display:none;"></div>
+                                                                                    <div dojoType="dijit.form.TextBox"
+								                      type="text"
+								                       id="objDD.idGridNro"
+								                       jsId="objDD.idGridNro"
+								                       name="objDD.idGridNro"
+								                       style="display:none;"></div>
+							                </td>                                             
+                                          </tr>
+                            
+                            
+                        </tbody>                                        
+                                                               
+                     </table>
+                  </div>
+               </td>
+            </tr>
+            <tr>
+               <td align="left">
+                  <div class="margen5PX">
+                     <button dojoType="dijit.form.Button"
+                             type="button"
+                             id="btnRegistrarDocumentoBottom"
+                             jsId="btnRegistrarDocumentoBottom"
+                             iconClass="siged16 sigedSave16"
+                             onClick="submitForm"
+                             showLabel="true">Registrar Documento</button>
+                  </div>
+               </td>
+            </tr>
+         </table>
+      </form>
+      <script type="text/javascript" src="js/siged/busquedaExpedienteMP.js"></script>
+      <%@ include file="/pages/tramite/busquedaExpediente.jsp" %>
+      <%@ include file="/examples/derivar-dialogs.jsp" %>
+
+	  <%@ include file="../tramite/busquedaCliente.jsp" %>
+      <script type="text/javascript" src="js/siged/busquedaExpedienteAbiertoMP.js"></script>
+      <%@ include file="busquedaExpedienteAbierto.jsp" %>
+   </body>
+</html>

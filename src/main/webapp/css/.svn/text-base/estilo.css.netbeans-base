@@ -1,0 +1,218 @@
+body{margin:0; background:url(../images/gradient.jpg) repeat-x}
+
+.label{font-family:Arial,Helvetica,sans-serif; font-size:11px; font-style:normal; line-height:normal; color:#568BBF}
+.plomo{ color:#9199AC; font-weight:normal}
+
+.asunto{font-family:Arial,Helvetica,sans-serif; font-size:18px; font-weight:bold; line-height:normal; font-weight:bold; color:#303030}
+
+.usuario{font-family:Arial,Helvetica,sans-serif; font-size:14px; font-style:normal; line-height:normal; color:#CCC}
+.normal{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+.CabeceraTabla{background-color:#4896E4; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; font-weight:bold; font-variant:normal; color:#FFF}
+
+.busqueda{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:bold; color:#666; background-color:#C4D6E2}
+.EdicionTabla{ background-color:#F6FBFF}
+
+.Estilo5{color:#FFF; font-size:18px}
+.Estilo6{color:#FFF; font-size:14px}
+.titulo{font-size:12px; color:#333; font-weight:bold; font-family:Arial,Helvetica,sans-serif; width:12%}
+.negrita{font-weight:bold}
+
+.tituloRojo{font-size:12px; color:#fff; font-weight:bold; font-family:Arial,Helvetica,sans-serif}
+.textonoeditable{background-color:#CCC; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+
+.Fila1{background-color:#F6FBFF; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+.Fila2{stylebackground-color:#EBF1F4; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+
+.BordeTabla{ background-color:#BCBCBC}
+
+.MarcoTabla{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:bold; color:#666;     background-color:#c4d6e2}
+
+.MarcoPrincipal{    background-color:#6487d4}
+
+.Cabecera{background:url("../images/cab1.jpg"); font-family:Arial,Helvetica,sans-serif; font-size:18px; font-style:normal; font-weight:bold; font-variant:normal; color:#FFF}
+
+.nav{ background-color:#C4D6E2; color:#000; font-family:Arial,Helvetica,sans-serif; font-size:12px; TEXT-INDENT:4px}
+.navi{ background-color:#F6FBFF; color:#000;  font-family:Arial,Helvetica,sans-serif; font-size:12px;  TEXT-INDENT:4px}
+.nov{ background-color:#C4D6E2; color:#000;  font-family:Arial,Helvetica,sans-serif; font-size:12px;  TEXT-INDENT:4px}
+.novi{ background-color:#EBF1F4; color:#000; font-family:Arial,Helvetica,sans-serif; font-size:12px;  TEXT-INDENT:4px}
+
+.textoalerta{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:red}
+
+table{border-collapse:collapse; font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  color:#000}
+.required{color:#F90; font-size:10pt; font-weight:normal}
+select, textarea{ font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  color:#000}
+.hintText{ font-family:verdana,arial,helvetica,sans-serif; font-size:8pt; font-style:italic}
+
+div#tbl-container{width:990px; height:290px; overflow:auto; scrollbar-3dlight-color:#CCC; scrollbar-arrow-color:#568BBF; scrollbar-base-color:#C3D5E9; scrollbar-darkshadow-color:#666; scrollbar-highlight-color:#669BCD; scrollbar-shadow-color:#999}
+
+#tbl{border-collapse:collapse; background-color:#fff; border:1px solid #ccc}
+
+div#tbl-container table th{white-space:nowrap}
+
+#tbl td{font-size:13px; color:#333; border-right:1px solid #ccc; border-bottom:1px solid #ccc; padding:6px 6px 6px 12px; white-space:nowrap}
+
+#tbl td a:link, #tbl td a:visited{color:#333; text-decoration:none}
+
+#tbl td a:hover{text-decoration:underline}
+
+thead th, thead th.locked{text-align:center; color:#fff; font-size:10px; font-weight:normal; border-right:1px solid #ebebeb; border-bottom:1px solid #ebebeb; border-top:1px solid #ebebeb; padding:6px 6px 6px 12px; background-color:#669BCD;  position:relative;  cursor:default}
+
+table.tableForm{}
+.tableForm tr, .tableForm input, .tableForm select{ font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  vertical-align:baseline; color:#000}
+.tableForm tr.header{font-size:10px; font-weight:normal; background-color:#669BCD; color:#fff; vertical-align:bottom; text-align:center}
+.tableForm tr.altRow1{background-color:#E8F0F7}
+.tableForm tr.altRow2{background-color:#fff}
+.tableForm tr.altRow3{background-color:#fff; font-size:6.5pt}
+.tableForm tr.azul{background-color:#BFD9F1}
+.tableForm tr.plomo{background-color:#9199AC; color:#fff}
+.tableForm td, th{vertical-align:middle}
+.tableForm td.fixed, th.fixed{text-align:center; vertical-align:middle}
+.tableForm tr.header a{color:#fff; text-decoration:underline}
+.tableForm td a{color:#000; text-decoration:underline}
+
+table.form{}
+.form td, .form input, .form select{font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  color:#000; font-weight:normal}
+.form td.prompt{text-align:right; border-right:10px solid #BED6EF}
+.form td.name{text-align:left; border-right:12px solid #BED6EF}
+.form td.value{text-align:left; border-right:12px solid #BED6EF; font-family:verdana,arial,helvetica,sans-serif; font-size:8pt; color:#013470; font-weight:bold}
+.form td.deshabilitado{color:#F33}
+
+.deshabilitado{color:#999}
+
+table.findForm{}
+.findForm td, .findForm input, .findForm select{font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  color:#000; font-weight:normal}
+.findForm td.prompt{text-align:right; border-right:10px solid #BED6EF}
+
+table.tabBar{}
+.tabBar td{background-color:#E8F0F7; border-bottom:10px solid #BED6EF;  font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  vertical-align:bottom; text-align:center}
+.tabBar td.empty{background-color:#BED6EF}
+.tabBar td.tabCurrent{background-color:#669BCD; color:#FFF}
+.tabBar a{text-decoration:underline; color:#013470}
+.tabBar .tabCurrent a{color:#FFF}
+
+table.subtabBar{}
+.subtabBar td{background-color:#E8F0F7;  font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  vertical-align:bottom; text-align:center}
+.subtabBar td.empty{background-color:#BED6EF}
+.subtabBar td.subtabCurrent{background-color:#669BCD; color:#FFF}
+.subtabBar a{text-decoration:underline; color:#013470}
+.subtabBar .subtabCurrent a{color:#fff}
+
+table.subtabBar{}
+.subtabBar td{background-color:#E8F0F7;  font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  vertical-align:bottom; text-align:center}
+.subtabBar td.empty{background-color:#BED6EF}
+.subtabBar td.subtabCurrent1{background-color:#fff; color:#FFF}
+.subtabBar a{text-decoration:underline; color:#013470}
+.subtabBar .subtabCurrent a{color:#fff}
+
+input.button, button{font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  background:#4271AD; border-width:1px; border-style:solid; cursor:pointer}
+input.button{ color:#FFF}
+
+table.heading1{font-family:verdana,arial,helvetica,sans-serif; font-size:10pt; color:#013470; font-weight:bold; height:100px}
+table.heading2{font-family:verdana,arial,helvetica,sans-serif; font-size:8pt; color:#013470; font-weight:bold; height:100px}
+
+table.masterContext{}
+.masterContext td{font-family:verdana,arial,helvetica,sans-serif; border-top:10px solid #BED6EF; border-bottom:10px solid #BED6EF}
+.masterContext td.name{font-size:8pt; text-align:right; color:#000; font-weight:normal; border-right:5px solid #BED6EF}
+.masterContext td.value{font-size:8pt; color:#669BCD; font-weight:bold}
+
+table.error{background-color:#FFF5E5; font-family:verdana,arial,helvetica,sans-serif; color:#c00}
+.error .message td{font-size:8pt}
+.error .header td{font-size:12pt; border-bottom:1px solid #c00; color:#c00}
+
+table.information{background-color:#FFF5E5; font-family:verdana,arial,helvetica,sans-serif; color:#013470}
+.information .message td{font-size:8pt}
+.information .header td{font-size:12pt; border-bottom:1px solid #BED6EF}
+
+.header{font-family:verdana,arial,helvetica,sans-serif; font-size:10pt; color:#31619C; font-weight:bold}
+.headerTitulo{font-family:verdana,arial,helvetica,sans-serif; font-size:10pt; color:#013470; font-weight:bold}
+table.footer{font-family:verdana,arial,helvetica,sans-serif; font-size:7pt; color:#013470;  border-top:1px solid #BED6EF}
+
+table.lovTable{}
+.lovTable tr, .lovTable input, .lovTable select{ font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  vertical-align:baseline; color:#000}
+.lovTable tr.header{font-weight:bold; background-color:#669BCD; color:#fff; vertical-align:bottom; text-align:center}
+.lovTable tr.altRow1{background-color:#E8F0F7}
+.lovTable tr.altRow2{background-color:#fff}
+.lovTable td, th{border:0px solid #BED6EF}
+.lovTable a{font-family:verdana,arial,helvetica sans-serif; font-size:8pt; color:#000; text-decoration:underline}
+
+BR.breakhere{ page-break-before:always}
+
+.titulo1{font-family:Arial,Helvetica,sans-serif; font-size:19px; color:#004386; font-weight:bold}
+
+.campos{font-family:Arial,Verdana,Helvetica,sans-serif; font-size:8pt; color:#000}
+
+.TxtTitulo{background-color:#789bbf; font-family: Arial,Verdana; font-size:12px; font-style:normal; FONT-WEIGHT:normal; color:#FFF}
+.TxtSubtitulo{FONT:bold 13px arial; COLOR:#004386}
+.TxtSubtitulo2{FONT:bold 15px arial; COLOR:#004386; FONT-WEIGHT:bold}
+.TxtDetalleBold{FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial; FONT-WEIGHT:bold}
+.TxtDetalleNormal{FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial}
+.TxtMontosNegativos{FONT-SIZE:11px; COLOR:#C00; FONT-FAMILY:Arial}
+.TxtAnoDesabilitado{FONT-SIZE:11px; COLOR:#CCC; FONT-FAMILY:Arial}
+.TxtPaginacion{FONT-SIZE:12px; COLOR:#004386; FONT-FAMILY:Arial; FONT-WEIGHT:bold}
+.FondoTabla{background-color:#e1f3ff}
+.FondoEncabezadoDetalle{background-color:#789bbf; font-family: Arial,Verdana; font-size:12px; font-style:normal; FONT-WEIGHT:normal; color:#FFF}
+.FondoFilaDetalle{background-color:#e1f3ff; font-family: Arial,Verdana,Helvetica,sans-serif; font-size:11px; font-style:normal; font-weight:normal; COLOR:#000}
+.FondoFilaDetalle1{font-family: Arial,Verdana,Helvetica,sans-serif; font-size:11px; font-style:normal; font-weight:normal; COLOR:#000}
+.TxtUsuarioDetalleBold{FONT-SIZE:13px; COLOR:#000; FONT-FAMILY:Arial; FONT-WEIGHT:bold}
+.TxtUsuarioDetalleNormal{FONT-SIZE:13px; COLOR:#000; FONT-FAMILY:Arial}
+.Input{FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial; text-align:right}
+.InputText{FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial}
+.ComboBox{ FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial}
+.CheckBox{FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial}
+.cajaDesabilitada{text-align:right; border:thin none #FFF; background-color:#e1f3ff;  FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial}
+.cajaMontoTotal{TEXT-ALIGN:left; border:1px solid #000; background-color:#fff;  FONT-SIZE:11px; COLOR:#000; FONT-FAMILY:Arial}
+.cajaFecha{TEXT-ALIGN:left; border:1px solid #000; background-color:#4271AD;  FONT-SIZE:9px; COLOR:#fff; FONT-FAMILY:Arial}
+.TxtAsterisco{FONT-SIZE:11px; COLOR:#004386; FONT-FAMILY:Arial; FONT-WEIGHT:bold}
+.TxtAzul{FONT-SIZE:11px; COLOR:#004386; FONT-FAMILY:Arial; FONT-WEIGHT:bold}
+
+a:link{text-decoration:none; color:black}
+a:visited{text-decoration:none; color:black}
+a:active{text-decoration:none; color:inherit}
+a:hover{text-decoration:none; color:red}
+
+#myGrid{height:160px !important; width:800px !important}
+
+.botonGerman{color:#FFF; font-weight:bold; font-size:11px; -moz-border-radius:4px; -webkit-border-radius:4px; border-radius:4px; border:1px solid #FFF; height:25px; background-image:url(../images/fondoBoton.png); background-repeat:repeat-x; background-position:left top; cursor:pointer}
+
+.botonGerman:hover{background-position:left bottom}
+
+img{border:0}
+
+label.error{color:red; font-weight:bold}
+
+#dojox_layout_ContentPane_0{padding:1px; height:52px !important}
+
+#info{width:250px; float:left; font-size:0.75em; line-height:0.8em; padding:5px}
+
+p{margin:2px}
+
+#divToolBarTop{float:left; margin-left:50px}
+
+#busqueda{width:250px; float:right; font-size:0.75em; line-height:0.80em; padding:5px}
+
+#busqueda #txtBusquedaSimple{width:80%}
+
+#divTreeExpediente{   border:1px solid #669BCD;    left:0px;    height:400px;    overflow:auto; width:70%}
+
+#divViewUsuario{   position:absolute;    right:50px;    top:70px;    width:400px}
+
+#detalle{padding:10px; margin:10px auto; width:350px}
+
+#detalle td:first-child{background-color:#669BCD; color:#FEFEFE; line-height:15px}
+
+#detalle td{background-color:#FEFEFE; padding:3px; border-bottom:1px solid #DDD}
+
+#dojox_form_FileUploader_0{height:22px !important; width:72px !important}
+#dojox_form_FileUploader_0 div{height:22px !important; line-height:22px !important; width:68px !important; position:absolute; padding-right:2px !important; text-align:right !important}
+
+#FileUploaderForm_0{   background-image:url(../images/sigedIconos/adjuntar.png); background-position:left center; background-repeat:no-repeat}
+
+#dlgProgresBar{z-index:1000}
+
+#seleccionClientes{position:absolute; background-color:#FFF; padding:10px; border:1px solid #ACACAC; top:50px; width:94%}
+
+.arbol{float:left; width:34%; height:100%; overflow:auto; border:1px solid #D9D9D9}
+
+.detalleArbol{float:right; width:64%}
+
+#tabContainerDetail{width:100% !important}

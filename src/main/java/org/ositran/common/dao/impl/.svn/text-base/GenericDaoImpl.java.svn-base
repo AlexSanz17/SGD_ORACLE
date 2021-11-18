@@ -1,0 +1,5 @@
+package org.osinerg.common.dao.impl;
+
+public class GenericDaoImpl {
+
+}

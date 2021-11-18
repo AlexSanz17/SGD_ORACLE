@@ -1,0 +1,24 @@
+<html>
+<head>
+<title>Sistema de Gesti&oacute;n Documentaria</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<script language="JavaScript" type="text/JavaScript">
+
+</script>
+</head>
+<frameset rows="*" cols="190,*" id="centro" framespacing="0" frameborder="no" border="0" >
+    <frame src="menuMsj.html" name="leftFrame" scrolling="no" resize  />
+
+<frameset rows="*" cols="*," framespacing="0" frameborder="no" border="0">
+    <frame src="pages/mensajeria/docRecibidos.html" name="mainFrame" scrolling="auto" resize />
+
+</frameset>
+</frameset>
+
+
+<noframes></noframes>
+
+
+
+</html>
+

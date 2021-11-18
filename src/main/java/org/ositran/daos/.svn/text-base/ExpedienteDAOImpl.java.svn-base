@@ -1,0 +1,654 @@
+package org.osinerg.daos;
+
+import gob.osinergmin.siged.util.ArchivoPropertiesEnum;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.osinerg.ajax.autocomplete.toolDwr;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.Expedienfindadvance;
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.NonUniqueResultException;
+import org.osinerg.utils.PropertyFileUtils;
+import org.osinerg.utils.StringUtil;
+
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Numeracionexpediente;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+@Repository
+public class ExpedienteDAOImpl implements ExpedienteDAO{
+
+	private static Logger log=Logger.getLogger(ExpedienteDAOImpl.class);
+	private EntityManager em;
+	private Properties sasProperties;
+
+    public ExpedienteDAOImpl() {
+        try {
+            sasProperties = PropertyFileUtils.load(ArchivoPropertiesEnum.SAS.getUbicacion());
+        } catch(Exception e) {
+            log.error("No se encuentra el archivo '" + ArchivoPropertiesEnum.SAS.getUbicacion() + "' en el classpath.", e);
+        }
+    }
+
+	public Expediente findByIdExpediente(Integer idExpediente){
+		log.debug("-> [DAO] ExpedienteDAO - findByIdExpediente():Expediente ");
+		
+		Expediente expediente=em.find(Expediente.class,idExpediente);
+		if(expediente != null){
+			Query qr=em.createQuery("select sum(d.numeroFolios) from Documento d where d.expediente.id =:idexpediente and d.delExpediente = :delExpediente group by d.expediente.id");
+			qr.setParameter("idexpediente",idExpediente);
+			qr.setParameter("delExpediente",Constantes.DOCUMENTO_DEL_EXPEDIENTE);
+			Long obj;
+			try{
+				obj=(Long) (qr.getSingleResult());
+			}
+			catch(Exception e){
+				obj= Long.valueOf(0);
+			}
+			expediente.setNroFoliosTotal(obj.intValue());
+		}
+		return expediente;
+	}
+
+	public Expediente findPropietarioByIdExpediente(Integer idExpediente){
+		log.debug("-> [DAO] ExpedienteDAO - findPropietarioByIdExpediente():Expediente ");
+		
+		String elquery=" SELECT  NEW Expediente( " + " e.id, e.idpropietario  )" + " from Expediente e "   ;
+		Query q; 
+		q=em.createQuery(elquery+" WHERE e.id = :idexpediente");
+		q.setParameter("idexpediente",idExpediente);
+		Expediente objExpediente=(Expediente) q.getSingleResult();
+		return objExpediente;		
+		
+	}
+	
+	public void actualizarResponsableExpediente(Integer idExpediente,Usuario idpropietario){
+		log.debug("-> [DAO] ExpedienteDAO - actualizarResponsableExpediente():void ");
+		
+		Expediente exp=this.findByIdExpediente(idExpediente);
+		exp.setIdpropietario(idpropietario);
+		em.merge(exp);
+		em.flush();
+	}
+
+	public Integer getCantidadTrazabilidad(Integer idExpediente){
+		log.debug("-> [DAO] ExpedienteDAO - getCantidadTrazabilidad():Integer ");
+		
+		log.debug("iIdExp " + idExpediente);
+
+		// da
+		Query qr=em.createQuery(" select count( t.idtrazabilidaddocumento ) " + " from Documento d , Trazabilidaddocumento t  " + " where d.idDocumento  = t.documento " + " and  d.idDocumento = " + " ( select min (dd.idDocumento) from Documento dd where " + "   dd.expediente.id =:idexpediente ) ");
+		qr.setParameter("idexpediente",idExpediente);
+
+		Long obj;
+		try{
+			obj=(Long) (qr.getSingleResult());
+		}
+		catch(Exception e){
+			log.error(e.getMessage(), e);
+			obj= Long.valueOf(0);
+		}
+		log.debug("cat trazabilidad xD :" + obj);
+
+		return Integer.valueOf(obj.intValue());
+
+	}
+
+	public void aplicarNumeracionInternaExpediente(Integer iIdExp){
+		log.debug("-> [DAO] ExpedienteDAO - aplicarNumeracionInternaExpediente():void ");
+		
+		Expediente data=(Expediente) em.createNamedQuery("Expediente.findByIdexpediente").setParameter("idexpediente",iIdExp).getSingleResult();
+		Proceso proceso=data.getProceso();
+		log.debug(" getTiponumeracion :  " + proceso.getTiponumeracion());
+		if(proceso.getTiponumeracion() != null && proceso.getTiponumeracion().toString() != null){
+			try{
+				if(proceso.getTiponumeracion().toString().equalsIgnoreCase(Constantes.NUMERACION_NINGUNA)){
+					log.debug(" ento a  :  " + Constantes.NUMERACION_NINGUNA);
+					data.setNrointerno(" ");
+				}
+				else{
+					Numeracionexpediente num;
+					log.debug(" proceso.getTiponumeracion().toString().equalsIgnoreCase(Constantes.NUMERACION_POR_PROCESO) " + proceso.getTiponumeracion().toString().equalsIgnoreCase(Constantes.NUMERACION_POR_PROCESO));
+					if(proceso.getTiponumeracion().toString().equalsIgnoreCase(Constantes.NUMERACION_POR_PROCESO)){
+						try{
+							num=(Numeracionexpediente) em.createNamedQuery("Numeracionexpediente.findByProceso").setParameter("idproceso",proceso.getIdproceso()).getSingleResult();
+							num.setNumeroactual(num.getNumeroactual() + 1);
+							data.setNrointerno(toolDwr.replaceFormat(num.getFormato(),num.getNumeroactual() - 1));
+							em.merge(num);
+						}
+						catch(NoResultException e){
+							log.warn("No se encontro la numeracion para el proceso " + proceso.getNombre());
+						}
+					}
+					else if(proceso.getTiponumeracion().toString().equalsIgnoreCase(Constantes.NUMERACION_POR_GRUPO_PROCESO)){
+						try{
+							num=(Numeracionexpediente) em.createNamedQuery("Numeracionexpediente.findByGrupoProceso").setParameter("idgrupoproceso",proceso.getIdgrupoproceso().getIdgrupoproceso()).getSingleResult();
+							num.setNumeroactual(num.getNumeroactual() + 1);
+							data.setNrointerno(toolDwr.replaceFormat(num.getFormato(),num.getNumeroactual() - 1));
+							em.merge(num);
+						}
+						catch(NoResultException e){
+							log.warn("No se encontro la numeracion para el grupo de proceso " + proceso.getIdgrupoproceso());
+						}
+					}
+				}
+				em.merge(data); // Actualizacion
+				em.flush();
+			}
+			catch(Exception ex){ // ex.printStackTrace();
+                            log.error(ex.getMessage(), ex);
+			}
+		}
+	}
+
+	public Expediente findByNroExpediente(String sNroExpediente){
+		log.debug("-> [DAO] ExpedienteDAO - findByNroExpediente():Expediente ");
+		
+		em.flush();
+		Expediente data=(Expediente) em.createNamedQuery("Expediente.findByNroexpediente").setParameter("nroexpediente",sNroExpediente).getSingleResult();
+		em.refresh(data);
+		return data;
+	}
+
+	public Expediente saveExpediente(Expediente objE){
+		log.debug("-> [DAO] ExpedienteDAO - saveExpediente():Expediente ");
+		
+		if(objE.getAsunto()!= null){
+			objE.setAsunto(objE.getAsunto().toUpperCase());
+		}
+		if(objE.getIdexpediente() == null){
+			em.persist(objE); // Nuevo
+			em.flush();
+			em.refresh(objE);
+		}
+		else{
+			objE.getAsunto();
+			em.merge(objE); // Actualizacion
+			em.flush();
+		}
+		return objE;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expediente> buscarLstPor(Integer iIdCliente,Character cEstado){
+		log.debug("-> [DAO] ExpedienteDAO - buscarLstPor():List<Expediente> ");
+		
+		String sQuery="SELECT NEW Expediente(  "+
+					" e.asunto,  "+
+					" co.razonSocial,  "+
+					" e.fechacreacion,  "+
+					" e.id,  "+
+					" e.nroexpediente,  "+
+					" pro.nombre,  "+
+					" u.nombre)	 ";
+		sQuery+=" FROM Expediente e "+
+				" LEFT JOIN e.concesionario co " +
+				" LEFT JOIN e.proceso pro " + 
+				" LEFT JOIN pro.responsable res " +
+				" LEFT JOIN res.unidad u " +			
+				" WHERE e.cliente.idCliente = :idcliente AND e.estado = :estado ";
+
+		Query obj=em.createQuery(sQuery).setParameter("idcliente",iIdCliente).setParameter("estado", cEstado);
+			return obj.getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expediente> findAll(){
+		log.debug("-> [DAO] ExpedienteDAO - findAll():List<Expediente> ");
+		
+		return em.createNamedQuery("Expediente.findAll").getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expediente> filtrarExpediente(String sNroExpediente,String sProceso,String sNroIdentificacion,String sCliente,String sRuc,String sConcesionario){
+		log.debug("-> [DAO] ExpedienteDAO - filtrarExpediente():List<Expediente> ");
+		
+		boolean bMoreThanOne=false;
+		String[][] arrFiltro={{sNroExpediente," LOWER(e.nroexpediente) LIKE ?1 "},{sProceso," LOWER(e.proceso.nombre) LIKE ?2 "},{sNroIdentificacion," LOWER(e.cliente.numeroIdentificacion) LIKE ?3 "},{sCliente," LOWER(e.cliente.razonSocial) LIKE ?4 OR LOWER(e.cliente.nombres) LIKE ?4 OR LOWER(e.cliente.apellidoPaterno) LIKE ?4 "},{sRuc," LOWER(e.concesionario.ruc) LIKE ?5 "},{sConcesionario," LOWER(e.concesionario.razonSocial) LIKE ?6 "}};
+		String sOperator=" AND ";
+		StringBuilder sQuery= new StringBuilder("SELECT e FROM Expediente e WHERE ");
+
+		log.debug("Numero de filtros [" + arrFiltro.length + "]");
+
+		for(int i=0;i < arrFiltro.length;i++){
+			if(!StringUtil.isEmpty(arrFiltro[i][0])){
+				if(bMoreThanOne){
+					sQuery.append(sOperator);
+				}
+
+				bMoreThanOne=true;
+				sQuery.append(arrFiltro[i][1]);
+			}
+		}
+
+		sQuery.append(" AND e.estado='A' ORDER BY e.nroexpediente ");
+
+		log.debug("QUERY [" + sQuery + "]");
+
+		Query qResultado=em.createQuery(sQuery.toString());
+
+		for(int i=0;i < arrFiltro.length;i++){
+			if(!StringUtil.isEmpty(arrFiltro[i][0])){
+				qResultado.setParameter(i + 1,"%" + arrFiltro[i][0].toLowerCase() + "%");
+			}
+		}
+
+		return qResultado.getResultList();
+	}
+
+	public Integer getMaxIdExpediente(){
+		log.debug("-> [DAO] ExpedienteDAO - getMaxIdExpediente():Integer ");
+		
+		return (Integer) em.createNamedQuery("Expediente.getMaxIdExpediente").getSingleResult();
+	}
+
+   @Override
+   public Integer generateNroExpedienteProduccion() {
+	   log.debug("-> [DAO] ExpedienteDAO - generateNroExpedienteProduccion():Integer ");
+	   
+	   String sQuery = "SELECT expedienteproduccion_seq.nextval FROM DUAL";
+	   Query qQuery = em.createNativeQuery(sQuery);
+	   
+	   return Integer.valueOf(qQuery.getResultList().get(0).toString());
+   }
+   
+   public Integer generateNroExpedienteDesarrollo() {
+	   log.debug("-> [DAO] ExpedienteDAO - generateNroExpedienteDesarrollo():Integer ");
+	   
+	   String sQuery = "SELECT exp_seq.nextval FROM DUAL";
+	   Query qQuery = em.createNativeQuery(sQuery);
+
+	   return Integer.valueOf(qQuery.getResultList().get(0).toString());
+   }
+
+	@SuppressWarnings("unchecked")
+	public List<Expediente> findByNroDocument(String StrNDo){
+		log.debug("-> [DAO] ExpedienteDAO - findByNroDocument():List<Expediente> ");
+		
+		return em.createNamedQuery("Expediente.findByNroDocument").setParameter("ni",Integer.parseInt(StrNDo)).getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expedienfindadvance> findbyadvanced(String Strcampo){
+		log.debug("-> [DAO] ExpedienteDAO - findbyadvanced():List<Expedienfindadvance> ");
+		
+		List<Expedienfindadvance> data=new ArrayList<Expedienfindadvance>();
+		log.debug("En :" + ExpedienteDAOImpl.class.getSimpleName());
+		SimpleDateFormat sdf=new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		Date fechaini=null;
+		Date fechafin=null;
+		try{
+			fechaini=sdf.parse(Strcampo + " 00:00");
+			fechafin=sdf.parse(Strcampo + " 23:59");
+		}
+		catch(Exception e){
+		}
+		if(Strcampo != null && !Strcampo.equals("")){
+			Strcampo=Strcampo.toLowerCase();
+			String sql="SELECT distinct NEW org.osinerg.utils.Expedienfindadvance(" + "un.idunidad," + "un.nombre," + "u.idusuario," + "u.nombres," + "u.apellidos," + "p.idproceso," + "p.nombre," + "p.descripcion," + "ex.id," + "ex.nroexpediente," + "ex.fechacreacion," + "ex.asunto," + "ex.estado," + "ex.cliente.idCliente," + "ex.cliente.numeroIdentificacion," + "ex.cliente.razonSocial," + "ex.cliente.direccionPrincipal," + "ex.cliente.direccionAlternativa," + "ex.cliente.nombres," + "ex.cliente.apellidoPaterno," + "ex.cliente.apellidoMaterno," + "c.idConcesionario," + "c.razonSocial," + "c.direccion," + "d.idDocumento," + "d.numeroDocumento," + "d.asunto," + "d.numeroFolios," + "d.fechaCreacion," + "d.tipoDocumento.idtipodocumento," + "d.tipoDocumento.nombre," + "ex.cliente.tipoIdentificacion.nombre)" + " FROM Unidad un" + " LEFT JOIN un.usuarios u  " + " LEFT JOIN u.procesosParticipante p" + " LEFT JOIN p.expedienteList ex " + " LEFT JOIN ex.concesionario c  "
+					+ " LEFT JOIN ex.documentoList d  " +
+					// " LEFT JOIN d.trazabilidaddocumentoList td  "+
+					" WHERE " + "  lower(p.nombre) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(ex.nroexpediente) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(ex.cliente.nombres) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(ex.cliente.apellidoPaterno) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(ex.cliente.apellidoMaterno) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(ex.cliente.razonSocial) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(ex.cliente.direccionPrincipal) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(ex.cliente.direccionAlternativa) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(c.razonSocial) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(d.numeroDocumento) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(d.asunto) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR lower(d.tipoDocumento.nombre) LIKE '%"
+					+ Strcampo
+					+ "%'"
+					+ /*
+					 * " OR lower(td.asunto) LIKE '%"+Strcampo+"%'"+" OR lower(td.destinatario.nombres) LIKE '%"
+					 * +Strcampo+"%' "+
+					 */" OR lower(un.nombre) Like '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR c.ruc Like '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR d.numeroMesaPartes Like '%"
+					+ Strcampo
+					+ "%' "
+					+ " OR ( lower(d.propietario.nombres) Like '%"
+					+ Strcampo
+					+ "%'"
+					+ " OR "
+					+ "lower(d.propietario.apellidos) Like '%"
+					+ Strcampo.toLowerCase() + "%'  ) " + " OR " + "  LOWER( CONCAT(d.propietario.nombres,CONCAT(' ',d.propietario.apellidos)  ))  Like '%" + Strcampo.toLowerCase() + "%'  " + " OR lower(ex.asunto) LIKE '%" + Strcampo.toLowerCase() + "%'" + " OR lower(ex.estado) = '" + Strcampo.toLowerCase().charAt(0) + "'";
+			if(fechaini != null && fechafin != null){
+				sql+="or (year(d.fechaCreacion) >= year(:datFechaDocIni) and month(d.fechaCreacion) >= month(:datFechaDocIni) and day(d.fechaCreacion) >= day(:datFechaDocIni) and " + " year(d.fechaCreacion) <= year(:datFechaDocFin) and month(d.fechaCreacion) <= month(:datFechaDocFin) and day(d.fechaCreacion) <= day(:datFechaDocFin)) ";
+				sql+="or (year(ex.fechacreacion) >= year(:datFechaExpIni) and month(ex.fechacreacion) >= month(:datFechaExpIni) and day(ex.fechacreacion) >= day(:datFechaExpIni) and " + "year(ex.fechacreacion) <= year(:datFechaExpFin) and month(ex.fechacreacion) <= month(:datFechaExpFin) and day(ex.fechacreacion) <= day(:datFechaExpFin)) ";
+			}
+			Query q=em.createQuery(sql);
+			if(fechaini != null && fechafin != null){
+				q.setParameter("datFechaDocIni",fechaini);
+				q.setParameter("datFechaDocFin",fechafin);
+			}
+			if(fechaini != null && fechafin != null){
+				q.setParameter("datFechaExpIni",fechaini);
+				q.setParameter("datFechaExpFin",fechafin);
+			}
+			// log.deb
+			data=q.getResultList();
+		}
+		return data;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expedienfindadvance> findbyadvancedId(String condicion){
+		log.debug("-> [DAO] ExpedienteDAO - findbyadvancedId():List<Expedienfindadvance> ");
+		
+		List<Expedienfindadvance> data=new ArrayList<Expedienfindadvance>();
+		data=null;
+		if(condicion.equals("")){
+		}
+		else{
+			String sql="SELECT distinct NEW org.osinerg.utils.Expedienfindadvance(un.idunidad,un.nombre,u.idusuario,u.nombres,u.apellidos,p.idproceso,p.nombre,p.descripcion,ex.id,ex.nroexpediente,ex.fechacreacion,ex.asunto,ex.estado,ex.cliente.idCliente,ex.cliente.numeroIdentificacion,ex.cliente.razonSocial,ex.cliente.direccionPrincipal,ex.cliente.direccionAlternativa,ex.cliente.nombres,ex.cliente.apellidoPaterno,ex.cliente.apellidoMaterno,c.idConcesionario,c.razonSocial,c.direccion,d.idDocumento,d.numeroDocumento,d.asunto,d.numeroFolios,d.fechaCreacion,d.tipoDocumento.idtipodocumento,d.tipoDocumento.nombre,ex.cliente.tipoIdentificacion.nombre) FROM Unidad un LEFT JOIN un.usuarios u LEFT JOIN u.procesosParticipante p LEFT JOIN p.expedienteList ex LEFT JOIN ex.concesionario c LEFT JOIN ex.documentoList d WHERE " + condicion;
+			// log.debug(sql);
+			data=em.createQuery(sql).getResultList();
+		}
+		return data;
+	}
+
+	/**
+	 * Modificado por German Enriquez (que feo estaba ese codigo)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Expedienfindadvance> findbySuperadvanced(String numeroExpediente,String numeroDocumento,String numeroMesaPartes,String tipoDocumento,String concesionario,String cliente,String areaDestino,String propietario,String proceso,String tipoBusqueda,String asuntoexpediente,String asuntodocumento,String estadoexpediente){
+		log.debug("-> [DAO] ExpedienteDAO - findbySuperadvanced():List<Expedienfindadvance> ");
+		
+		StringBuilder condicion= new StringBuilder("WHERE ");
+		String valores[]={numeroExpediente,numeroDocumento,numeroMesaPartes,tipoDocumento,concesionario,cliente,areaDestino,propietario,proceso,asuntoexpediente,asuntodocumento,estadoexpediente};
+		String entradas[]={"lower(ex.nroexpediente) LIKE '%" + numeroExpediente.toLowerCase() + "%'","lower(d.numeroDocumento) LIKE '%" + numeroDocumento.toLowerCase() + "%'","lower(d.numeroMesaPartes) LIKE '%" + numeroMesaPartes.toLowerCase() + "%'","lower(d.tipoDocumento.nombre) Like '%" + tipoDocumento.toLowerCase() + "%'","lower(c.razonSocial) Like '%" + concesionario.toLowerCase() + "%'","(" + "lower(ex.cliente.razonSocial) Like '%" + cliente.toLowerCase() + "%' " + " or " + "lower(ex.cliente.nombres) Like '%" + cliente.toLowerCase() + "%' " + " or " + "lower(ex.cliente.apellidoPaterno) Like '%" + cliente.toLowerCase() + "%'  " + " or " + "lower(ex.cliente.apellidoMaterno) Like '%" + cliente.toLowerCase() + "%'  )","lower(un.nombre) Like '%" + areaDestino.toLowerCase() + "%'",
+				" ( lower(d.propietario.nombres) Like '%" + propietario.toLowerCase() + "%'" + " OR " + "lower(d.propietario.apellidos) Like '%" + propietario.toLowerCase() + "%'   " + " OR " + "  LOWER( CONCAT(d.propietario.nombres,CONCAT(' ',d.propietario.apellidos)  ))  Like '%" + propietario.toLowerCase() + "%' ) ","lower(p.nombre) Like '%" + proceso.toLowerCase() + "%'","lower(ex.asunto) LIKE '%" + asuntoexpediente.toLowerCase() + "%'","lower(d.asunto) LIKE '%" + asuntodocumento.toLowerCase() + "%'","lower(ex.estado) = '" + estadoexpediente.toLowerCase() + "'"};
+		boolean tipo=false;
+		for(int j=0;j < valores.length;j++){
+			if(!StringUtil.isEmpty(valores[j])){
+				if(tipo){
+					condicion.append(' ');
+                                        condicion.append(tipoBusqueda);
+					condicion.append(' ');
+				}
+				condicion.append(entradas[j]);
+				tipo=true;
+			}
+		}
+		if(!condicion.toString().equals("WHERE ")){
+			String sql="SELECT distinct NEW org.osinerg.utils.Expedienfindadvance(un.idunidad,un.nombre,u.idusuario,u.nombres,u.apellidos,p.idproceso,p.nombre,p.descripcion,ex.id,ex.nroexpediente,ex.fechacreacion,ex.asunto,ex.estado,ex.cliente.idCliente,ex.cliente.numeroIdentificacion,ex.cliente.razonSocial,ex.cliente.direccionPrincipal,ex.cliente.direccionAlternativa,ex.cliente.nombres,ex.cliente.apellidoPaterno,ex.cliente.apellidoMaterno,c.idConcesionario,c.razonSocial,c.direccion,d.idDocumento,d.numeroDocumento,d.asunto,d.numeroFolios,d.fechaCreacion,d.tipoDocumento.idtipodocumento,d.tipoDocumento.nombre,ex.cliente.tipoIdentificacion.nombre) FROM Unidad un" + " LEFT JOIN un.usuarios u " + " LEFT JOIN u.procesosParticipante p" + " LEFT JOIN p.expedienteList ex " + " LEFT JOIN ex.concesionario c " + " LEFT JOIN ex.documentoList d " + condicion.toString();
+			// log.debug(sql);
+			log.debug(" query superadvanced  : " + sql);
+			List result=em.createQuery(sql).getResultList();
+			log.debug(" query superadvanced end :");
+			return result;
+		}
+		return null;
+	}
+	
+	public Documento getDocumentoPrincipal(Integer idExpediente){
+		log.debug("-> [DAO] ExpedienteDAO - getDocumentoPrincipal():Documento ");
+		
+		Expediente expediente=findByIdExpediente(idExpediente);
+		if(expediente != null){
+			return expediente.getDocumentoPrincipal();
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expediente> findByNroExpedientesTerminadosSAS(String sNroExpediente,String proceso){
+		log.debug("-> [DAO] ExpedienteDAO - findByNroExpedientesTerminadosSAS():List<Expediente> ");
+		
+		List<Expediente> data=new ArrayList<Expediente>();
+		if(sNroExpediente.equals("") != true){
+			data=em.createQuery("SELECT e FROM Expediente e " + "WHERE e.nroexpediente like '%" + sNroExpediente + "%' " + "and e.estado='T' " + "and e.proceso.codigo='" + sasProperties.getProperty(proceso) + "'").getResultList();
+		}
+		else{
+			data=em.createQuery("SELECT e FROM Expediente e " + "WHERE e.estado='T' " + "and e.proceso.codigo='" + sasProperties.getProperty(proceso) + "'").getResultList();
+		}
+		return data;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expediente> findByNroExpedientesTerminadosGFEyGG_SAS(String sNroExpediente){
+		log.debug("-> [DAO] ExpedienteDAO - findByNroExpedientesTerminadosGFEyGG_SAS():List<Expediente> ");
+		
+		List<Expediente> data=new ArrayList<Expediente>();
+		// pediente cambiar a codigo de expediente
+
+		String sgfe=sasProperties.getProperty("proceso.SGFE");
+		String sgg=sasProperties.getProperty("proceso.SGG");
+		String srgfe=sasProperties.getProperty("proceso.RGFE");
+		String srgg=sasProperties.getProperty("proceso.RGG");
+
+		if(sNroExpediente.equals("") != true){
+			data=em.createQuery("SELECT e FROM Expediente e  WHERE " + "e.nroexpediente like '%" + sNroExpediente + "%' and " + "e.estado='T' and (" + "e.proceso.codigo='" + sgfe + "' or " + "e.proceso.codigo='" + sgg + "')").getResultList();
+		}
+		else{
+			data=em.createQuery("SELECT e FROM Expediente e  WHERE " + "e.estado='T' and (" + "e.proceso.codigo='" + sgfe + "' or " + "e.proceso.codigo='" + sgg + "' or " + "e.proceso.codigo='" + srgfe + "' or  " + "e.proceso.codigo='" + srgg + "')").getResultList();
+		}
+		return data;
+	}
+
+	public Expediente findByNroExpedienteTerminadoSAS(String sNroExpediente){
+		log.debug("-> [DAO] ExpedienteDAO - findByNroExpedienteTerminadoSAS():Expediente ");
+		
+		Expediente data=(Expediente) em.createQuery("SELECT e FROM Expediente e WHERE e.nroexpediente ='" + sNroExpediente + "' and e.estado='T'").getSingleResult();
+		return data;
+	}
+
+	@PersistenceContext(unitName="sigedPU")
+	public void setEm(EntityManager em){
+		this.em=em;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Expedienfindadvance> busquedaAvanzadaAdicional(String numeroExpediente,String tipoDocumento,String numeroDocumento,String identidadConcesionario,String numeroMesaPartes,String fechaInicioDocumento,String fechaFinDocumento,String concesionario,String fechaInicioExpediente,String fechaFinExpediente,String cliente,String direccionCliente,String areaDestino,String propietario,String proceso,String tipoBusqueda,String asuntoexpediente,String asuntodocumento,String estadoexpediente){
+		log.debug("-> [DAO] ExpedienteDAO - busquedaAvanzadaAdicional():List<Expedienfindadvance> ");
+		
+		StringBuilder condicion= new StringBuilder("WHERE ");
+		String valores[]={numeroExpediente,tipoDocumento,numeroDocumento,identidadConcesionario,numeroMesaPartes,fechaInicioDocumento,fechaFinDocumento,concesionario,fechaInicioExpediente,fechaFinExpediente,cliente,direccionCliente,areaDestino,propietario,proceso,asuntoexpediente,asuntodocumento,estadoexpediente};
+		String entradas[]={"lower(ex.nroexpediente) Like '%" + numeroExpediente.toLowerCase() + "%'","lower(d.tipoDocumento.nombre) like '%" + tipoDocumento.toLowerCase() + "%'","lower(d.numeroDocumento) Like'%" + numeroDocumento.toLowerCase() + "%'","c.ruc Like '%" + identidadConcesionario.toLowerCase() + "%'","d.numeroMesaPartes Like '%" + numeroMesaPartes.toLowerCase() + "%'","","","lower(c.razonSocial) Like '%" + concesionario.toLowerCase() + "%'","","","(" + "lower(ex.cliente.razonSocial) Like '%" + cliente.toLowerCase() + "%' " + " or " + "lower(ex.cliente.nombres) Like '%" + cliente.toLowerCase() + "%' " + " or " + "lower(ex.cliente.apellidoPaterno) Like '%" + cliente.toLowerCase() + "%'  " + " or " + "lower(ex.cliente.apellidoMaterno) Like '%" + cliente.toLowerCase() + "%'  )","lower(ex.cliente.direccionPrincipal) Like '%" + direccionCliente.toLowerCase() + "%'","lower(un.nombre) Like '%" + areaDestino.toLowerCase() + "%'",
+				" ( lower(d.propietario.nombres) Like '%" + propietario.toLowerCase() + "%'" + " OR " + "lower(d.propietario.apellidos) Like '%" + propietario.toLowerCase() + "%'   " + " OR " + "  LOWER( CONCAT(d.propietario.nombres,CONCAT(' ',d.propietario.apellidos)  ))  Like '%" + propietario.toLowerCase() + "%' ) ","lower(p.nombre) Like '%" + proceso.toLowerCase() + "%'","lower(ex.asunto) Like '%" + asuntoexpediente.toLowerCase() + "%'","lower(d.asunto) Like '%" + asuntodocumento.toLowerCase() + "%'","lower(ex.estado) = '" + estadoexpediente.toLowerCase() + "'"};
+		entradas[5]="(year(d.fechaCreacion) >= year(:datFechaDocIni) and month(d.fechaCreacion) >= month(:datFechaDocIni) and day(d.fechaCreacion) >= day(:datFechaDocIni) and " + "year(d.fechaCreacion) <= year(:datFechaDocFin) and month(d.fechaCreacion) <= month(:datFechaDocFin) and day(d.fechaCreacion) <= day(:datFechaDocFin))";
+		entradas[8]="(year(ex.fechacreacion) >= year(:datFechaExpIni) and month(ex.fechacreacion) >= month(:datFechaExpIni) and day(ex.fechacreacion) >= day(:datFechaExpIni) and " + "year(ex.fechacreacion) <= year(:datFechaExpFin) and month(ex.fechacreacion) <= month(:datFechaExpFin) and day(ex.fechacreacion) <= day(:datFechaExpFin))";
+		boolean tipo=false;
+		for(int j=0;j < valores.length;j++){
+			if(j != 6 && j != 9){
+				// excepto si es la fecha de fin de documento y expediente
+				if(!valores[j].equals("")){
+					if(tipo){
+						condicion.append(' ');
+                                                condicion.append(tipoBusqueda);
+						condicion.append(' ');
+					}
+					condicion.append(entradas[j]);
+					tipo=true;
+				}
+			}
+		}
+		Date datFecDocIni=null;
+		Date datFecDocFin=null;
+		Date datFecExpIni=null;
+		Date datFecExpFin=null;
+		try{
+			if(!fechaInicioDocumento.equals("") && !fechaFinDocumento.equals("")){
+				datFecDocIni=(Date) Constantes.FORAMATEADOR_FECHA.parseObject(fechaInicioDocumento);
+				datFecDocFin=(Date) Constantes.FORAMATEADOR_FECHA.parseObject(fechaFinDocumento);
+			}
+		}
+		catch(ParseException e){
+			log.error("No se pudo parsear la fecha, se cancela la busqueda. Las fechas ingresadas fueron:\nFecha Inicio Documento: " + fechaInicioDocumento + "\nFecha Fin Documento: " + fechaFinDocumento);
+			return null;
+		}
+		try{
+			if(!fechaInicioExpediente.equals("") && !fechaFinExpediente.equals("")){
+				datFecExpIni=(Date) Constantes.FORAMATEADOR_FECHA.parseObject(fechaInicioExpediente);
+				datFecExpFin=(Date) Constantes.FORAMATEADOR_FECHA.parseObject(fechaFinExpediente);
+			}
+		}
+		catch(ParseException e){
+			log.error("No se pudo parsear la fecha, se cancela la busqueda. Las fechas ingresadas fueron:\nFecha Inicio Expediente: " + fechaInicioExpediente + "\nFecha Fin Expediente: " + fechaFinExpediente);
+			return null;
+		}
+		if(!condicion.toString().equals("WHERE ")){
+			String sql="SELECT distinct NEW org.osinerg.utils.Expedienfindadvance(un.idunidad,un.nombre,u.idusuario,u.nombres,u.apellidos,p.idproceso,p.nombre,p.descripcion,ex.id,ex.nroexpediente,ex.fechacreacion,ex.asunto,ex.estado,ex.cliente.idCliente,ex.cliente.numeroIdentificacion,ex.cliente.razonSocial,ex.cliente.direccionPrincipal,ex.cliente.direccionAlternativa,ex.cliente.nombres,ex.cliente.apellidoPaterno,ex.cliente.apellidoMaterno,c.idConcesionario,c.razonSocial,c.direccion,d.idDocumento,d.numeroDocumento,d.asunto,d.numeroFolios,d.fechaCreacion,d.tipoDocumento.idtipodocumento,d.tipoDocumento.nombre,ex.cliente.tipoIdentificacion.nombre) FROM Unidad un LEFT JOIN un.usuarios u LEFT JOIN u.procesosParticipante p LEFT JOIN p.expedienteList ex LEFT JOIN ex.concesionario c LEFT JOIN ex.documentoList d " + condicion.toString();
+			Query q=em.createQuery(sql);
+			if(datFecDocIni != null && datFecDocFin != null){
+				q.setParameter("datFechaDocIni",datFecDocIni);
+				q.setParameter("datFechaDocFin",datFecDocFin);
+			}
+			if(datFecExpFin != null && datFecExpIni != null){
+				q.setParameter("datFechaExpIni",datFecExpIni);
+				q.setParameter("datFechaExpFin",datFecExpFin);
+			}
+			return q.getResultList();
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Expediente> findByCriteria(String numeroIdentificacion,String razonSocial,String numeroExpediente,String asunto,int proceso,Date fecha, String tipoBusqueda, Integer idusuario){
+		log.debug("-> [DAO] ExpedienteDAO - findByCriteria():List<Expediente> ");
+		
+		String query="SELECT e FROM Expediente e WHERE 1 = 1 " ;
+		
+		if(!StringUtils.isEmpty(numeroIdentificacion)){
+			query += "AND LOWER(e.cliente.numeroIdentificacion) LIKE :nroidentificacion ";
+		}
+		if(!StringUtils.isEmpty(razonSocial)){
+			query += "AND (LOWER(e.cliente.razonSocial) LIKE :razonsocial OR LOWER(e.cliente.nombres) LIKE :razonsocial OR LOWER(e.cliente.apellidoPaterno) LIKE :razonsocial) ";
+		}
+		if(!StringUtils.isEmpty(numeroExpediente)){
+			query += "AND LOWER(e.nroexpediente) LIKE :nroexpediente ";
+		}
+		if(!StringUtils.isEmpty(asunto)){
+			query += "AND LOWER(e.asunto) LIKE :asunto ";
+		}
+		if(proceso != 0){
+			query+="AND e.proceso.idproceso=:proceso ";
+		}
+		if(fecha != null){
+			query+="AND (year(e.fechacreacion)=year(:fecha) AND month(e.fechacreacion)=month(:fecha) AND day(e.fechacreacion)=day(:fecha)) ";
+		}
+		if(!StringUtil.isEmpty(tipoBusqueda)){
+			query+="AND e.estaenflujo=:estaenflujo ";
+		}
+		/**REN: Esto permite buscar solo en externos y en expedientes que posea el usuario------------------------------------**
+		query += " AND (e.proceso.idgrupoproceso.codigo = :codigogrupo OR e.idpropietario.idusuario = :propietario " +
+				"OR :propietario IN (SELECT DISTINCT t.destinatario.idusuario FROM Trazabilidaddocumento t WHERE t.documento.expediente.id = e.id)) ";
+		/**-------------------------------------------------------------------------------------------------------------------**/
+		query+=" AND e.estado='A' ORDER BY nroexpediente";
+		Query q=em.createQuery(query);
+		
+		if(!StringUtils.isEmpty(numeroIdentificacion)){
+			q.setParameter("nroidentificacion","%" + numeroIdentificacion.toLowerCase().trim() + "%");
+		}
+		if(!StringUtils.isEmpty(razonSocial)){
+			q.setParameter("razonsocial","%" + razonSocial.toLowerCase().trim() + "%");
+		}
+		if(!StringUtils.isEmpty(numeroExpediente)){
+			q.setParameter("nroexpediente","%" + numeroExpediente.toLowerCase().trim() + "%");
+		}
+		if(!StringUtils.isEmpty(asunto)){
+			q.setParameter("asunto","%" + asunto.toLowerCase().trim() + "%");
+		}
+		
+		/**REN: Esto permite buscar solo en externos y en expedientes que posea el usuario------------------------------------**
+		q.setParameter("codigogrupo", Constantes.CODIGO_FLUJO_DOC);
+		q.setParameter("propietario", idusuario);		
+		/**-------------------------------------------------------------------------------------------------------------------**/
+		
+		if(proceso != 0){
+			q.setParameter("proceso",proceso);
+		}
+		if(fecha != null){
+			q.setParameter("fecha",fecha);
+		}
+		if(!StringUtil.isEmpty(tipoBusqueda)){
+			q.setParameter("estaenflujo",'S');
+		}
+		return q.getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Expediente> findLstBy(Integer iIdResponsable){
+		log.debug("-> [DAO] ExpedienteDAO - findLstBy():List<Expediente> ");
+		
+		String sQuery="SELECT NEW Expediente(" + "e.id," + "e.nroexpediente," + "e.fechacreacion," + "e.clienterazonsocial," + "e.clientenombres," + "e.clienteapellidopaterno," + "e.clienteapellidomaterno," + "p.nombre," + "ti.nombre," + "cl.razonSocial," + "cl.nombres," + "cl.apellidoPaterno," + "cl.apellidoMaterno" + ") ";
+		sQuery+="FROM Expediente e ";
+		sQuery+="LEFT JOIN e.idpropietario u1 ";
+		sQuery+="LEFT JOIN e.proceso p ";
+		sQuery+="LEFT JOIN p.responsable u2 ";
+		sQuery+="LEFT JOIN p.idasistente u3 ";
+		sQuery+="LEFT JOIN e.cliente cl ";
+		sQuery+="LEFT JOIN cl.tipoIdentificacion ti ";
+		sQuery+="WHERE u1.idusuario = :idpropietario OR u2.idusuario = :idresponsable OR u3.idusuario = :idasistente ";
+		sQuery+="ORDER BY e.fechacreacion DESC";
+
+		Query qQuery=em.createQuery(sQuery).setParameter("idpropietario",iIdResponsable).setParameter("idresponsable",iIdResponsable).setParameter("idasistente",iIdResponsable);
+
+		return qQuery.getResultList();
+	}
+
+   @Override
+   public Expediente findObjectBy(String numeroExpediente, Character estado) {
+	   log.debug("-> [DAO] ExpedienteDAO - findObjectBy():Expediente ");
+	   try {
+		   return (Expediente) em.createNamedQuery("Expediente.findByNumeroexpedienteEstado")
+		   .setParameter("numeroexpediente", numeroExpediente.toLowerCase())
+		   .setParameter("estado", estado)
+		   .getSingleResult();
+	   } catch (NoResultException nre) {
+		   log.warn("No se encontro registro con numeroExpediente [" + numeroExpediente + "] estado [" + estado + "]");
+
+		   return null;
+	   } catch (NonUniqueResultException nure) {
+		   log.warn("Se encontro mas de un registro con numeroExpediente [" + numeroExpediente + "] estado [" + estado + "]");
+
+		   return null;
+	   }
+   }
+}

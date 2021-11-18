@@ -1,0 +1,13 @@
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Courier;
+
+
+
+public interface CourierService {
+
+   public Courier viewcod(String codigo);
+   
+   public Courier findkey(int Id);
+   
+}

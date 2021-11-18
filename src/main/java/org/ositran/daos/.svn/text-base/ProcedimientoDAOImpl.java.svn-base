@@ -1,0 +1,54 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.apache.log4j.Logger;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Procedimiento;
+import com.btg.osinergmin.siged.domain.Unidadxprocedimiento;
+
+@Transactional
+public class ProcedimientoDAOImpl implements ProcedimientoDAO{
+	
+	private static Logger log = Logger.getLogger(ProcedimientoDAOImpl.class);
+	
+	private EntityManager em;
+	
+	public EntityManager getEm() {
+		return em;
+	}
+	
+	@PersistenceContext(unitName="sigedPU")
+	public void setEm(EntityManager em) {
+		this.em = em;
+	}
+
+	public List<Procedimiento> getProcedimientos(List<Unidadxprocedimiento> procedimientos) {
+		
+		StringBuffer sql = new StringBuffer();
+		
+		sql.append("\nselect b from Procedimiento b where b.idprocedimiento in (");
+		
+		for(int i=0;i<procedimientos.size();i++){
+			Unidadxprocedimiento unidadxprocedimiento = procedimientos.get(i);
+			if(i==0)
+				sql.append(unidadxprocedimiento.getUnidadxprocedimientoPK().getIdprocedimiento());
+			else
+				sql.append(","+unidadxprocedimiento.getUnidadxprocedimientoPK().getIdprocedimiento());
+		}
+		sql.append(")\n");
+		
+		log.debug("sql : "+sql.toString());
+		
+		return em.createQuery(sql.toString()).getResultList();
+	}
+
+	public Procedimiento getProcedimientoById(Integer procedimientos) {
+		log.debug("procedimientos: "+procedimientos);
+		return em.find(Procedimiento.class, procedimientos);
+	}
+}

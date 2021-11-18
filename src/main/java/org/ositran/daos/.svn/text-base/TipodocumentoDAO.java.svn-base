@@ -1,0 +1,27 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Tipodocumento;
+
+public interface TipodocumentoDAO {
+
+   public List<Tipodocumento> findAll();
+
+   //TEMPORAL
+   public List<Tipodocumento> findAllWithoutStor();
+
+   public Tipodocumento buscarObjPor(String sCodigo);
+
+   public Tipodocumento findByIdTipoDocumento(Integer iIdTipodocumento);
+
+   public Tipodocumento findByNombre(String sNombre);
+
+   public List<Tipodocumento> findByNombreLike(String like);
+   
+   public Tipodocumento guardarObj(Tipodocumento objTipodocumento);
+
+   public List<Tipodocumento> findAllwithPlantilla();
+
+   public List<Tipodocumento> findAllWithoutPlantilla();
+}

@@ -1,0 +1,48 @@
+package org.osinerg.services;
+
+import java.util.List;
+import java.util.Map;
+
+import org.osinerg.dojo.ClienteJSon;
+import org.osinerg.utils.DocumentoDetail;
+
+import com.btg.osinergmin.siged.domain.Cliente;
+
+public interface ClienteService{
+	
+	public void deleteCliete(Cliente objCliente);
+
+	public Map<Integer,String> getClienteList() throws RuntimeException;
+
+	public Cliente findByIdCliente(Integer iIdCliente);
+
+	public Cliente findByNroIdentificacion(String sNroIdentificacion);
+
+	public Cliente guardarObj(Cliente objClienteOld,Cliente objClienteNew,String sUsuarioSesion,String sTipoAuditoria);
+
+	public Cliente updateInfoCliente(DocumentoDetail objDD);
+
+	public List<Cliente> findByTipoIdentificacionList(Integer iIdTipoIdentificacion, String sTipoIdentificacion);
+
+	public List<Cliente> findAll();
+	
+	public ClienteJSon getClientePorRUCSunat(String ruc);
+	
+	public List<ClienteJSon> getClientesPorRazonSocialSunat(String razonSocial);
+
+   public List<Cliente> findLstByCriteria(String sFiltroBusqueda);
+
+   public String generateNroIdentificacionOtro();
+
+   public Cliente findObjectBy(String numeroIdentificacion, Character estado);
+
+   List<Cliente> findLikeNroIdentificacion(String sNroIdentificacion);
+
+   public List<Cliente> findLikeNroIdentificacionOrNombre(String prm);
+
+   public Cliente findByTipoIdentificacionList2(Integer iIdTipoIdentificacion, String sTipoIdentificacion,String nroIdentificacion);
+
+   public Cliente findByExpediente(Integer idExpediente);
+   
+   List<Cliente> findByNombreRazonLike(String like);
+}

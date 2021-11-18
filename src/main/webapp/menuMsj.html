@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+<HEAD>
+<script language="javascript" src="./js/switchMenu.js"></script>
+<script language="JavaScript" src="./js/dtree.js"></script>
+<script language="JavaScript">
+
+function Abrir_ventana (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, width=600, height=420, top=120, left=250";
+window.open(pagina,"",opciones);
+}
+function Abrir_pagina (pagina) {
+var opciones="location=mainFrame";
+window.open(pagina,"",opciones);
+}
+function principal(){ 
+    parent.location.href = "inicio.html" 
+ }
+</script>
+
+<script language="javascript" type="text/javascript">
+//Menú contextual con botón derecho actualizado para soporte multinavegador 
+//pocicion absoluta del menu=0, menu con el boton derecho=1
+var menutipo = 1
+//muestra el menu
+function sombra(e){
+   if (document.getElementById) {
+      mimenu = document.getElementById("cepilomenu")
+   }else if (document.all) {
+      mimenu = document.all.cepilomenu
+   }
+  /*La gestion de eventos con IE4 e IE5 utiliza el objeto window.event, que no forma
+   parte de DOM2. IE5 soporta getElementById, pero sigue usando este objeto para la
+   gestion de eventos, por lo que hay que tratarle de forma exclusiva */
+   if (!e) var e = window.event
+   //distancia a bordes
+   var borde_derecho = document.body.clientWidth - e.clientX
+   var borde_inferior = document.body.clientHeight - e.clientY
+   //distancia del menu al puntero
+   if (borde_derecho < mimenu.offsetWidth)
+      mimenu.style.left = document.body.scrollLeft + e.clientX - cepilomenu.offsetWidth + 'px'
+   else
+      mimenu.style.left = document.body.scrollLeft + e.clientX + 'px'
+   //pocicion vertical
+   if (borde_inferior < mimenu.offsetHeight)
+      mimenu.style.top = document.body.scrollTop + e.clientY - cepilomenu.offsetHeight
+   else
+      mimenu.style.top = document.body.scrollTop + e.clientY
+      mimenu.style.visibility = "visible"
+   return false
+}
+function visibilidad(){
+   if (document.getElementById) {
+      mimenu = document.getElementById("cepilomenu")
+   }else if (document.all) {
+      mimenu = document.all.cepilomenu
+   }
+   mimenu.style.visibility = "hidden"
+}
+document.oncontextmenu = sombra
+document.onclick = visibilidad
+</script>
+
+
+
+<style>
+	a, A:link, a:visited, a:active
+		{color: #000000;text-decoration: none; font-family: Tahoma, Verdana; font-size: 11px}
+	A:hover
+		{color: #ff0000; text-decoration: none; font-family: Tahoma, Verdana; font-size: 11px}
+</style>
+<link rel="StyleSheet" href="./css/dtree.css" type="text/css" />
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><style type="text/css">
+<!--
+body {
+	background-color: #FFFFFF;
+}
+-->
+</style>
+
+<style TYPE="text/css">
+.tipo0{
+padding: 6px;
+position: absolute;
+width: 200px;
+border: 2px solid black;
+background-color: menu;
+font-family: Verdana;
+line-height: 20px;
+cursor: default;
+visibility: hidden;
+}
+.tipo1{
+padding: 6px;
+cursor: default;
+position: absolute;
+width: 165px;
+background-color: Menu;
+color: MenuText;
+border: 0 solid white;
+visibility: hidden;
+border: 2 outset ButtonHighlight;
+}
+a.menuitem {font-size: 0.7em; font-family: Arial, Serif; text-decoration: none;}
+a.menuitem:link {color: #000000; }
+a.menuitem:hover {color: #ffffff; background: #0A246A;}
+a.menuitem:visited {color: #868686;}
+</style>
+<script language="JavaScript" type="text/JavaScript">
+<!--
+function MM_reloadPage(init) {  //reloads the window if Nav4 resized
+  if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
+    document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
+  else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
+}
+MM_reloadPage(true);
+//-->
+</script>
+
+
+</head>
+<body topmargin="0" leftmargin="0" rightmargin="0" >
+<form>
+<table width="180" border="0" cellpadding="0" cellspacing="0">
+  <!--DWLayoutTable-->
+  <tr>
+    <td width="90" height="20" valign="top"><img src="./images/MenuPrincipal4_r3_c2.gif" width="90" height="20"></td>
+    <td width="161" valign="top"><!--DWLayoutEmptyCell-->&nbsp;</td>
+  </tr>
+</table>
+<table id="tablaMenuExpandido" width="100%" border="1" height="600" cellpadding="0" cellspacing="0">
+  <!--DWLayoutTable-->
+   <tr>
+    <td width="100%" style="height:auto" valign="top"  bgcolor="#ffffff"> <script language="JavaScript">
+
+		d = new dTree('d');
+
+		d.add(0,-1,'Gesti&oacute;n Documentaria');
+		<!--d.add(1,0,'BANDEJA','', 'BANDEJA', '');
+		<!--     d.add(2,1,'Recibidos','pages/bandeja/docRecibidos.html','','mainFrame');
+		<!--     d.add(3,1,'Por Enviar','pages/bandeja/docEnviar.html','','mainFrame');
+		<!--	 d.add(4,1,'Enviados','pages/bandeja/docEnviado.html','','mainFrame');
+		d.add(1,0,'Doc Recibidos','pages/mensajeria/docRecibidos.html','','mainFrame','images/recibido.gif');
+		<!--d.add(2,0,'Doc por Enviar','','','mainFrame','images/page2.gif');-->
+		<!--d.add(3,0,'Doc Enviados','','','mainFrame','images/porEnviar.gif');-->
+		<!--d.add(40,0,'BUSQUEDA','pages/bandeja/busqueda.html','','mainFrame','images/busqueda.gif');
+		<!--d.add(50,0,'REGISTRO DOCUMENTOS','', 'REGISTRO DOCUMENTOS', '');
+		<!--	d.add(51,50,'Solicitudes','pages/ingreso/ingresoSolicitudes.html','','mainFrame');
+		<!--d.add(60,0,'TRAMITE DOCUMENTOS','', 'TRAMITE DOCUMENTOS', '');
+		<!--	d.add(61,60,'Documentos','pages/tramite/ingreso.html','','mainFrame');
+
+		document.write(d);
+
+		//-->
+
+			</script></td>
+  
+  
+    <td width="6" align="right" height="100%" valign="middle">
+				<a href="#" style="background-color: transparent">
+				<img src="images/separador.gif" width="6" height="338" name="MenuSwitch"
+				onclick="switchMenu()" border="0">
+				</a>
+	  </td>
+	  <td height="100%" width="1" bgcolor="#1B2085"></td>
+	</tr>
+  
+  
+</table>
+
+
+<table id="tablaMenuColapsado" style="display: none;" width="7" height="600" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="6" height="100%" valign="middle">
+				<a href="#" style="background-color: transparent">
+				<img src="images/separador2.gif" width="6" height="338"
+				name="MenuSwitch" onclick="switchMenu()" border="0"></a>	 
+			</td>
+			<td width="1" height="100%" bgcolor="#1B2085"></td>
+		</tr>
+</table>
+
+
+
+</form>
+
+
+<!-- Capa que construye el menu -->  
+<div id="cepilomenu">
+ 
+<a class="menuitem" href="javascript:principal()">Abrir</a><br>  
+<a class="menuitem" href="javascript:principal()">Marcar todas como no leídas</a><br>  
+<hr>  
+<a class="menuitem" href="javascript:principal()">Mover Carpeta</a><br>  
+<a class="menuitem" href="javascript:principal()">Copiar Carpeta</a><br> 
+<a class="menuitem" href="javascript:Abrir_ventana('pages/bandeja/nuevaCarpeta.html')">Nueva Carpeta B&uacute;squeda</a><br>   
+</div>   
+  
+<!-- Inicializacion de estilos -->  
+<script type="text/javascript" language="JavaScript">  
+   if (document.getElementById) {   
+     if (menutipo == 0)   
+       document.getElementById("cepilomenu").className = "tipo0"  
+     else   
+       document.getElementById("cepilomenu").className = "tipo1"  
+   } else if (document.all) {   
+     if (menutipo == 0)   
+       document.all.cepilomenu.className = "tipo0"  
+     else   
+       document.all.cepilomenu.className = "tipo1"  
+   }    
+</script> 
+</BODY>
+</HTML>

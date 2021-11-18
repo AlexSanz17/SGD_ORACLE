@@ -1,0 +1,14 @@
+
+ /* To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */ 
+
+package org.osinerg.daos;
+
+/**
+ * 
+ * @author armando
+ */
+public enum SearchMode {
+    EXACT_MATCH,LEFT_MATCH,RIGHT_MATCH,ANYWHERE_MATCH
+}

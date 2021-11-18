@@ -1,0 +1,11 @@
+.fila{display:table-row; margin-left:20px}
+
+.fila strong{background-color:#669BCD; color:#fff; padding:1px; border-bottom:1px solid #FFF}
+
+.fila span{border-bottom:1px solid #669BCD}
+
+.motivo{display:table-cell; width:220px}
+
+.submotivo{display:table-cell; width:250px; padding-left:5px}
+
+.eliminar{cursor:pointer; display:inline-block; width:12px; height:12px; margin-left:5px}

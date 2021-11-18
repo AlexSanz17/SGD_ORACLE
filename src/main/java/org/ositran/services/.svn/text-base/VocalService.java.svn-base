@@ -1,0 +1,12 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Vocal;
+
+public interface VocalService {
+
+   public Vocal findById(Integer idVocal);
+   
+   public List<Vocal> findAll();
+}

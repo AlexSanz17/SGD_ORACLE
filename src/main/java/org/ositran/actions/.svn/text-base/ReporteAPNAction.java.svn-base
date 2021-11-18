@@ -1,0 +1,516 @@
+package org.osinerg.actions;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.jxls.transformer.XLSTransformer;
+
+import org.apache.cxf.common.util.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+import org.osinerg.dojo.BusquedaAvanzada;
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.reporte.LBTRUtil;
+import org.osinerg.services.DocumentoService;
+import org.osinerg.services.ReporteAPNService;
+import org.osinerg.services.ExpedienteService;
+import org.osinerg.services.UnidadService;
+import org.osinerg.services.UsuarioService;
+import org.osinerg.utils.Constantes;
+
+import com.btg.osinergmin.siged.domain.ConsultaAPN3;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.FilaHojaRuta;
+import com.btg.osinergmin.siged.domain.FilaReporteAPN2;
+import com.btg.osinergmin.siged.domain.NodoExpReporteAPN3;
+import com.btg.osinergmin.siged.domain.ReporteAPN1;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Unidad;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+import java.util.Map;
+
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.ActionContext;
+
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+public class ReporteAPNAction {
+
+	private static Logger log = Logger.getLogger(ReporteSigedAction.class);
+		
+	private Integer idDocumento;
+	private Integer size;
+	
+	private String idAreaOrigen;
+	private String areaOrigen;
+	private String idTipoDocumento;
+	private String idPrioridad;
+	private String fechaCreacion;
+	private String fechaDesde;
+	private String fechaHasta;
+	private String html;
+	private String grupoProceso;
+	private String cliente;
+	private String filtroPlazo;
+	
+	private Expediente expediente;
+	private Documento documento;
+	private Trazabilidaddocumento trazabilidad;
+	private BusquedaAvanzada objFiltro;
+	private List<Unidad> areas;
+	private List<ReporteAPN1> listaReporteAPN1;
+	private List<FilaReporteAPN2> listaReporteAPN2;
+	private List<NodoExpReporteAPN3> listaReporteAPN3;
+	private List<FilaHojaRuta> hojaRuta;
+	
+	private ReporteAPNService reporteAPNService;
+	private ExpedienteService expedienteService;
+	private DocumentoService documentoService;
+	private UnidadService unidadService;
+	private UsuarioService usuarioService;
+	
+	private Unidad unidad;
+	private Map<String, Object> mapSession;
+	
+	public String reporteAPN1(){
+		mapSession = ActionContext.getContext().getSession();
+		Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		log.debug("ReporteAPN1 usuario "+usuario.getIdusuario());
+		usuario = usuarioService.findByIdUsuario(usuario.getIdusuario());
+		this.idAreaOrigen=String.valueOf(usuario.getUnidad().getIdunidad().toString()) ;
+		log.debug("ReporteAPN1 idArea "+idAreaOrigen);
+		return "reporteAPN1";
+	}
+	
+	public String reporteAPN2(){
+		mapSession = ActionContext.getContext().getSession();
+		Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+		log.debug("ReporteAPN2 usuario "+usuario.getIdusuario());
+		usuario = usuarioService.findByIdUsuario(usuario.getIdusuario());
+		this.idAreaOrigen=String.valueOf(usuario.getUnidad().getIdunidad().toString()) ;
+		log.debug("ReporteAPN2 idArea "+idAreaOrigen);
+		return "reporteAPN2";
+	}
+	
+	public String reporteAPN3(){
+		
+		return "reporteAPN3";
+	}
+	
+	public void exportarExcelAPN1() throws ServletException, IOException {
+		HttpServletRequest request=ServletActionContext.getRequest();
+		HttpServletResponse response=ServletActionContext.getResponse();
+		    
+		try {
+		
+			this.idAreaOrigen = new String(request.getParameter("idAreaOrigenH").getBytes(
+					"ISO-8859-1"), "UTF-8");
+			this.idTipoDocumento = new String(request.getParameter(
+					"idTipoDocumentoH").getBytes("ISO-8859-1"), "UTF-8");
+			this.idPrioridad = new String(request.getParameter("idPrioridadH")
+					.getBytes("ISO-8859-1"), "UTF-8");
+			this.fechaDesde = new String(request.getParameter("fechaDesdeH")
+					.getBytes("ISO-8859-1"), "UTF-8");
+			this.fechaHasta = new String(request.getParameter("fechaHastaH")
+					.getBytes("ISO-8859-1"), "UTF-8");
+			this.areaOrigen = new String(request.getParameter("areaOrigenH")
+					.getBytes("ISO-8859-1"), "UTF-8");
+			listaReporteAPN1 = reporteAPNService.getListaReporteAPN1(idAreaOrigen, idTipoDocumento, idPrioridad, fechaDesde, fechaHasta);
+			
+	        HttpServletRequestWrapper srw = new HttpServletRequestWrapper(request);
+			String ruta = srw.getRealPath("");
+			ruta += "/excel/ReporteAPN1.xls";
+			 
+		    HSSFWorkbook objetoExcel = getReporteAPN1HSSFW(listaReporteAPN1,ruta, fechaDesde, fechaHasta, areaOrigen);		    
+		    LBTRUtil.ExportExcel(objetoExcel, response, "ReporteAPN1");  
+	        
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}					
+	}
+	
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public HSSFWorkbook getReporteAPN1HSSFW(List listResultados, String ruta, String fechaDesde, String fechaHasta, String areaOrigen){		
+		{ 
+			try{				    
+		        Map beans = new HashMap();
+		        SimpleDateFormat dateFormat =  new SimpleDateFormat("dd/MM/yyyy hh:mm");   
+		        beans.put("row", listResultados); 
+		        beans.put("fechaDesde", fechaDesde);
+		        beans.put("fechaHasta", fechaHasta);
+		        beans.put("areaOrigen", areaOrigen);
+		        beans.put("dateFormat", dateFormat);
+		        XLSTransformer transformer = new XLSTransformer(); 		        
+		        File plantilla  = new File (ruta);		        
+		        FileInputStream plantillaStream =  new FileInputStream(plantilla);                
+		        return  transformer.transformXLS ( plantillaStream , beans ) ; 
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null ;     
+			}
+	    }
+	}
+	
+	public String verHojaRuta() {
+		//areas = unidadService.buscarUnidadesFuncionales();
+		documento = documentoService.findByIdDocumento(idDocumento);
+		int iddoc = documento.getDocumentoreferencia() != null ? documento.getDocumentoreferencia() : idDocumento;
+		hojaRuta = reporteAPNService.generarHojaRuta(iddoc);
+		trazabilidad = reporteAPNService.buscarUltimaTraza(iddoc);
+		return "HojaRuta";
+	}
+    
+	public String verHojaRutaExpediente(){
+		documento = documentoService.findByIdDocumento(idDocumento);
+		hojaRuta = reporteAPNService.generarHojaRutaExpediente(documento.getExpediente().getId());
+		//trazabilidad = reporteAPNService.buscarUltimaTraza(iddoc);
+		return "HojaRutaExpediente";
+	}
+	
+	public String listarReporte1() {
+		HttpServletRequest request = ServletActionContext.getRequest();
+		try {
+			this.idAreaOrigen = new String(request.getParameter("area").getBytes(
+					"ISO-8859-1"), "UTF-8");
+			this.idTipoDocumento = new String(request.getParameter(
+					"tipodocumento").getBytes("ISO-8859-1"), "UTF-8");
+			this.idPrioridad = new String(request.getParameter("prioridad")
+					.getBytes("ISO-8859-1"), "UTF-8");
+			this.fechaDesde = new String(request.getParameter("fechaDesde")
+					.getBytes("ISO-8859-1"), "UTF-8");
+			this.fechaHasta = new String(request.getParameter("fechaHasta")
+					.getBytes("ISO-8859-1"), "UTF-8");
+			if(((idAreaOrigen.toString().trim()).equals("Todos"))){
+				this.areaOrigen="TODAS LAS AREAS";
+			}else{
+				unidad= unidadService.buscarObjPor(Integer.parseInt(idAreaOrigen.toString().trim()));
+				this.areaOrigen= unidad.getNombre().toString();
+			}			
+		} catch (UnsupportedEncodingException e) {
+			log.error(e.getMessage(), e);
+			return "error";
+		}			
+		
+		log.debug("(listarReporte1())"+"idareaOrigen "+ idAreaOrigen+" idtipodocumento "+ idTipoDocumento+" idprioridad "+ idPrioridad + "fechaDesde: "+ fechaDesde+"fechaHasta"+ fechaHasta);
+		
+		if (checkErrorFechas()) {			
+			listaReporteAPN1 = reporteAPNService.getListaReporteAPN1(idAreaOrigen, idTipoDocumento, idPrioridad, fechaDesde, fechaHasta);			
+			return Action.SUCCESS + "ReporteAPN1";
+		} else {
+			return "errorFechas";
+		}
+
+	}
+	
+	public String listarReporte2(){
+		listaReporteAPN2 = reporteAPNService.getListaReporteAPN2(objFiltro);
+		grupoProceso = "";
+		if(!StringUtils.isEmpty(objFiltro.getGrupoProceso()) && !objFiltro.getGrupoProceso().equals("0")){
+			if(listaReporteAPN2 != null && !listaReporteAPN2.isEmpty()){
+				Documento documento = documentoService.findByIdDocumento(listaReporteAPN2.get(0).getIdDocumento());
+				grupoProceso = documento.getExpediente().getProceso().getIdgrupoproceso().getNombre();
+			}
+		}
+		return Action.SUCCESS + "ReporteAPN2";
+	}
+	
+	public String listarReporte3(){
+		if(StringUtils.isEmpty(cliente)){
+			objFiltro.setCliente("");
+		}
+		listaReporteAPN3 = reporteAPNService.getListaReporteAPN3(objFiltro);
+		size=0;
+		if(listaReporteAPN3 != null && !listaReporteAPN3.isEmpty()){	
+			for(NodoExpReporteAPN3 nodo : listaReporteAPN3){
+				if(nodo.getCantidadDocumentos().intValue() > size.intValue()){
+					size = new Integer(nodo.getCantidadDocumentos().intValue());
+				}
+			}
+		}
+		return Action.SUCCESS + "ReporteAPN3";
+	}
+	
+	private boolean checkErrorFechas(){
+		/**
+		 * Este error es causado cuando hay un conflicto entre el nombre de variables
+		 * que son usadas en el reporte. Para que desaparezca debes revisar el nombre
+		 * de las variables de los javascript y JSP.
+		 */
+		SimpleDateFormat fechita = new SimpleDateFormat("dd/MM/yyyy");
+		try{
+			fechita.parse(fechaDesde);
+		}catch(ParseException e){
+			log.warn("ERROR!, ha ocurrido un error con el campo FechaDesde y se han desactivado los filtros");
+			return false;
+		}
+		try{
+			fechita.parse(fechaHasta);
+		}catch(ParseException e){
+			log.warn("ERROR!, ha ocurrido un error con el campo FechaHasta y se han desactivado los filtros");
+			return false;
+		}
+		return true;
+	}
+
+	public static Logger getLog() {
+		return log;
+	}
+
+	public static void setLog(Logger log) {
+		ReporteAPNAction.log = log;
+	}
+
+	public ExpedienteService getExpedienteService() {
+		return expedienteService;
+	}
+
+	public void setExpedienteService(ExpedienteService expedienteService) {
+		this.expedienteService = expedienteService;
+	}
+
+	public Expediente getExpediente() {
+		return expediente;
+	}
+
+	public void setExpediente(Expediente expediente) {
+		this.expediente = expediente;
+	}
+	
+	public List<Unidad> getAreas() {
+		return areas;
+	}
+
+	public void setAreas(List<Unidad> areas) {
+		this.areas = areas;
+	}
+
+	public UnidadService getUnidadService() {
+		return unidadService;
+	}
+
+	public void setUnidadService(UnidadService unidadService) {
+		this.unidadService = unidadService;
+	}
+
+	public Trazabilidaddocumento getTrazabilidad() {
+		return trazabilidad;
+	}
+
+	public void setTrazabilidad(Trazabilidaddocumento trazabilidad) {
+		this.trazabilidad = trazabilidad;
+	}
+
+	public String getIdTipoDocumento() {
+		return idTipoDocumento;
+	}
+
+	public void setIdTipoDocumento(String idTipoDocumento) {
+		this.idTipoDocumento = idTipoDocumento;
+	}
+
+	public String getIdPrioridad() {
+		return idPrioridad;
+	}
+
+	public void setIdPrioridad(String idPrioridad) {
+		this.idPrioridad = idPrioridad;
+	}
+
+	public String getFechaCreacion() {
+		return fechaCreacion;
+	}
+
+	public void setFechaCreacion(String fechaCreacion) {
+		this.fechaCreacion = fechaCreacion;
+	}
+
+	public String getFechaDesde() {
+		return fechaDesde;
+	}
+
+	public void setFechaDesde(String fechaDesde) {
+		this.fechaDesde = fechaDesde;
+	}
+
+	public String getFechaHasta() {
+		return fechaHasta;
+	}
+
+	public void setFechaHasta(String fechaHasta) {
+		this.fechaHasta = fechaHasta;
+	}
+
+	public String getHtml() {
+		return html;
+	}
+
+	public void setHtml(String html) {
+		this.html = html;
+	}
+
+	public ReporteAPNService getReporteAPNService() {
+		return reporteAPNService;
+	}
+
+	public void setReporteAPNService(ReporteAPNService reporteAPNService) {
+		this.reporteAPNService = reporteAPNService;
+	}
+
+	public Documento getDocumento() {
+		return documento;
+	}
+
+	public void setDocumento(Documento documento) {
+		this.documento = documento;
+	}
+
+	public DocumentoService getDocumentoService() {
+		return documentoService;
+	}
+
+	public void setDocumentoService(DocumentoService documentoService) {
+		this.documentoService = documentoService;
+	}
+
+	public Integer getIdDocumento() {
+		return idDocumento;
+	}
+
+	public void setIdDocumento(Integer idDocumento) {
+		this.idDocumento = idDocumento;
+	}
+
+	public List<ReporteAPN1> getListaReporteAPN1() {
+		return listaReporteAPN1;
+	}
+
+	public void setListaReporteAPN1(List<ReporteAPN1> listaReporteAPN1) {
+		this.listaReporteAPN1 = listaReporteAPN1;
+	}
+
+	public Unidad getUnidad() {
+		return unidad;
+	}
+
+	public void setUnidad(Unidad unidad) {
+		this.unidad = unidad;
+	}
+
+
+	public String getIdAreaOrigen() {
+		return idAreaOrigen;
+	}
+
+
+	public void setIdAreaOrigen(String idAreaOrigen) {
+		this.idAreaOrigen = idAreaOrigen;
+	}
+
+
+	public String getAreaOrigen() {
+		return areaOrigen;
+	}
+
+
+	public void setAreaOrigen(String areaOrigen) {
+		this.areaOrigen = areaOrigen;
+	}
+
+
+	public Map<String, Object> getMapSession() {
+		return mapSession;
+	}
+
+
+	public void setMapSession(Map<String, Object> mapSession) {
+		this.mapSession = mapSession;
+	}
+
+
+	public UsuarioService getUsuarioService() {
+		return usuarioService;
+	}
+
+
+	public void setUsuarioService(UsuarioService usuarioService) {
+		this.usuarioService = usuarioService;
+	}
+
+	public List<FilaHojaRuta> getHojaRuta() {
+		return hojaRuta;
+	}
+
+	public void setHojaRuta(List<FilaHojaRuta> hojaRuta) {
+		this.hojaRuta = hojaRuta;
+	}
+
+	public BusquedaAvanzada getObjFiltro() {
+		return objFiltro;
+	}
+
+	public void setObjFiltro(BusquedaAvanzada objFiltro) {
+		this.objFiltro = objFiltro;
+	}
+
+	public List<FilaReporteAPN2> getListaReporteAPN2() {
+		return listaReporteAPN2;
+	}
+
+	public void setListaReporteAPN2(List<FilaReporteAPN2> listaReporteAPN2) {
+		this.listaReporteAPN2 = listaReporteAPN2;
+	}
+
+	public String getGrupoProceso() {
+		return grupoProceso;
+	}
+
+	public void setGrupoProceso(String grupoProceso) {
+		this.grupoProceso = grupoProceso;
+	}
+
+	public List<NodoExpReporteAPN3> getListaReporteAPN3() {
+		return listaReporteAPN3;
+	}
+
+	public void setListaReporteAPN3(List<NodoExpReporteAPN3> listaReporteAPN3) {
+		this.listaReporteAPN3 = listaReporteAPN3;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
+	}
+
+	public String getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(String cliente) {
+		this.cliente = cliente;
+	}
+
+	public String getFiltroPlazo() {
+		return filtroPlazo;
+	}
+
+	public void setFiltroPlazo(String filtroPlazo) {
+		this.filtroPlazo = filtroPlazo;
+	}
+	
+}

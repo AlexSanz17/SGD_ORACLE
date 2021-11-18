@@ -1,0 +1,1135 @@
+package org.osinerg.services;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import javax.persistence.NoResultException;
+import org.apache.log4j.Logger;
+import org.osinerg.daos.EstadoDAO;
+import org.osinerg.daos.EtapaDAO;
+import org.osinerg.daos.ExpedienteDAO;
+import org.osinerg.daos.ExpedientestorDAO;
+import org.osinerg.dojo.tree.NodoArbol;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.DocumentoDetail;
+import org.osinerg.utils.Expedienfindadvance;
+import org.osinerg.utils.ExpedienteList;
+import org.osinerg.utils.ExpedienteTree;
+import org.osinerg.utils.StringUtil;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Actividad;
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.Auditoria;
+import com.btg.osinergmin.siged.domain.Carpeta;
+import com.btg.osinergmin.siged.domain.Cliente;
+import com.btg.osinergmin.siged.domain.Concesionario;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Documentoxexpediente;
+import com.btg.osinergmin.siged.domain.Estado;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Expedientestor;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class ExpedienteServiceImpl implements ExpedienteService {
+
+    private static Logger log = Logger.getLogger(ExpedienteServiceImpl.class);
+    private ActividadService srvActividad;
+    private ConcesionarioService srvC;
+    private DocumentoService documentoService;
+    private ExpedienteDAO dao;
+    private ExpedientestorDAO daoES;
+    private ProcesoService srvP;
+    private ClienteService srvS;
+    private RepositorioService repositorioService;
+    private TipodocumentoService srvTipoDocumento;
+    private AuditoriaService srvAuditoria;
+    private TrazabilidaddocumentoService trazabilidadDocumentoService;
+    private EtapaDAO etapaDAO;
+    private EstadoDAO estadoDAO;
+    private ParametroService srvParametro;
+
+    public ExpedienteServiceImpl(ExpedienteDAO dao, ConcesionarioService srvC, ProcesoService srvP, ClienteService srvS) {
+        setDao(dao);
+        setSrvC(srvC);
+        setSrvP(srvP);
+        setSrvS(srvS);
+    }
+
+    public Expediente findByIdExpediente(Integer iIdExp) {
+        return getDao().findByIdExpediente(iIdExp);
+    }
+
+    public Expediente findPropietarioByIdExpediente(Integer iIdExp) {
+        return getDao().findPropietarioByIdExpediente(iIdExp);
+    }
+    /*public Expediente findByExpedienteSAS(Integer iId){
+    return null ;// getDao().findByExpedienteSAS(iId);
+    }*/
+
+    @Transactional
+    public void aplicarNumeracionInternaExpediente(Integer iIdExp) {
+        this.getDao().aplicarNumeracionInternaExpediente(iIdExp);
+    }
+
+    @Transactional
+    public String puedeRechazar(Integer idExpediente) {
+        Integer cantTraza = this.getDao().getCantidadTrazabilidad(idExpediente);
+
+        if (cantTraza != null && cantTraza.intValue() > 0) {
+            return Constantes.PUEDE_RECHAZAR;
+        }
+        return Constantes.NO_PUEDE_RECHAZAR;
+
+    }
+
+    @Override
+    @Transactional
+    public Expediente prepareExpediente(DocumentoDetail objDD, Usuario objUsuario) {
+        Actividad objActividad = null;
+        Cliente objCliente = null;
+        Concesionario objConcesionario = null;
+        Expediente objExpediente = null;
+        Proceso objProceso = null;
+        log.debug("Expediente a analizar con ID [" + objDD.getIIdExpediente() + "]");
+        log.debug("Proceso recibido con ID [" + objDD.getIIdProceso() + "]");
+        objCliente = srvS.updateInfoCliente(objDD);
+        if (objDD.getIIdExpediente() != null) {
+            objExpediente = dao.findByIdExpediente(objDD.getIIdExpediente());
+            log.debug("Expediente existente con ID [" + objExpediente.getIdexpediente() + "] Nro Expediente [" + objExpediente.getNroexpediente() + "]");
+            if (objUsuario.getRol() != null && objUsuario.getRol().getIdperfil().getNombre().equals(Constantes.PERFIL_QAS)) {
+                objProceso = srvP.findByIdProceso(objDD.getIIdProceso());
+                objExpediente.setProceso(objProceso);
+                // objCliente=srvS.findByIdCliente(objDD.getIIdCliente());
+                objExpediente.setCliente(objCliente);
+                objExpediente.setClientenombres(objCliente.getNombres());
+                objExpediente.setClienteapellidopaterno(objCliente.getApellidoPaterno());
+                objExpediente.setClienteapellidomaterno(objCliente.getApellidoMaterno());
+                objExpediente.setClienterazonsocial(objCliente.getRazonSocial());
+                objExpediente.setClienterepresentantelegal(objCliente.getRepresentanteLegal());
+                objExpediente.setClientedireccionprincipal(objCliente.getDireccionPrincipal());
+                if (objCliente.getUbigeoPrincipal() != null) {
+                    objExpediente.setClienteubigeoprincipal(objCliente.getUbigeoPrincipal().getIddistrito());
+                }
+                objExpediente.setClientedireccionalternativa(objCliente.getDireccionAlternativa());
+                if (objCliente.getUbigeoAlternativo() != null) {
+                    objExpediente.setClienteubigeoalternativo(objCliente.getUbigeoAlternativo().getIddistrito());
+                }
+                objExpediente.setClientetelefono(objCliente.getTelefono());
+                objExpediente.setClientecorreo(objCliente.getCorreo());
+                if (objDD.getStrAbreviado().equals(Constantes.TIPO_PROCESO_STOR)) {
+                    objConcesionario = srvC.findByIdConcesionario(objDD.getIIdCorrentista());
+                    objExpediente.setConcesionario(objConcesionario);
+                }
+                objExpediente.setAsunto(objDD.getAsuntoExpediente());
+                objExpediente.setSumilla(objDD.getsSumilla());
+
+                objExpediente.setEstaenflujo(Constantes.ESTAENFLUJO_S);
+
+                objExpediente.setHistorico(objDD.getHistorico());
+
+                objExpediente = dao.saveExpediente(objExpediente);
+                log.debug("Nuevo proceso asociado [" + objExpediente.getProceso().getNombre() + "]");
+                if (objExpediente.getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                    log.debug("Nuevo cliente asociado [" + objExpediente.getCliente().getRazonSocial() + "]");
+                } else {
+                    log.debug("Nuevo cliente asociado [" + objExpediente.getCliente().getNombres() + " " + objExpediente.getCliente().getApellidoPaterno() + " " + objExpediente.getCliente().getApellidoMaterno() + "]");
+                }
+                if (objDD.getStrAbreviado().equals(Constantes.TIPO_PROCESO_STOR)) {
+                    log.debug("Nuevo concesionario asociado [" + objExpediente.getConcesionario().getRazonSocial() + "]");
+                }
+                if (objProceso.getTipoproceso().getNombre().equals(Constantes.TIPO_PROCESO_STOR)) {
+                    objExpediente.setExpedientestor(this.saveExpedienteStor(objExpediente, objDD));
+                }
+            }
+            objExpediente.setNuevo(false);
+            return objExpediente;
+        }
+        objExpediente = new Expediente();
+        // Asociacion del Cliente
+        // objCliente=srvS.findByIdCliente(objDD.getIIdCliente());
+        log.debug("Cliente a asociar con ID [" + objCliente.getIdCliente() + "] Razon Social [" + objCliente.getRazonSocial() + "]");
+        objExpediente.setCliente(objCliente);
+        objExpediente.setClientenombres(objCliente.getNombres());
+        objExpediente.setClienteapellidopaterno(objCliente.getApellidoPaterno());
+        objExpediente.setClienteapellidomaterno(objCliente.getApellidoMaterno());
+        objExpediente.setClienterazonsocial(objCliente.getRazonSocial());
+        objExpediente.setClienterepresentantelegal(objCliente.getRepresentanteLegal());
+        objExpediente.setClientedireccionprincipal(objCliente.getDireccionPrincipal());
+        if (objCliente.getUbigeoPrincipal() != null) {
+            objExpediente.setClienteubigeoprincipal(objCliente.getUbigeoPrincipal().getIddistrito());
+        }
+        objExpediente.setClientedireccionalternativa(objCliente.getDireccionAlternativa());
+        if (objCliente.getUbigeoAlternativo() != null) {
+            objExpediente.setClienteubigeoalternativo(objCliente.getUbigeoAlternativo().getIddistrito());
+        }
+        objExpediente.setClientetelefono(objCliente.getTelefono());
+        objExpediente.setClientecorreo(objCliente.getCorreo());
+        // Asociacion del Cliente
+        // Asociacion del Concesionario
+        if (objDD.getIIdCorrentista() != null) {
+            objConcesionario = srvC.findByIdConcesionario(objDD.getIIdCorrentista());
+            log.debug("Concesionario a asociar con ID [" + objConcesionario.getIdConcesionario() + "] Razon Social [" + objConcesionario.getRazonSocial() + "]");
+        }
+        objExpediente.setConcesionario(objConcesionario);
+        // Asociacion del Concesionario
+        // Asociacion del Proceso
+        objProceso = srvP.findByIdProceso(objDD.getIIdProceso());
+        log.debug("Proceso a asociar con ID [" + objProceso.getIdproceso() + "] Nombre [" + objProceso.getNombre() + "]");
+        objExpediente.setProceso(objProceso);
+        // Asociacion del Proceso
+        objExpediente.setIdpropietario(objProceso.getResponsable());
+
+        if (StringUtil.isEmpty(objDD.getsNroExpediente())) {
+            //objExpediente.setNroexpediente(this.getMaxReferencia());
+            objExpediente.setNroexpediente("NOTYET");
+            objExpediente.setHistorico('N');
+        } else {
+            objExpediente.setNroexpediente(objDD.getsNroExpediente());
+            objExpediente.setHistorico('S');
+        }
+
+        objExpediente.setAsunto(objDD.getAsuntoExpediente());
+        objExpediente.setSumilla(objDD.getsSumilla());
+        objExpediente.setContenido(objDD.getStrContenido());
+        objExpediente.setFechacreacion(new Date());
+        objExpediente.setEstado(Constantes.ESTADO_ACTIVO);
+        log.debug("Tipo Proceso: " + objProceso.getTipoproceso().getNombre() + " Proceso: " + objProceso.getCodigo());
+        log.debug("ACTIVIDAD A PROCESAR: ");
+        if (objProceso.getTipoproceso().getNombre().equals(Constantes.TIPO_PROCESO_STOR)) {
+            if (objProceso.getCodigo().equalsIgnoreCase("apelacion")) {
+                objActividad = getSrvActividad().findByCodigo("ap_calexp");
+            } else if (objProceso.getCodigo().equalsIgnoreCase("queja")) {
+                objActividad = getSrvActividad().findByCodigo("q_calexp");
+            } else if (objProceso.getCodigo().equalsIgnoreCase("medida cautelar")) {
+                log.debug("Ingreso de una medida cautelar");
+                objActividad = getSrvActividad().findByCodigo("mc_calexp");
+            }
+            log.debug("Codigo de Proceso=" + objProceso.getCodigo());
+            log.debug("Actividad a asociar con ID [" + objActividad.getIdActividad() + "] Nombre [" + objActividad.getNombre() + "]");
+            objExpediente.setIdactividad(objActividad);
+        }
+
+        objExpediente.setEstaenflujo(Constantes.ESTAENFLUJO_N);
+        objExpediente = this.saveExpediente(objExpediente);
+
+        if (StringUtil.isEmpty(objDD.getsNroExpediente())) {
+            objExpediente.setNroexpediente(this.generateNroExpediente(objExpediente.getIdexpediente(), objExpediente.getProceso().getProduccion()));
+            objExpediente = this.saveExpediente(objExpediente);
+        }
+
+        // El nuevo expediente es creado en Alfresco
+        if (repositorioService.crearEstructuraExpediente(objUsuario.getUsuario(), objUsuario.getClave(), objExpediente.getIdexpediente())) {
+            log.info("Expediente [" + objExpediente.getNroexpediente() + "] ha sido creado en Alfresco");
+        } else {
+            log.warn("Expediente [" + objExpediente.getNroexpediente() + "] NO ha sido creado en Alfresco. Quizas Ya existe?");
+            throw new RuntimeException("No se pudo crear el expediente en Alfresco");
+        }
+        // Grabando informacion para el proceso STOR
+        if (objProceso.getTipoproceso().getNombre().equals(Constantes.TIPO_PROCESO_STOR)) {
+            objExpediente.setExpedientestor(this.saveExpedienteStor(objExpediente, objDD));
+        }
+        objExpediente.setNuevo(true);
+
+        return objExpediente;
+    }
+
+    /*
+     * public ExpedienteTree getExpedienteTree(Integer iIdExpediente) {
+     *
+     * Expediente objExpediente = getDao().findByIdExpediente(iIdExpediente);
+     * List<Archivo> lstArchivo = null; List<Documento> lstDocumento =
+     * objExpediente.getDocumentoList(); List<ExpedienteTree> lstTreeDocumento =
+     * new ArrayList<ExpedienteTree>(); //List<ExpedienteTree> lstTreeUnidad =
+     * new ArrayList<ExpedienteTree>();
+     *
+     * for (Documento objDocumento : lstDocumento) {
+     *
+     *
+     * List<ExpedienteTree> lstTreeArchivo = new ArrayList<ExpedienteTree>();
+     *
+     * /*
+     *
+     * lstArchivo = objDocumento.getArchivos();
+     *
+     * for (Archivo objArchivo : lstArchivo) { int iBracket =
+     * objArchivo.getNombre().indexOf("]");
+     *
+     * if (iBracket != -1) {
+     * objArchivo.setNombre(objArchivo.getNombre().substring(iBracket + 1)); }
+     *
+     * ExpedienteTree objETArchivo = new
+     * ExpedienteTree(objArchivo.getIdarchivo(), objArchivo.getNombre());
+     * lstTreeArchivo.add(objETArchivo); } //
+     *//*
+     *
+     * ExpedienteTree objETDocumento = new
+     * ExpedienteTree(objDocumento.getIdDocumento(),
+     * "<img src='images/xx.gif' align='left' border='0' alt='Adjunto'>" +
+     * objDocumento.getTipoDocumento().getNombre() + " - " +
+     * objDocumento.getNumeroDocumento() + "\" onclick=\"alert('5555hooo id:" +
+     * objDocumento.getIdDocumento() + "')   "); //
+     * objETDocumento.setLstExpedienteChildren(lstTreeArchivo);
+     * lstTreeDocumento.add(objETDocumento); }
+     *
+     * ExpedienteTree objExpedienteTree = new ExpedienteTree(iIdExpediente,
+     * objExpediente.getNroexpediente());
+     * objExpedienteTree.setLstExpedienteChildren(lstTreeDocumento);
+     *
+     * return objExpedienteTree; }
+     */
+
+    public ExpedienteTree getExpedienteTree(Integer iIdExpediente) {
+        Expediente objExpediente = getDao().findByIdExpediente(iIdExpediente);
+        List<Carpeta> lstCarpeta = new ArrayList<Carpeta>();
+        List<ExpedienteTree> lstTreeDocumento = new ArrayList<ExpedienteTree>();
+        // seleccionar las carpetas que se enceutnran en la raiz
+        for (Carpeta objCarpeta : objExpediente.getCarpetaList()) {
+            if (objCarpeta.getCarpetapadre() == null) {
+                lstCarpeta.add(objCarpeta);
+            }
+        }
+        lstTreeDocumento = this.getArbolCarpeta(lstTreeDocumento, lstCarpeta);
+        // para documentos sin carpeta
+        // Comentado por German: ya no se usan carpetas
+		/*List<Documento> lstDocumento=objExpediente.getDocumentoList();
+        for(Documento objDocumento : lstDocumento){
+        if(objDocumento.getIdcarpeta()==null){
+        ExpedienteTree objETDocumento=new ExpedienteTree("D-"+objDocumento.getIdDocumento(),"<img src='images/xx.gif' align='left' border='0' alt='Adjunto'>"+objDocumento.getTipoDocumento().getNombre()+" - "+objDocumento.getNumeroDocumento()+"\" onclick=\"alert('5555hooo id:"+objDocumento.getIdDocumento()+"')   ");
+        lstTreeDocumento.add(objETDocumento);
+        }
+        }*/
+        // Para documentos virtuales
+        List<Documentoxexpediente> lstDocXExp = objExpediente.getDocumentoxexpedienteList();
+        for (Documentoxexpediente objDocXExp : lstDocXExp) {
+            Documento objDocumento = objDocXExp.getDocumento();
+            log.debug("Documento Virtual con ID [" + objDocumento.getIdDocumento() + "]");
+            ExpedienteTree objETDocumento = new ExpedienteTree("D-" + objDocumento.getIdDocumento(), "<img src='images/flechita.gif' align='left' border='0' alt='Adjunto'>" + objDocumento.getTipoDocumento().getNombre() + " - " + objDocumento.getNumeroDocumento() + "\" onclick=\"alert('5555hooo id:" + objDocumento.getIdDocumento() + "')   ");
+            lstTreeDocumento.add(objETDocumento);
+        }
+        ExpedienteTree objExpedienteTree = new ExpedienteTree("E-" + iIdExpediente, objExpediente.getNroexpediente());
+        objExpedienteTree.setLstExpedienteChildren(lstTreeDocumento);
+        return objExpedienteTree;
+    }
+
+    @Transactional
+    public void actualizarResponsableExpediente(Integer idExpediente, Usuario idpropietario) {
+        dao.actualizarResponsableExpediente(idExpediente, idpropietario);
+    }
+
+    public List<ExpedienteTree> getArbolCarpeta(List<ExpedienteTree> listallenar, List<Carpeta> carpetas) {
+        for (Carpeta objCarpeta : carpetas) {
+            List<Carpeta> lstinternaCarpetas = objCarpeta.getCarpetaList();
+            List<ExpedienteTree> listaInterna = new ArrayList<ExpedienteTree>();
+            ExpedienteTree objETCarpeta = new ExpedienteTree("C-" + objCarpeta.getIdcarpeta(), "<img src='images/folder.gif' align='left' border='0' alt='Adjunto'>" + objCarpeta.getNombre() + "\" onclick=\"alert('5555hooo id:" + objCarpeta.getIdcarpeta() + "')   ");
+            if (lstinternaCarpetas != null && lstinternaCarpetas.size() > 0) {
+                listaInterna = this.getArbolCarpeta(listaInterna, lstinternaCarpetas);
+                //
+            }
+            /*List<Documento> lstDocumentos=objCarpeta.getDocumentoList();
+            log.debug(" objCarpeta.id :"+objCarpeta.getIdcarpeta()+" "+objCarpeta.getNombre());
+            log.debug(" objCarpeta.getDocumentoList().size : "+lstDocumentos.size());
+            for(Documento objDocumento : lstDocumentos){
+            log.debug(" lstDocumentos.objDocumento "+objDocumento.getTipoDocumento().getNombre()+" - "+objDocumento.getNumeroDocumento());
+            ExpedienteTree objETDocumento=new ExpedienteTree("D-"+objDocumento.getIdDocumento(),"<img src='images/xx.gif' align='left' border='0' alt='Adjunto'>"+objDocumento.getTipoDocumento().getNombre()+" - "+objDocumento.getNumeroDocumento()+"\" onclick=\"alert('5555hooo id:"+objDocumento.getIdDocumento()+"')   ");
+            listaInterna.add(objETDocumento);
+            }*/
+            objETCarpeta.setLstExpedienteChildren(listaInterna);
+            listallenar.add(objETCarpeta);
+        }
+        return listallenar;
+    }
+
+    public List<NodoArbol> getDojoExpedienteTree(Integer idExpediente, Integer idDocumento) {
+        Expediente objExpediente = dao.findByIdExpediente(idExpediente);
+        //List<Carpeta> lstCarpeta=new ArrayList<Carpeta>();
+        // List<ExpedienteTree> lstTreeDocumento = new
+        // ArrayList<ExpedienteTree>();
+        // cambio X
+        List<NodoArbol> lstTreeDocumento = new ArrayList<NodoArbol>();
+        List<NodoArbol> allElements = new ArrayList<NodoArbol>();
+        // seleccionar las carpetas que se enceutnran en la raiz
+		/*for(Carpeta objCarpeta : objExpediente.getCarpetaList()){
+        if(objCarpeta.getCarpetapadre()==null){
+        lstCarpeta.add(objCarpeta);
+        }
+        }*/
+        //lstTreeDocumento=getDojoArbolCarpeta(lstTreeDocumento,null,allElements);
+        // para documentos sin carpeta
+        List<Documento> documentos = documentoService.getDocumentosPorExpediente(idExpediente);
+        //List<Documento> documentos = documentoService.getDocumentosNoConfidencialesPorExpediente(idExpediente);
+        boolean contieneDoc = false;
+        for (Documento documento : documentos) {
+        	if(documento.getDocumentoreferencia() == null){
+        		/**No deben listarse las copias de trabajo--------------------------------------------------------------------*/
+        		if(documento.getIdDocumento().intValue() == idDocumento.intValue()){
+        			contieneDoc = true;
+        		}
+        		if(String.valueOf(documento.getEstado()).equals(String.valueOf(Constantes.ESTADO_ANULADO))){
+        			NodoArbol objETDocumento = new NodoArbol(false, "D-" + documento.getIdDocumento(), documento.getTipoDocumento().getNombre() + " - " + documento.getNumeroDocumento() + " (Anulado)", null);
+        			lstTreeDocumento.add(objETDocumento);
+        		}else{
+        			NodoArbol objETDocumento = new NodoArbol(false, "D-" + documento.getIdDocumento(), documento.getTipoDocumento().getNombre() + " - " + documento.getNumeroDocumento(), null);
+        			lstTreeDocumento.add(objETDocumento);
+        		}
+        
+                
+        	}
+        }
+        if(!contieneDoc){
+        	Documento documento = documentoService.findByIdDocumento(idDocumento);
+        	if(documento.getDocumentoreferencia() == null){
+        		/**No deben listarse las copias de trabajo--------------------------------------------------------------------*/
+        		if(String.valueOf(documento.getEstado()).equals(String.valueOf(Constantes.ESTADO_ANULADO))){
+        			NodoArbol objETDocumento = new NodoArbol(false, "D-" + documento.getIdDocumento(), documento.getTipoDocumento().getNombre() + " - " + documento.getNumeroDocumento() + " (Anulado)", null);
+        			lstTreeDocumento.add(objETDocumento);
+        		}else{
+        			NodoArbol objETDocumento = new NodoArbol(false, "D-" + documento.getIdDocumento(), documento.getTipoDocumento().getNombre() + " - " + documento.getNumeroDocumento(), null);
+        			lstTreeDocumento.add(objETDocumento);
+        		}        		
+        	}
+        }
+        // Para documentos virtuales
+        List<Documentoxexpediente> lstDocXExp = objExpediente.getDocumentoxexpedienteList();
+        for (Documentoxexpediente objDocXExp : lstDocXExp) {
+            Documento objDocumento = objDocXExp.getDocumento();
+            log.debug("Documento Virtual con ID [" + objDocumento.getIdDocumento() + "]");
+            // ExpedienteTree objETDocumento = new
+            // ExpedienteTree("D-"+objDocumento.getIdDocumento(),
+            // "<img src='images/flechita.gif' align='left' border='0' alt='Adjunto'>"
+            // + objDocumento.getTipoDocumento().getNombre() + " - " +
+            // objDocumento.getNumeroDocumento() +
+            // "\" onclick=\"alert('5555hooo id:" +
+            // objDocumento.getIdDocumento() + "')   ");
+            // derrepente cambio el tipo de D a V para poder soportar lo de doc
+            // virtuales :P
+            if(String.valueOf(objDocumento.getEstado()).equals(String.valueOf(Constantes.ESTADO_ANULADO))){
+    			NodoArbol objETDocumento = new NodoArbol(false, "V-" + objDocumento.getIdDocumento(), /* " </span> <img src='images/flechita.gif' align='left' border='0' alt='Adjunto'>  <span>" */ objDocumento.getTipoDocumento().getNombre() + " - " + objDocumento.getNumeroDocumento() + " (Anulado)", null);
+    			lstTreeDocumento.add(objETDocumento);
+    		}else{
+    			NodoArbol objETDocumento = new NodoArbol(false, "V-" + objDocumento.getIdDocumento(), /* " </span> <img src='images/flechita.gif' align='left' border='0' alt='Adjunto'>  <span>" */ objDocumento.getTipoDocumento().getNombre() + " - " + objDocumento.getNumeroDocumento(), null);
+    			lstTreeDocumento.add(objETDocumento);
+    		}
+        }
+        // ExpedienteTree objExpedienteTree = new
+        // ExpedienteTree("E-"+iIdExpediente, objExpediente.getNroexpediente());
+        // objExpedienteTree.setLstExpedienteChildren(lstTreeDocumento);
+        // cambio X
+        NodoArbol objExpedienteTree = new NodoArbol(true, "E-" + idExpediente, objExpediente.getNroexpediente(), lstTreeDocumento); // new
+        // NodoArbol(false,"E-"+iIdExpediente,
+        // objExpediente.getNroexpediente(),
+        // lstTreeDocumento);
+        
+        /*
+         * pruebas 
+         */
+        
+        //NodoArbol objExpedienteTree2 = new NodoArbol(false, "E-" + idExpediente, objExpediente.getNroexpediente(), lstTreeDocumento); // new
+        
+        
+        allElements.add(objExpedienteTree);
+        allElements.addAll(lstTreeDocumento);
+        return allElements;
+    }
+
+    public List<NodoArbol> getDojoArbolCarpeta(List<NodoArbol> listallenar, List<Carpeta> carpetas, List<NodoArbol> listaAll) {
+        for (Carpeta objCarpeta : carpetas) {
+            List<Carpeta> lstinternaCarpetas = objCarpeta.getCarpetaList();
+            List<NodoArbol> listaInterna = new ArrayList<NodoArbol>();
+            if (lstinternaCarpetas != null && lstinternaCarpetas.size() > 0) {
+                listaInterna = this.getDojoArbolCarpeta(listaInterna, lstinternaCarpetas, listaAll);
+                //
+            }
+            /*List<Documento> lstDocumentos=objCarpeta.getDocumentoList();
+            log.debug(" objCarpeta.id :"+objCarpeta.getIdcarpeta()+" "+objCarpeta.getNombre());
+            log.debug(" objCarpeta.getDocumentoList().size : "+lstDocumentos.size());
+            for(Documento objDocumento : lstDocumentos){
+            log.debug(" lstDocumentos.objDocumento "+objDocumento.getTipoDocumento().getNombre()+" - "+objDocumento.getNumeroDocumento());
+            // ExpedienteTree objETDocumento = new
+            // ExpedienteTree("D-"+objDocumento.getIdDocumento(),
+            // "<img src='images/xx.gif' align='left' border='0' alt='Adjunto'>"
+            // + objDocumento.getTipoDocumento().getNombre() + " - " +
+            // objDocumento.getNumeroDocumento() +
+            // "\" onclick=\"alert('5555hooo id:" +
+            // objDocumento.getIdDocumento() + "')   ");
+            NodoArbol objETDocumento=new NodoArbol(false,"D-"+objDocumento.getIdDocumento(), /*
+             * " </span> <img src='images/xx.gif' align='left' border='0' alt='Adjunto'>  <span>"
+             * +
+             *//*objDocumento.getTipoDocumento().getNombre()+" - "+(objDocumento.getNumeroDocumento()!=null?objDocumento.getNumeroDocumento():"s/n"),null);
+            listaInterna.add(objETDocumento);
+            }*/
+            // ExpedienteTree objETCarpeta = new
+            // ExpedienteTree("C-"+objCarpeta.getIdcarpeta(),
+            // "<img src='images/folder.gif' align='left' border='0' alt='Adjunto'>"
+            // + objCarpeta.getNombre() + "\" onclick=\"alert('5555hooo id:" +
+            // objCarpeta.getIdcarpeta() + "')   ");
+            // objETCarpeta.setLstExpedienteChildren(listaInterna);
+            NodoArbol objETCarpeta = new NodoArbol(false, "C-" + objCarpeta.getIdcarpeta(), /*
+                     * " </span> <img src='images/folder.gif' align='left' border='0' alt='Adjunto'>   <span> "
+                     * +
+                     */ objCarpeta.getNombre(), (listaInterna));
+            listaAll.addAll(listaInterna);
+            listallenar.add(objETCarpeta);
+        }
+        return listallenar;
+    }
+
+    public ExpedienteTree getExpedienteTreeArchivar(Integer iIdExpediente) {
+        Expediente objExpediente = getDao().findByIdExpediente(iIdExpediente);
+        List<Archivo> lstArchivo = null;
+        List<Documento> lstDocumento = objExpediente.getDocumentoList();
+        List<ExpedienteTree> lstTreeDocumento = new ArrayList<ExpedienteTree>();
+        // List<ExpedienteTree> lstTreeUnidad = new ArrayList<ExpedienteTree>();
+        for (Documento objDocumento : lstDocumento) {
+            List<ExpedienteTree> lstTreeArchivo = new ArrayList<ExpedienteTree>();
+            lstArchivo = objDocumento.getArchivos();
+            for (Archivo objArchivo : lstArchivo) {
+                int iBracket = objArchivo.getNombre().indexOf("]");
+                if (iBracket != -1) {
+                    objArchivo.setNombre(objArchivo.getNombre().substring(iBracket + 1));
+                }
+                ExpedienteTree objETArchivo = new ExpedienteTree("" + objArchivo.getIdArchivo(), objArchivo.getNombre());
+                lstTreeArchivo.add(objETArchivo);
+            }
+            ExpedienteTree objETDocumento = new ExpedienteTree("" + objDocumento.getIdDocumento(), objDocumento.getTipoDocumento().getNombre() + " - " + (objDocumento.getNumeroDocumento() != null ? objDocumento.getNumeroDocumento() : "s/n"));
+            objETDocumento.setDelexpediente(objDocumento.getDelExpediente());
+            log.debug(" setting docid:" + objDocumento.getIdDocumento() + " and delexpediente  " + objDocumento.getDelExpediente());
+            log.debug(" objETDocumento: " + objETDocumento.getDelexpediente());
+            objETDocumento.setLstExpedienteChildren(lstTreeArchivo);
+            lstTreeDocumento.add(objETDocumento);
+        }
+        ExpedienteTree objExpedienteTree = new ExpedienteTree("" + iIdExpediente, objExpediente.getNroexpediente());
+        objExpedienteTree.setLstExpedienteChildren(lstTreeDocumento);
+        return objExpedienteTree;
+    }
+
+    @Transactional
+    public Expedientestor saveExpedienteStor(Expediente objE, DocumentoDetail objDD) {
+        Expedientestor objExpStor = new Expedientestor();
+        // MEJORAR ESTO!!!!!!!!!!!!!
+        // Tipodocumento objTipoDocumento = null;
+        // objExpStor.setTipoexpediente(objE.getProceso().getCodigo());
+        // objExpStor.setTipoexpediente(srvP.findByIdProceso(objDD.getIIdProceso()).getCodigo());
+        // log.debug("Tipo de Expediente [" + objExpStor.getTipoexpediente() +
+        // "]");
+        // Expedientestor objESAux =
+        // getDaoES().findByIdExpediente(objE.getIdexpediente());
+        if (getDaoES().findByIdExpediente(objE.getIdexpediente()) == null) {
+            // Estado objEstado = new Estado(1);
+            // Etapa objEtapa = new Etapa(1);
+            Estado objEstado = estadoDAO.findByCodigo("anls");
+            Etapa objEtapa = etapaDAO.findByCodigo("traming");
+            // Character requiereVerificacion = null;
+            objExpStor.setExpediente(objE);
+            objExpStor.setIdexpediente(objE.getIdexpediente());
+            objExpStor.setEstado(objEstado);
+            objExpStor.setIdestadosiged(objEstado);
+            objExpStor.setEtapa(objEtapa);
+            getDaoES().saveExpedienteStor(objExpStor);
+        } else {
+            objExpStor = getDaoES().findByIdExpediente(objE.getIdexpediente());
+            objExpStor.setTipoexpediente(srvP.findByIdProceso(objDD.getIIdProceso()).getCodigo());
+            log.debug("Tipo de Expediente [" + objExpStor.getTipoexpediente() + "]");
+            getDaoES().updateExpedienteStor(objExpStor);
+        }
+        return objExpStor;
+    }
+
+    public List<Expediente> findAll() {
+        return getDao().findAll();
+    }
+
+    public List<ExpedienteList> fillExpedienteList(List<Expediente> lstE) throws RuntimeException {
+        try {
+            List<ExpedienteList> lstEL = new ArrayList<ExpedienteList>();
+            for (Expediente objE : lstE) {
+                ExpedienteList objEL = new ExpedienteList(objE.getFechacreacion(), objE.getIdexpediente(), objE.getCliente().getRazonSocial(), objE.getNroexpediente(), objE.getProceso().getResponsable().getNombres() + " " + objE.getProceso().getResponsable().getApellidos(), objE.getProceso().getResponsable().getUnidad().getNombre());
+                lstEL.add(objEL);
+            }
+            return lstEL;
+        } catch (RuntimeException re) {
+            log.error("", re);
+            return null;
+        }
+    }
+
+    public List<Expediente> filtrarExpediente(Expediente objExpediente) {
+        log.debug("** Filtro de Expediente **");
+        log.debug("Nro Expediente [" + objExpediente.getNroexpediente() + "]");
+        log.debug("Proceso [" + objExpediente.getProceso().getNombre() + "]");
+        log.debug("Cliente - Nro Identificacion [" + objExpediente.getCliente().getNumeroIdentificacion() + "]");
+        log.debug("Cliente - Razon Social [" + objExpediente.getCliente().getRazonSocial() + "]");
+        log.debug("Concesionario - RUC [" + objExpediente.getConcesionario().getRuc() + "]");
+        log.debug("Concesionario - Razon Social [" + objExpediente.getConcesionario().getRazonSocial() + "]");
+        return dao.filtrarExpediente(objExpediente.getNroexpediente(), objExpediente.getProceso().getNombre(), objExpediente.getCliente().getNumeroIdentificacion(), objExpediente.getCliente().getRazonSocial(), objExpediente.getConcesionario().getRuc(), objExpediente.getConcesionario().getRazonSocial());
+    }
+
+    public List<ExpedienteList> findByCriteria(String sNroIdentificacion, String sRazonSocial, String sNroExpediente, String sAsunto, Integer idusuario) {
+        log.debug("** findByCriteria **");
+        List<Expediente> lstExp;
+        /*
+         * if (strNI.isEmpty() && strRS.isEmpty() && strR.isEmpty()) { lstExp =
+         * getDao().findAll(); } else {
+         */
+        lstExp = getDao().findByCriteria(sNroIdentificacion, sRazonSocial, sNroExpediente, sAsunto, 0, null, null, idusuario);
+        // }
+        return this.fillExpedienteList(lstExp);
+    }
+
+    public List<Expediente> findbyNroExpediente(String NrDoc) {
+        log.debug("** findbyNroExpediente **");
+        return dao.findByNroDocument(NrDoc);
+    }
+
+    public List<Expedienfindadvance> findbyadvancedinn(String Strcampo) {
+        log.debug("** findbyadvancedinn **");
+        List<Expedienfindadvance> listaExpediente = dao.findbyadvanced(Strcampo);
+        log.debug(" listaExpediente.size:" + listaExpediente != null ? listaExpediente.size() : "null");
+        //List<Expedienfindadvance> listaExpedienteAux=new ArrayList<Expedienfindadvance>();
+        //FIXME obtener la data del cliente a partir de la query
+		/*for(int i=0;i<listaExpediente.size();i++){
+        int idExpediente=listaExpediente.get(i).getIdexpediente();
+        Expediente objExpediente=findByIdExpediente(idExpediente);
+        if(objExpediente.getCliente()!=null&&objExpediente.getCliente().getIdCliente()>0){
+        listaExpediente.set(i,obtieneCliente(listaExpediente.get(i),objExpediente));
+        }
+        if(!Strcampo.equals("")){
+        /*
+         * if ((listaExpediente.get(i).getPro_nombre()!=null &&
+         * listaExpediente
+         * .get(i).getPro_nombre().toLowerCase().contains(
+         * Strcampo.toLowerCase())) ||
+         * (listaExpediente.get(i).getExp_referencia()!=null &&
+         * listaExpediente
+         * .get(i).getExp_referencia().toLowerCase().contains
+         * (Strcampo.toLowerCase())) || (
+         * listaExpediente.get(i).getCn_rzsocial()!=null &&
+         * listaExpediente
+         * .get(i).getCn_rzsocial().toLowerCase().contains
+         * (Strcampo.toLowerCase())) ||
+         * (listaExpediente.get(i).getDoc_nrdoc()!=null &&
+         * listaExpediente
+         * .get(i).getDoc_nrdoc().toLowerCase().contains(Strcampo
+         * .toLowerCase())) ||
+         * (listaExpediente.get(i).getDoc_asunto()!=null &&
+         * listaExpediente
+         * .get(i).getDoc_asunto().toLowerCase().contains(
+         * Strcampo.toLowerCase())) ||
+         * (listaExpediente.get(i).getTd_nombre()!=null &&
+         * listaExpediente
+         * .get(i).getTd_nombre().toLowerCase().contains(Strcampo
+         * .toLowerCase()))) {
+         * listaExpedienteAux.add(listaExpediente.get(i)); } else { if
+         * (objExpediente.getCliente() != null &&
+         * objExpediente.getCliente().getIdCliente() > 0) { if (
+         * (listaExpediente.get(i).getCli_rzsocial()!=null &&
+         * listaExpediente
+         * .get(i).getCli_rzsocial().toLowerCase().contains
+         * (Strcampo.toLowerCase())) || (
+         * listaExpediente.get(i).getCli_dirprin()!=null &&
+         * listaExpediente
+         * .get(i).getCli_dirprin().toLowerCase().contains
+         * (Strcampo.toLowerCase())) || (
+         * listaExpediente.get(i).getCli_diralter()!=null &&
+         * listaExpediente
+         * .get(i).getCli_diralter().toLowerCase().contains
+         * (Strcampo.toLowerCase())) || (
+         * listaExpediente.get(i).getTidcli_nom()!=null &&
+         * listaExpediente
+         * .get(i).getTidcli_nom().toLowerCase().contains(
+         * Strcampo.toLowerCase()))) {
+         * listaExpedienteAux.add(listaExpediente.get(i)); } } }
+         */
+        /*listaExpedienteAux.add(listaExpediente.get(i));
+        }
+        }*/
+        /*if(!Strcampo.equals(""))
+        return listaExpedienteAux;*/
+        return listaExpediente;
+    }
+
+    @Override
+    public List<Expedienfindadvance> findbysuperadvanced(boolean alfresco, String numeroExpediente, String numeroDocumento, String numeroMesaPartes, String tipoDocumento, String concesionario, String cliente, String areaDestino, String propietario, String proceso, String contenido, String tipoBusqueda, String asuntoexpediente, String asuntodocumento, String estadoexpediente) {
+        log.debug("estadoexpediente [" + estadoexpediente + "]");
+        //FIXME cuando busca por contenido, no busca por los demas campos
+        List<Expedienfindadvance> data = null;
+        // List<Expedienfindadvance> listaExpedienteAux = new
+        // ArrayList<Expedienfindadvance>();
+        List<Integer> data2 = new ArrayList<Integer>();
+        StringBuilder condicion = new StringBuilder("");
+        // consulta para alfresco//
+        log.debug(" findbysuperadvanced.contenido : " + contenido);
+        if (!contenido.equals("")) {
+            // Map propiedades=new HashMap();
+            if (alfresco) {
+                data2 = repositorioService.busquedaIdDocumentos(contenido.toLowerCase(), null);
+                if (data2 != null) {
+                    for (int i = 0; i < data2.size(); i++) {
+                        if (i != 0) {
+                            condicion.append(" OR ");
+                        }
+                        condicion.append("d.idDocumento=");
+                        condicion.append(data2.get(i));
+                    }
+                    data = dao.findbyadvancedId(condicion.toString());
+                } else {
+                    data = new ArrayList<Expedienfindadvance>();
+                }
+            }
+        } else {
+            data = dao.findbySuperadvanced(numeroExpediente.toLowerCase(), numeroDocumento.toLowerCase(), numeroMesaPartes.toLowerCase(), tipoDocumento.toLowerCase(), concesionario.toLowerCase(), cliente.toLowerCase(), areaDestino.toLowerCase(), propietario.toLowerCase(), proceso.toLowerCase(), tipoBusqueda, asuntoexpediente.toLowerCase(), asuntodocumento.toLowerCase(), estadoexpediente.toLowerCase());
+            log.debug("Numero de expedientes encontrados [" + data.size() + "]");
+            //FIXME obtener la data del cliente a partir de la query
+			/*for(int i=0;i<data.size();i++){
+            int idExpediente=data.get(i).getIdexpediente();
+            Expediente objExpediente=findByIdExpediente(idExpediente);
+            if(objExpediente.getCliente()!=null&&objExpediente.getCliente().getIdCliente()>0){
+            data.set(i,obtieneCliente(data.get(i),objExpediente));
+            }
+            // XXX que $%($# es esto?!!!!!
+            /*
+             * if (!cliente.equals("") && (data.get(i).getPro_nombre() !=
+             * null &&
+             * data.get(i).getPro_nombre().toLowerCase().contains(cliente
+             * .toLowerCase()))) { listaExpedienteAux.add(data.get(i)); }
+             */
+            //}
+			/*
+             * if (!cliente.equals("")) return listaExpedienteAux; else
+             */
+            return data;
+        }
+        return data;
+    }
+
+    /*
+     * public List<Expedienfindadvance> findbysuperadvanced2(String Strnroexp,
+     * String Strtipdoc, String Strnrodoc, String Strdoccor, String Strmparte,
+     * String Strfinidoc, String Strffindoc, String Strrzcorr, String
+     * Strfiniexp, String Strffinexp, String Strcliente, String Strdirclie,
+     * String Strareades, String Strpropiet, String Strproceso, String
+     * Strtipbus, String condic[], String Strcontenido) {
+     * log.debug("** findbysuperadvanced2 **"); List data = new ArrayList();
+     * List<Integer> data2 = new ArrayList<Integer>(); String condicion = "";
+     *
+     * if (!Strcontenido.equals("")) { data2 =
+     * getRepositorioService().busquedaIdDocumentos(Strcontenido, null);
+     *
+     * if (data2 != null) { for (int i = 0; i < data2.size(); i++) { condicion =
+     * condicion + " d.iddocumento=" + String.valueOf(data2.get(i)) + " OR"; }
+     * int logcad = condicion.length(); String Condic = ""; for (int j = 0; j <
+     * logcad - 3; j++) { Condic = Condic + condicion.charAt(j); }
+     *
+     * data = dao.findbyadvancedId(Condic); } } else { data =
+     * dao.findbySuperadvanced2(Strnroexp.toLowerCase(),
+     * Strtipdoc.toLowerCase(), Strnrodoc.toLowerCase(),
+     * Strdoccor.toLowerCase(), Strmparte.toLowerCase(),
+     * Strfinidoc.toLowerCase(), Strffindoc, Strrzcorr.toLowerCase(),
+     * Strfiniexp.toLowerCase(), Strffinexp, Strcliente.toLowerCase(),
+     * Strdirclie.toLowerCase(), Strareades.toLowerCase(),
+     * Strpropiet.toLowerCase(), Strproceso.toLowerCase(),
+     * Strtipbus.toLowerCase(), condic); } return data; }
+     */
+    @Override
+    synchronized public String getMaxReferencia() {
+        Integer iMaxIdExpediente = null;
+        String sFormato = null;
+        StringBuilder sbNroExpediente = null;
+
+        try {
+            iMaxIdExpediente = dao.getMaxIdExpediente();
+            iMaxIdExpediente = (iMaxIdExpediente == null) ? Constantes.EXPEDIENTE_FIRST_ID : iMaxIdExpediente++;
+            sFormato = srvParametro.findByTipoUnico(Constantes.PARAMETRO_TIPO_PREFIJONROEXPEDIENTE).getValor();
+            sbNroExpediente = new StringBuilder((StringUtil.isEmpty(sFormato)) ? "" : sFormato);
+            sbNroExpediente.replace(sFormato.length() - iMaxIdExpediente.toString().length(), sFormato.length(), iMaxIdExpediente.toString());
+
+            if (log.isDebugEnabled()) {
+                log.debug("formato [" + sFormato + "] max idExpediente [" + iMaxIdExpediente.toString() + "]");
+            }
+
+            log.info("Nro de Expediente generado [" + sbNroExpediente.toString() + "]");
+
+            return sbNroExpediente.toString();
+        } catch (IndexOutOfBoundsException ex) {
+            return iMaxIdExpediente.toString();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+
+            return null;
+        }
+    }
+
+    @Override
+    public String generateNroExpediente(Integer iIdExpediente, Character cProduccion) {
+        String sFormato = null;
+        StringBuilder sbNroExpediente = null;
+        String sPrefijo = null;
+
+        if (cProduccion == null || cProduccion == 'N') {
+            sPrefijo = Constantes.PARAMETRO_TIPO_PREFIJONROEXPEDIENTE;
+            iIdExpediente = dao.generateNroExpedienteDesarrollo();
+        } else {
+            sPrefijo = Constantes.PARAMETRO_TIPO_PREFIJONROEXPEDIENTEPRODUCCION;
+            iIdExpediente = dao.generateNroExpedienteProduccion();
+        }
+
+        sFormato = srvParametro.findByTipoUnico(sPrefijo).getValor();
+        sbNroExpediente = new StringBuilder((StringUtil.isEmpty(sFormato)) ? "" : sFormato);
+
+        if (log.isDebugEnabled()) {
+            log.debug("formato [" + sFormato + "] idExpediente [" + iIdExpediente + "] produccion [" + cProduccion + "]");
+        }
+
+        sbNroExpediente.replace(sFormato.length() - iIdExpediente.toString().length(), sFormato.length(), iIdExpediente.toString());
+        log.info("Nro de Expediente generado [" + sbNroExpediente.toString() + "]");
+
+        return sbNroExpediente.toString();
+    }
+
+    @Transactional
+    public void anularExpediente(Expediente objExpediente) {
+        String sObservacion = objExpediente.getObservacion();
+        objExpediente = this.findByIdExpediente(objExpediente.getIdexpediente());
+        objExpediente.setObservacion(sObservacion);
+        objExpediente.setEstado(Constantes.ESTADO_ANULADO);
+        log.debug("Nro Expediente [" + objExpediente.getNroexpediente() + "]");
+        log.debug("Observacion del Expediente [" + objExpediente.getObservacion() + "]");
+        documentoService.inactivarDocumentos(objExpediente.getIdexpediente());
+        this.saveExpediente(objExpediente);
+    }
+
+    @Transactional
+    public Expediente saveExpediente(Expediente objExpediente) {
+        return getDao().saveExpediente(objExpediente);
+    }
+
+    @Transactional
+    public void registrarExpediente(Expediente objExpedienteOld, Expediente objExpedienteNew, String sUsuarioSesion, String sTipoAuditoria) {
+        try {
+            srvAuditoria.aplicarAuditoria(objExpedienteOld, objExpedienteNew, sUsuarioSesion, Constantes.AUDITORIA_OPCION_GUARDAR, sTipoAuditoria);
+        } catch (ClassNotFoundException e) {
+            log.error(e.getMessage(), e);
+        }
+        objExpedienteNew = dao.saveExpediente(objExpedienteNew);
+        log.debug("Expediente guardado con ID [" + objExpedienteNew.getIdexpediente() + "] Nro Expediente [" + objExpedienteNew.getNroexpediente() + "]");
+        
+    }
+
+    public ActividadService getSrvActividad() {
+        return srvActividad;
+    }
+
+    public void setSrvActividad(ActividadService srvActividad) {
+        this.srvActividad = srvActividad;
+    }
+
+    @Transactional
+    public Expediente buscarObjPor(String sNroExpediente) {
+        try {
+            return dao.findByNroExpediente(sNroExpediente);
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
+    // //////////////////////
+    // Getters and Setters
+    // //////////////////////
+    public ConcesionarioService getSrvC() {
+        return srvC;
+    }
+
+    public void setSrvC(ConcesionarioService srvC) {
+        this.srvC = srvC;
+    }
+
+    public void setDocumentoService(DocumentoService documentoService) {
+        this.documentoService = documentoService;
+    }
+
+    public ExpedienteDAO getDao() {
+        return dao;
+    }
+
+    public void setDao(ExpedienteDAO dao) {
+        this.dao = dao;
+    }
+
+    public ExpedientestorDAO getDaoES() {
+        return daoES;
+    }
+
+    public void setDaoES(ExpedientestorDAO daoES) {
+        this.daoES = daoES;
+    }
+
+    public ProcesoService getSrvP() {
+        return srvP;
+    }
+
+    public void setSrvP(ProcesoService srvP) {
+        this.srvP = srvP;
+    }
+
+    public ClienteService getSrvS() {
+        return srvS;
+    }
+
+    public void setSrvS(ClienteService srvS) {
+        this.srvS = srvS;
+    }
+
+    public RepositorioService getRepositorioService() {
+        return repositorioService;
+    }
+
+    public void setRepositorioService(RepositorioService repositorioService) {
+        this.repositorioService = repositorioService;
+    }
+
+    public TipodocumentoService getSrvTipoDocumento() {
+        return srvTipoDocumento;
+    }
+
+    public void setSrvTipoDocumento(TipodocumentoService srvTipoDocumento) {
+        this.srvTipoDocumento = srvTipoDocumento;
+    }
+
+    public AuditoriaService getSrvAuditoria() {
+        return srvAuditoria;
+    }
+
+    public void setSrvAuditoria(AuditoriaService srvAuditoria) {
+        this.srvAuditoria = srvAuditoria;
+    }
+
+    /*private Expedienfindadvance obtieneCliente(Expedienfindadvance objExp,Expediente objExpediente){
+    Cliente objCliente=srvS.findByIdCliente(objExpediente.getCliente().getIdCliente());
+    objExp.setIdcliente(objCliente.getIdCliente());
+    objExp.setCli_nrodoc(objCliente.getNumeroIdentificacion());
+    objExp.setCli_rzsocial(objCliente.getRazonSocial());
+    objExp.setCli_dirprin(objCliente.getDireccionPrincipal());
+    objExp.setCli_diralter(objCliente.getDireccionAlternativa());
+    objExp.setTidcli_nom(objCliente.getTipoIdentificacion().getNombre());
+    return objExp;
+    }*/
+    @Override
+    public List<Expedienfindadvance> busquedaAvanzadaAdicional(boolean alfresco, String numeroExpediente, String tipoDocumento, String numeroDocumento, String identidadConcesionario, String numeroMesaPartes, String fechaInicioDocumento, String fechaFinDocumento, String concesionario, String fechaInicioExpediente, String fechaFinExpediente, String cliente, String direccionCliente, String areaDestino, String propietario, String proceso, String contenido, String tipoBusqueda, String asuntoexpediente, String asuntodocumento, String estadoexpediente) {
+        log.debug(" findbysuperadvanced.contenido : " + contenido);
+        if (!contenido.equals("")) {
+            if (alfresco) {
+                List<Integer> ids = getRepositorioService().busquedaIdDocumentos(contenido.toLowerCase(), null);
+                if (ids != null) {
+                    StringBuilder condicion = new StringBuilder("");
+                    for (int i = 0; i < ids.size(); i++) {
+                        Integer id = ids.get(i);
+                        if (i != 0) {
+                            condicion.append(" OR ");
+                        }
+                        condicion.append("d.iddocumento=");
+                        condicion.append(id);
+                    }
+                    return dao.findbyadvancedId(condicion.toString());
+                }
+            }
+        } else {
+            return dao.busquedaAvanzadaAdicional(numeroExpediente, tipoDocumento, numeroDocumento, identidadConcesionario, numeroMesaPartes, fechaInicioDocumento, fechaFinDocumento, concesionario, fechaInicioExpediente, fechaFinExpediente, cliente, direccionCliente, areaDestino, propietario, proceso, tipoBusqueda, asuntoexpediente, asuntodocumento, estadoexpediente);
+        }
+        return null;
+    }
+
+    @Transactional
+    public void archivarExpediente(int idDocumento, int[] documentosDelExpediente, Usuario remitente, Integer idexpediente, String observacion, String tipoArchivar, String nombrePC) throws RuntimeException {
+        try {
+            Expediente expediente;
+
+            if (idDocumento != 0) {
+                Documento doc = documentoService.findByIdDocumento(idDocumento);
+                expediente = dao.findByIdExpediente(doc.getExpediente().getIdexpediente());
+            } else {
+                expediente = dao.findByIdExpediente(idexpediente);
+            }
+
+            //Documento documento=srvDocumento.findByIdDocumento(idDocumento);
+            //if(documento!=null){
+            //	 expediente=documento.getExpediente();
+            if (expediente != null) {
+                if (Constantes.ACCION_ARCHIVAR.equals(tipoArchivar)) {
+                    Auditoria a = new Auditoria();
+                    a.setAntiguoValor(new Character(Constantes.ESTADO_ACTIVO).toString());
+                    a.setNuevoValor(new Character(Constantes.ESTADO_INACTIVO).toString());
+                    a.setFechaAudioria(new Date());
+                    a.setOpcion(Constantes.TO_Archivar);
+                    a.setTipoAuditoria(Constantes.TA_ArchivarDocs);
+                    a.setModulo(Constantes.TM_UserFinal);
+                    a.setUsuario(remitente.getUsuario());
+                    a.setExpediente(expediente);
+                    this.srvAuditoria.SaveAuditoria(a);
+                }
+                List<Documento> documentos = expediente.getDocumentoList();
+                for (Documento doc : documentos) {
+                    if (documentosDelExpediente != null) {
+                        for (int delExpediente : documentosDelExpediente) {
+                            if (doc.getIdDocumento() == delExpediente) {
+                                doc.setDelExpediente(Constantes.DOCUMENTO_DEL_EXPEDIENTE);
+                                break;
+                            }
+                        }
+                    }
+                    if (doc.getDelExpediente() != null && !doc.getDelExpediente().equals(Constantes.DOCUMENTO_DEL_EXPEDIENTE)) {
+                        doc.setDelExpediente(Constantes.DOCUMENTO_NO_DEL_EXPEDIENTE);
+                    }
+                    //if(doc.getIdDocumento()==idDocumento){
+                    doc.setEstado(Constantes.ESTADO_INACTIVO);
+                    //}
+                    String accion = "";
+                    if (Constantes.ACCION_ARCHIVAR.equals(tipoArchivar)) {
+                        expediente.setOefa(Constantes.ENVIADO_OEFA_N);
+                        accion = Constantes.ACCION_ARCHIVAR;
+                    } else if (Constantes.ACCION_OEFA.equals(tipoArchivar)) {
+                        expediente.setOefa(Constantes.ENVIADO_OEFA_S);
+                        accion = Constantes.ACCION_OEFA;
+                    }
+                    log.debug("Tipo Archivar [" + tipoArchivar + "]");
+                    trazabilidadDocumentoService.guardarTrazabilidad(doc, remitente, remitente, accion, null, null, nombrePC);
+
+                    documentoService.saveDocumento(doc);
+                    log.info("Se actualizo el documento con id: " + doc.getIdDocumento() + ", pertenencia al expediente: " + doc.getDelExpediente() + ".\nSe registro su trazabilidad como " + tipoArchivar);
+                }
+                if (observacion != null && !observacion.equals("")) {
+                    expediente.setObservacionArchivar(observacion);
+                }
+                expediente.setEstado(Constantes.ESTADO_INACTIVO);
+                expediente.setFechaarchivar(new Date());
+                this.saveExpediente(expediente);
+                log.info("El expediente " + expediente.getNroexpediente() + " ha pasado a estar inactivo.");
+            } else {
+                log.error("No existe el expediente");
+            }
+        } catch (RuntimeException re) {
+            log.debug("", re);
+        }
+
+    }
+
+    public void setTrazabilidadDocumentoService(TrazabilidaddocumentoService trazabilidadDocumentoService) {
+        this.trazabilidadDocumentoService = trazabilidadDocumentoService;
+    }
+
+    public EstadoDAO getEstadoDAO() {
+        return estadoDAO;
+    }
+
+    public void setEstadoDAO(EstadoDAO estadoDAO) {
+        this.estadoDAO = estadoDAO;
+    }
+
+    public EtapaDAO getEtapaDAO() {
+        return etapaDAO;
+    }
+
+    public void setEtapaDAO(EtapaDAO etapaDAO) {
+        this.etapaDAO = etapaDAO;
+    }
+
+    @Transactional
+    @Override
+    public void archivarExpediente(Expediente expediente, Usuario remitente, String nombrePC) {
+        if (expediente != null) {
+            if (remitente != null) {
+                List<Documento> documentos = expediente.getDocumentoList();
+                if (documentos != null) {
+                    for (Documento doc : documentos) {
+                        if (doc != null) {
+                            doc.setEstado(Constantes.ESTADO_INACTIVO);
+                            trazabilidadDocumentoService.guardarTrazabilidad(doc, remitente, remitente, Constantes.ACCION_ARCHIVAR, null, null, nombrePC);
+                            documentoService.saveDocumento(doc);
+                            log.info("Se actualizo el documento con id: " + doc.getIdDocumento() + ".\nSe registro su trazabilidad como \"archivado\".");
+                        }
+                    }
+                }
+                expediente.setEstado(Constantes.ESTADO_INACTIVO);
+                dao.saveExpediente(expediente);
+                log.info("El expediente " + expediente.getNroexpediente() + " ha pasado a estar inactivo.");
+            } else {
+                log.error("Se debe especificar un usuario que archive el expediente.");
+            }
+        } else {
+            log.error("Se debe especificar un expediente a archivar.");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void archivarExpediente(int idExpediente, Usuario remitente, String nombrePC) {
+        if (idExpediente != 0) {
+            archivarExpediente(findByIdExpediente(idExpediente), remitente, nombrePC);
+        } else {
+            log.error("Se debe especificar un id de expediente a buscar");
+        }
+    }
+
+    public List<Expediente> findLstBy(Integer iIdResponsable) {
+        return dao.findLstBy(iIdResponsable);
+    }
+
+    public ParametroService getSrvParametro() {
+        return srvParametro;
+    }
+
+    public void setSrvParametro(ParametroService srvParametro) {
+        this.srvParametro = srvParametro;
+    }
+
+    @Override
+    public Expediente findObjectBy(String numeroExpediente, Character estado) {
+        if (log.isDebugEnabled()) {
+            log.debug("Buscando expediente con numeroExpediente [" + numeroExpediente + "] estado [" + estado + "]");
+        }
+
+        if (StringUtil.isEmpty(numeroExpediente) || estado == null) {
+            return null;
+        }
+
+        return dao.findObjectBy(numeroExpediente, estado);
+    }
+
+    @Transactional
+    public void reabrirExpediente(Expediente expediente, Usuario remitente, String nombrePC) {
+        if (expediente != null) {
+            if (remitente != null) {
+                List<Documento> documentos = expediente.getDocumentoList();
+                if (documentos != null) {
+                    for (Documento doc : documentos) {
+                        if (doc != null) {
+                            doc.setEstado(Constantes.ESTADO_ACTIVO);
+                            trazabilidadDocumentoService.guardarTrazabilidad(doc, remitente, remitente, Constantes.ACCION_REABRIR, null, null, nombrePC);
+//							documentoService.saveDocumentodoc);
+                            log.info("Se actualizo el documento con id: " + doc.getIdDocumento() + ".\nSe registro su trazabilidad como \"archivado\".");
+                        }
+                    }
+                }
+                expediente.setEstado(Constantes.ESTADO_ACTIVO);
+                expediente.setFechaarchivar(null);
+                this.saveExpediente(expediente);
+                Auditoria a = new Auditoria();
+                a.setAntiguoValor(new Character(Constantes.ESTADO_INACTIVO).toString());
+                a.setNuevoValor(new Character(Constantes.ESTADO_ACTIVO).toString());
+                a.setFechaAudioria(new Date());
+                a.setOpcion(Constantes.TO_Reabrir);
+                a.setTipoAuditoria(Constantes.TA_ArchivarDocs);
+                a.setModulo(Constantes.TM_UserFinal);
+                a.setUsuario(remitente.getUsuario());
+                a.setExpediente(expediente);
+                this.srvAuditoria.SaveAuditoria(a);
+                log.info("El expediente " + expediente.getNroexpediente() + " ha pasado a estar inactivo.");
+            } else {
+                log.error("Se debe especificar un usuario que archive el expediente.");
+            }
+        } else {
+            log.error("Se debe especificar un expediente a archivar.");
+        }
+    }
+}

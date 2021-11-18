@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Sistema de Gesti&oacute;n Documentaria - B&uacute;squeda Simple</title>
+		<script type="text/javascript" src="js/siged/layout/busquedaSimple.js"></script>
+	</head>
+	<body class="soria">
+		<div dojoType="dijit.layout.BorderContainer" id="borderContainerBusquedaSimple" jsId="borderContainerBusquedaSimple" style="width: 100%;height: 100%;border: 0;padding: 0;margin: 0;overflow: hidden;">
+         <script type="dojo/method">
+            this._splitterClass="dojox.layout.ToggleSplitter";
+         </script>
+         <div dojoType="dojox.layout.ContentPane" region="center" style="width:100%;" id="centralSimple">              
+			<div id="mensajeErrorSimple" style="width: 100%;height: 100px;text-align: center;display:none;">No se encontro ning&uacute;n resultado para la b&uacute;squeda.</div>
+			<div dojoType="dojox.grid.DataGrid" id="gridBusquedaSimple" jsId="gridBusquedaSimple" onRowClick="viewDetailBusquedaSimple" rowsPerPage="50"></div>
+			<div id="cargandoSimple" style="display: none;" class="cargando">
+				<img src="images/cargandoGrid.gif" alt="Cargando" />
+				<strong>Cargando...</strong>
+			</div>
+         </div>
+         <div dojoType="dijit.layout.TabContainer"
+              id="tabContainerDetailBusquedaSimple"
+              jsId="tabContainerDetailBusquedaSimple"
+              region="bottom"
+              splitter="true"
+              style="width:95%;height:50%;" 
+              tabStrip="true">
+            <div dojoType="dojox.layout.ContentPane"
+                 id="contentPaneDetailBusquedaSimple"
+                 jsId="contentPaneDetailBusquedaSimple"
+                 style="width:95%;overflow:scroll"
+                 title="General"></div>
+            <div dojoType="dojox.layout.ContentPane"
+                 id="contentPaneDocumentosAdicionalesBusquedaSimple"
+                 jsId="contentPaneDocumentosAdicionalesBusquedaSimple"
+                 title="Documentos"></div>
+         </div>
+      </div>     
+   </body>     
+</html>

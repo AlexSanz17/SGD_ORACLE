@@ -1,0 +1,11 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Unidadxprocedimiento;
+
+public interface UnidadxprocedimientoDAO {
+
+	public List<Unidadxprocedimiento> getProcedimientosXUnidad(int parseInt);
+
+}

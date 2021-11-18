@@ -1,0 +1,90 @@
+/*LICENCIA DE USO DEL SGD .TXT*/package org.ositran.common.reportes.birt;
+
+import java.util.HashMap;
+
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+
+import org.apache.log4j.Logger;
+import org.eclipse.birt.report.engine.api.EngineConstants;
+import org.eclipse.birt.report.engine.api.HTMLRenderContext;
+import org.eclipse.birt.report.engine.api.HTMLRenderOption;
+import org.eclipse.birt.report.engine.api.IReportEngine;
+import org.eclipse.birt.report.engine.api.IReportRunnable;
+import org.eclipse.birt.report.engine.api.IRunAndRenderTask;
+
+
+/**
+ * BIRT Report Engine initialization and shutdown Plugin.
+ *
+ * @author : victor
+ * @version : $Revision$
+ */
+public class BirtInitializationPlugin extends HttpServlet {
+
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -3656202991475539637L;
+		/**
+		 * Constructor of the object.
+		 */
+		private IReportEngine birtReportEngine = null;
+		protected static Logger logger = Logger.getLogger(BirtInitializationPlugin.class);
+
+		public BirtInitializationPlugin() {
+			super();
+		}
+
+		/**
+		 * Destruction of the servlet. <br>
+		 */
+		public void destroy() {
+			super.destroy();
+			BirtEngine.destroyBirtEngine();
+		}
+
+
+		/**
+		 * Initialization of the servlet. <br>
+		 *
+		 * @throws ServletException if an error occure
+		 */
+		public void init() throws ServletException {
+			logger.debug("dentro del servlet");
+			BirtEngine.initBirtConfig();
+
+			ServletContext sc=this.getServletContext();
+			// setup image directory
+		     HTMLRenderContext renderContext = new HTMLRenderContext();
+		     renderContext.setBaseImageURL(sc.getContextPath() + "/images");
+		     renderContext.setImageDirectory(sc.getRealPath("/images"));
+			 HashMap<String, HTMLRenderContext> contextMap = new HashMap<String, HTMLRenderContext>();
+		     contextMap.put(EngineConstants.APPCONTEXT_HTML_RENDER_CONTEXT, renderContext);
+		try {
+
+			String reportName = "cargoDocumento.rptdesign";
+			IReportEngine birtReportEngine = BirtEngine.getBirtEngine(sc);
+			IReportRunnable design;
+			design = null;// birtReportEngine.openReportDesign(sc.getRealPath("/reports") + "/" + reportName);
+			IRunAndRenderTask task = birtReportEngine.createRunAndRenderTask(design);
+	           task.setAppContext(contextMap);
+	           task.setParameterValue("cadena", "holaaa");
+	           // set output options
+	           HTMLRenderOption options = new HTMLRenderOption();
+	           options.setOutputFormat(HTMLRenderOption.OUTPUT_FORMAT_PDF);
+	          // options.setOutputStream(sc..getOutputStream());
+	           task.setRenderOption(options);
+
+	           // run report
+	           task.run();
+	           task.close();
+		} catch (Exception e) {
+			logger.debug(e.getMessage());
+	           throw new ServletException(e);
+	       }
+		}
+}

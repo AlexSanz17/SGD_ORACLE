@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Recurso;
+
+public interface RecursoDAO {
+
+   List<Recurso> findAll();
+   
+   List<Recurso> buscarRecursosActivos();
+
+   Recurso findByIdRecurso(Integer iIdRecurso);
+
+   Recurso saveRecurso(Recurso objRecurso);
+}

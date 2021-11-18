@@ -1,0 +1,94 @@
+<head>
+<title>Tramite Documentario</title>
+<link href="../../css/estilo.css" rel="stylesheet" type="text/css">
+<script language="javascript" src="../../js/form.js"> </script>
+<script language="Javascript" src="../../js/general.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="../../css/calendar-green.css">
+<script type="text/javascript" src="../../js/calendar.js"></script>
+<script type="text/javascript" src="../../js/calendar-es.js"></script>
+<script type="text/javascript" src="../../js/calendar-setup.js"></script>
+
+<script language="JavaScript">
+function Abrir_ventana (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=700, top=50, left=200";
+window.open(pagina,"",opciones);
+}
+
+
+</script>
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><style type="text/css">
+<!--
+body {
+	background-color: #DDEDFF;
+}
+-->
+</style></head>
+
+<body topmargin="0" leftmargin="0" rigthmargin="0" > 
+<form>
+  <table width="103%">
+    <tr> 
+      <td height="14" colspan="2"> </td>
+    </tr>
+    <tr> 
+      <td height="13" colspan="2" class="header" ><div align="center">OTROS DATOS 
+          ADICIONALES </div></td>
+    </tr>
+
+    <tr> 
+      <td height="13" colspan="2" class="header" ></td>
+    </tr>
+
+
+    <tr> 
+      <td height="14" colspan="2">
+	  <table width="75%" height="148"  border="1"  style="border-style:solid" align="center" bordercolor="#669BCD" bgcolor="#BFD9F1">
+	     <tr class="altRow2" style="cursor:hand">
+           <td width="11%" height="9"><center>Observaciones</center></td>
+         </tr>
+		 <tr class="altRow2" style="cursor:hand">
+           <td width="11%" height="49"><center><textarea name="comentario" cols="50" rows="7"></textarea>
+           </center></td>
+         </tr>
+		 
+		  <tr class="altRow2" style="cursor:hand">
+           <td width="11%" height="9"><center>Atender &aacute;ntes de</center></td>
+         </tr>
+		 <tr class="altRow2" style="cursor:hand">
+           <td width="11%" height="29"><center><input class="cajaMontoTotal" name="date" type="text" id="campo_fecha1" size="14" maxlength="20">
+                <input name="button3" type="button" class="cajaFecha" id="lanzador1" value="..." alt="Calendario">
+           </center></td>
+         </tr>
+		
+       </table>
+	  </td>
+    </tr>
+	
+	<tr> 
+      <td colspan="2">	  </td>
+    </tr>
+    <tr> 
+      <td height="14"  colspan="2"></td>
+    </tr>
+<tr> 
+      <td colspan="2" align="center"><input type="button" name="button" value="Aceptar" class="button" onClick="window.close()"   />        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  
+	<input type="submit" name="button2" value="Cancelar" class="button" onClick="window.close()" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  </td></tr>
+
+
+    <tr align="center"> 
+      <td colspan="2"  align="center">&nbsp;</td>
+    </tr>
+</table>
+</form>
+<script type="text/javascript">
+    Calendar.setup({
+        inputField     :    "campo_fecha1",      // id del campo de texto
+        ifFormat       :    "%d/%m/%Y",       // formato de la fecha, cuando se escriba en el campo de texto
+        button         :    "lanzador1"   // el id del botón que lanzará el calendario
+    });
+	
+</script>
+</body>
+</html:html>

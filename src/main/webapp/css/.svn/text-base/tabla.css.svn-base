@@ -1,0 +1,24 @@
+div#tbl-container{width:100%; height:252px; overflow:auto; scrollbar-base-color:#EEE; margin-top:10px}
+
+#tbl{border-collapse:collapse; background-color:#fff; border:1px solid #ccc}
+
+div#tbl-container table th{white-space:nowrap}
+
+#tbl td{font-size:13px; color:#333; border-right:1px solid #ccc; border-bottom:1px solid #ccc; padding:6px 6px 6px 12px; white-space:nowrap}
+
+#tbl td a:link, #tbl td a:visited{color:#333; text-decoration:none}
+
+#tbl td a:hover{text-decoration:underline}
+
+thead th, thead th.locked{text-align:center; color:#666; font-size:14px; font-weight:normal; border-right:1px solid #ebebeb; border-bottom:1px solid #ebebeb; border-top:1px solid #ebebeb; padding:6px 6px 6px 12px; background:#dedede url(../assets/images/bg_header.jpg) no-repeat scroll;  position:relative;  cursor:default}
+
+thead th{top:expression(document.getElementById("tbl-container").scrollTop-2); z-index:20}
+
+thead th a{color:#666; text-decoration:none; }
+
+body{font-family:tahoma}
+
+#tbl tr:hover{background-color:#C3D4FF}
+
+.tabclass tr:hover, .tabclass tr.hilite{background-color:#C3D4FF}
+.totales{background-color:#eee}

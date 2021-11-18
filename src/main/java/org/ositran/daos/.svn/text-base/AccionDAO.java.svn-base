@@ -1,0 +1,10 @@
+package org.osinerg.daos;
+
+import com.btg.osinergmin.siged.domain.Accion;
+
+public interface AccionDAO {
+
+   public Accion buscarObjPor(String sNombre);
+
+   public Accion findByNombre(String strA);
+}

@@ -1,0 +1,14 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Favorito;
+
+public interface FavoritoDAO {
+
+   public Favorito findObjectBy(Integer idPropietario, Integer idContacto, Character tipoContacto, Character estado);
+
+   public List<Favorito> findLstBy(Integer idPropietario, Character estado, String mode);
+
+   public void saveFavorito(Favorito favorito);
+}

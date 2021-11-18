@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+ 
+	<package name="reportes" extends="struts-default">
+	  <action name="reporteBirt" method="imprimirPdfBIRT" class="ReporteAction" />
+	  <action name="reporteBirt2" method="imprimirHTMLBIRT" class="ReporteAction" />
+	  <action name="reporteBirt3" method="imprimirXLSBIRT" class="ReporteAction" />
+	  <action name="reporteGenerico1" method="run" class="ReporteTipo1Action" />
+	  <action name="reporteGenerico1JSP" method="ejecutarJSP" class="ReporteTipo1Action" >
+	   	<result>pages/reportes/reporteTipo1.jsp</result>
+	  </action>
+	  <action name="reporteMain">
+	  	<result>pages/sas/reporteMain.jsp</result>
+	  </action>
+   </package>
+  
+</struts>
+	

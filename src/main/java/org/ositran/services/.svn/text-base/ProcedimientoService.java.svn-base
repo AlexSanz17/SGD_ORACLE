@@ -1,0 +1,10 @@
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Procedimiento;
+
+public interface ProcedimientoService {
+	
+	public Object[] getProcedimientos(String idUnidad);
+
+	public Procedimiento getProcedimientoById(Integer procedimientos);
+}

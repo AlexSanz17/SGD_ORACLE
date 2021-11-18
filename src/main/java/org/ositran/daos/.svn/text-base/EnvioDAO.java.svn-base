@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Envio;
+
+
+public interface EnvioDAO {
+
+   public Envio saveDatos(Envio Obdt);
+   
+   public Envio findkey(int Id);
+   
+   public List<Envio> findall();
+
+}

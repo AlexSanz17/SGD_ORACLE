@@ -1,0 +1,187 @@
+package org.osinerg.services;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import javax.persistence.NoResultException;
+import org.apache.log4j.Logger;
+import org.osinerg.daos.ListaDAO;
+import org.osinerg.utils.Constantes;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Lista;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class ListaServiceImpl implements ListaService {
+
+   private static Logger log = Logger.getLogger(ListaServiceImpl.class);
+   private ListaDAO dao;
+   private UsuarioService srvUsuario;
+   private AuditoriaService srvAuditoria;
+
+   //////////////////////////////////
+   // Constructors                 //
+   //////////////////////////////////
+   public ListaServiceImpl(ListaDAO dao) {
+      this.dao = dao;
+   }
+
+   //////////////////////////////////
+   // Methods                      //
+   //////////////////////////////////
+   public Lista findByIdLista(Integer iIdLista) {
+      return dao.findObjById(iIdLista);
+   }
+
+   @Transactional
+   public Lista guardarObj(Lista objLista, List<Integer> lstIdAdministrador, List<Integer> lstIdParticipante) {
+      List<Usuario> lstAdministrador = new ArrayList<Usuario>();
+      List<Usuario> lstParticipante = new ArrayList<Usuario>();
+
+      if (lstIdAdministrador != null) {
+         for (Integer iIdAdministrador : lstIdAdministrador) {
+            Usuario objUsuario = srvUsuario.findByIdUsuario(iIdAdministrador);
+
+            log.debug("Agregando a Lista el administrador [" + objUsuario.getUsuario() + "]");
+            lstAdministrador.add(objUsuario);
+         }
+      }
+
+      if (lstIdParticipante != null) {
+         for (Integer iIdParticipante : lstIdParticipante) {
+            Usuario objUsuario = srvUsuario.findByIdUsuario(iIdParticipante);
+
+            log.debug("Agregando a Lista el participante [" + objUsuario.getUsuario() + "]");
+            lstParticipante.add(objUsuario);
+         }
+      }
+
+      if (objLista.getIdlista() != null) {
+         if (objLista.getAdministradorListaList() != null) {
+            objLista.getAdministradorListaList().clear();
+         }
+
+         if (objLista.getParticipanteListaList() != null) {
+            objLista.getParticipanteListaList().clear();
+         }
+      }
+
+      objLista.setAdministradorListaList(lstAdministrador);
+      objLista.setParticipanteListaList(lstParticipante);
+      objLista = dao.guardarObj(objLista);
+
+      log.debug("Lista guardada con ID [" + objLista.getIdlista() + "] Nombre [" + objLista.getNombre() + "] Administradores [" + objLista.getAdministradorListaList().size() + "] Participantes [" + objLista.getParticipanteListaList().size() + "]");
+
+      return objLista;
+   }
+
+   public List<Lista> findLstBy(Usuario objAdministrador, Character cEstado) {
+      try {
+         return dao.findLstBy(objAdministrador, cEstado);
+      } catch (NoResultException nre) {
+         return null;
+      }
+   }
+
+   public List<Lista> findLstBy(Character cEstado) {
+      try {
+         return dao.findLstBy(cEstado);
+      } catch (NoResultException nre) {
+         return null;
+      }
+   }
+
+   public List<Lista> findLstBy(Integer iIdPropietario) {
+      return dao.findLstBy(iIdPropietario);
+   }
+
+   public List<Lista> findLstByEstadoExcludedByProceso(Character cEstado, Proceso objProceso) {
+      return dao.findLstByEstadoExcludedByProceso(cEstado, objProceso);
+   }
+
+   public Map<Integer, String> convertFromLstToMap(List<Lista> lstLista) {
+      Map<Integer, String> mapResultado = new LinkedHashMap<Integer, String>();
+
+      if (lstLista != null) {
+         for (Lista objLista : lstLista) {
+            mapResultado.put(objLista.getIdlista(), objLista.getNombre());
+         }
+      }
+
+      return mapResultado;
+   }
+
+   @Transactional
+   public void deleteLista(Integer iIdLista) {
+      Lista objLista = dao.findObjById(iIdLista);
+
+      if (objLista == null) {
+         log.error("No existe lista con ID [" + iIdLista + "]");
+
+         return;
+      }
+
+      dao.deleteLista(objLista);
+   }
+
+   @Transactional
+   public void saveLista(Lista objListaOld, Lista objListaNew, List<Integer> lstIdContacto, String sUsuarioSesion, String sTipoAuditoria) {
+      List<Usuario> lstContacto = new ArrayList<Usuario>();
+
+      for (Integer iIdContacto : lstIdContacto) {
+         Usuario objUsr = srvUsuario.findByIdUsuario(iIdContacto);
+
+         lstContacto.add(objUsr);
+      }
+
+      //Solo se hace clear cuando haya una lista existente
+      if (objListaNew.getIdlista() != null && objListaNew.getUsuarioList() != null) {
+         objListaNew.getUsuarioList().clear();
+      }
+
+      objListaNew.setUsuarioList(lstContacto);
+
+      try {
+         srvAuditoria.aplicarAuditoria(objListaOld, objListaNew, sUsuarioSesion, Constantes.AUDITORIA_OPCION_GUARDAR, sTipoAuditoria);
+      } catch (ClassNotFoundException e) {
+         log.error(e.getMessage(), e);
+      }
+
+      if (objListaNew.getIdlista() == null) {
+         objListaNew = dao.saveLista(objListaNew);
+      } else {
+         objListaNew = dao.updateLista(objListaNew);
+      }
+
+      log.debug("Lista guardada con ID [" + objListaNew.getIdlista() + "] Nombre [" + objListaNew.getNombre() + "] Nro Contactos [" + objListaNew.getUsuarioList().size() + "]");
+   }
+
+   //////////////////////////////////
+   // Getters and Setters          //
+   //////////////////////////////////
+   public ListaDAO getDao() {
+      return dao;
+   }
+
+   public void setDao(ListaDAO dao) {
+      this.dao = dao;
+   }
+
+   public UsuarioService getSrvUsuario() {
+      return srvUsuario;
+   }
+
+   public void setSrvUsuario(UsuarioService srvUsuario) {
+      this.srvUsuario = srvUsuario;
+   }
+
+   public AuditoriaService getSrvAuditoria() {
+      return srvAuditoria;
+   }
+
+   public void setSrvAuditoria(AuditoriaService srvAuditoria) {
+      this.srvAuditoria = srvAuditoria;
+   }
+}

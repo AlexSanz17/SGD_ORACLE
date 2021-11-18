@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Distrito;
+
+public interface DistritoDAO {
+
+   public List<Distrito> buscarTodo();
+
+   public List<Distrito> findByProvincia(Integer iIdProvincia);
+   
+   public Distrito findById(Integer idDistrito);
+
+   public Distrito guardarObj(Distrito objDistrito, char cMode);
+}

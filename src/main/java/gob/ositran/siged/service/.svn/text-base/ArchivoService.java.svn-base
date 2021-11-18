@@ -1,0 +1,19 @@
+package gob.osinergmin.siged.service;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+/**
+ *
+ * @author diego.gil
+ */
+public interface ArchivoService {
+
+    void bloquearArchivo(Integer idArchivo, Usuario usuario, String nodeId);
+
+    void desbloquearArchivo(String nodeId);
+
+    List<Archivo> listarArchivosBloqueadosPorUsuario(Integer idUsuario);
+}

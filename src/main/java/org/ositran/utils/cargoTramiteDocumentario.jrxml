@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="CargoEscrito" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="2c4c1b17-3485-4d5b-b5da-4026fb19d985">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="37"/>
+	<parameter name="Plogo" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{Plogo}]]></defaultValueExpression>
+	</parameter>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="157" splitType="Stretch">
+			<image>
+				<reportElement x="197" y="10" width="160" height="144" uuid="3f7d9ff3-f4cd-46d5-ba65-aa3698af59bd"/>
+				<imageExpression><![CDATA[$P{Plogo}]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="9" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="134" splitType="Stretch">
+			<staticText>
+				<reportElement x="197" y="5" width="160" height="20" uuid="3ab1651b-6af7-4095-92a4-957118f8afcc"/>
+				<textElement>
+					<font fontName="Arial" isBold="true" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[CORTE SUPERIOR DE JUSTICIA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="262" y="25" width="30" height="20" uuid="78f56d37-47a0-471f-80ab-87748a3890d9"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LIMA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="236" y="45" width="82" height="20" uuid="ef00b827-cc6a-4924-8fe8-e16764ae8a66"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Sede Tributarios]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="173" y="65" width="208" height="20" uuid="968c4bfd-0f4f-4260-8d97-9bc32e9c0c7a"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Esq. Nicolás de Piérola con Rufino Torrico]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="163" y="85" width="229" height="20" uuid="1e530af9-0bf6-4f3a-a0b6-58c146dea1da"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cargo de Presentación Electrónica de Escrito ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="212" y="105" width="131" height="20" uuid="085c972d-73c2-4fe6-928f-00d530835d55"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Mesa de Partes Virtual]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="362" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="7" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="10" splitType="Stretch"/>
+	</summary>
+</jasperReport>

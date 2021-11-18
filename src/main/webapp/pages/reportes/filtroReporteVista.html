@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Sistema de Gesti&oacute;n Documentaria - Filtro para los Reportes</title>
+        <script language="JavaScript">
+            dojo.addOnLoad(function(){
+                Siged.Forms.combobox("tipoDocumentoBasicoRep",{
+                    id              : "objFiltroRep.tipoDocumento",
+                    jsId            : "objFiltroRep.tipoDocumento",
+                    name            : "objFiltroRep.tipoDocumento",
+                    storeUrl        : "autocompletarAllTipoDocumento.action?iWithoutStor=1",
+                    searchAttr      : "label",
+                    searchDelay     : 650,
+                    queryExpr       : "*${0}*",
+                    autoComplete    : false,
+                    hasDownArrow    : false,
+                    highlightMatch  : "all",
+                    invalidMessage  : "Seleccione un tipo de Documento",
+                    required        : false,
+                    style           : "width:200px"
+                });
+            });
+            
+            dojo.addOnLoad(function(){
+                Siged.Forms.combobox("propietarioBasicoRep",{
+                    id              : "objFiltroRep.propietario",
+                    jsId            : "objFiltroRep.propietario",
+                    name            : "objFiltroRep.propietario",
+                    storeUrl        : "autocompletarUsuariosxUnidad.action?iWithoutStor=0",
+                    searchAttr      : "label",
+                    searchDelay     : 650,
+                    queryExpr       : "*${0}*",
+                    autoComplete    : false,
+                    hasDownArrow    : false,
+                    highlightMatch  : "all",
+                    invalidMessage  : "Seleccione un propietario",
+                    required        : false,
+                    style           : "width:200px"
+                });
+            });
+            
+            dojo.addOnLoad(function(){
+                Siged.Forms.combobox("autorBasicoRep",{
+                    id              : "objFiltroRep.autor",
+                    jsId            : "objFiltroRep.autor",
+                    name            : "objFiltroRep.autor",
+                    storeUrl        : "autocompletarUsuariosxUnidad.action?iWithoutStor=0",
+                    searchAttr      : "label",
+                    searchDelay     : 650,
+                    queryExpr       : "*${0}*",
+                    autoComplete    : false,
+                    hasDownArrow    : false,
+                    highlightMatch  : "all",
+                    invalidMessage  : "Seleccione un autor",
+                    required        : false,
+                    style           : "width:200px"
+                });
+            });
+            
+        </script>
+    </head>
+    <body>
+        <div dojoType="dijit.form.Form" id="frmReporteVista" jsId="frmReporteVista">
+            <table width="100%">
+                <tr>
+                    <td>Tipo de Documento</td>
+                    <td colspan="3">
+                        <div name="tipoDocumentoBasicoRep"
+                             id="tipoDocumentoBasicoRep"></div>
+                    </td>
+                </tr>
+               <tr>
+               <td>Fecha Creaci&oacute;n Documento</td>
+               <td colspan="3">
+                  Desde :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objFiltroRep.fechaDocumentoDesde"
+                         jsId="objFiltroRep.fechaDocumentoDesde"
+                         name="objFiltroRep.fechaDocumentoDesde"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Documento (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objFiltroRep.fechaDocumentoHasta').constraints.min = this.getValue();" />
+                  Hasta :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objFiltroRep.fechaDocumentoHasta"
+                         jsId="objFiltroRep.fechaDocumentoHasta"
+                         name="objFiltroRep.fechaDocumentoHasta"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Documento (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objFiltroRep.fechaDocumentoDesde').constraints.max = this.getValue();" />
+               </td>
+               </tr>
+                <!--<tr>
+                    <td>Propietario</td>
+                    <td colspan="3">
+                       <div dojoType="dijit.form.TextBox"
+                            name="objFiltroRep.propietario"
+                            style="width:200px"
+                            trim="true" />
+                    </td>
+                </tr>-->
+                <tr>
+                    <td>Usuario Propietario</td>
+                    <td colspan="3">
+                        <div name="propietarioBasicoRep"
+                             id="propietarioBasicoRep"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Usuario Autor</td>
+                    <td colspan="3">
+                        <div name="autorBasicoRep"
+                             id="autorBasicoRep"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Asunto del Documento</td>
+                    <td colspan="3">
+                        <div dojoType="dijit.form.TextBox"
+                             name="objFiltroRep.asuntodocumento"
+                             style="width:200px"
+                             trim="true" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Estado del Documento</td>
+                    <td colspan="3">
+                        <select dojoType="dijit.form.FilteringSelect" name="objFiltroRep.estadoexpediente" required="false">
+                            <option value="*">Seleccionar</option>
+                            <option value="A">Registrado</option>
+                            <option value="R">Recibidos</option>
+                            <option value="P">Pendiente</option>
+                            <option value="T">Atendido</option>
+                             <option value="N">Anulado</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="padding-top:10px;">
+                        <button dojoType=dijit.form.Button type="button" iconClass="siged16 sigedExcel16" onClick="doReporteVista('frmReporteVista')" showLabel="true">Exportar</button>
+                        <button dojoType=dijit.form.Button type="button" onClick="resetFormReporteVista('frmReporteVista')" iconClass="siged16 sigedEraser16" showLabel="true">Limpiar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4"><div id="showErrorReporteVista" style="color:red;font-weight:bold;">&nbsp;</div></td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

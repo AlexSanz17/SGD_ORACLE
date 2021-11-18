@@ -1,0 +1,49 @@
+body{font-family:Arial,sans-serif; color:#fff; line-height:1.166; margin:0px; padding:0px; top:50px}
+
+.usuario{font-family:Arial,Helvetica,sans-serif; font-size:14px; font-style:normal; line-height:normal; color:#CCC}
+
+.txtBienvenida{font-family:"Verdana","Arial","Tahoma","Geneva";  font-size:10px; color:#fff; TEXT-DECORATION:none }
+
+.menuItem{font-family:Arial,Helvetica,sans-serif; font-size:10px; color:#639}
+
+.campo{font-size:10px; font-family:"Verdana,Arial,Helvetica,sans-serif"; color:#31619C}
+
+.normal{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+.CabeceraTabla{background-color:#92B9D3; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; font-weight:bold; font-variant:normal; color:#FFF}
+input.button, button{font-family:verdana,arial,helvetica sans-serif; font-size:8pt;  background:#4271AD; color:#fff; border-width:1px; border-style:solid; CURSOR:hand}
+
+.busqueda{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:bold; color:#31619C}
+.EdicionTabla{background-color:#F6FBFF}
+
+.Estilo5{color:#FFF; font-size:18px}
+.Estilo6{color:#FFF; font-size:14px}
+.textonoeditable{background-color:#CCC; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+
+.Fila1{background-color:#F6FBFF; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+.Fila2{background-color:#EBF1F4; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:#000}
+
+.BordeTabla{ background-color:#BCBCBC}
+
+.MarcoTabla{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:bold; color:#666;  background-color:#c4d6e2}
+
+.tituloAzul{font-family:"Arial","Verdana","Tahoma","Geneva"; font-size:16px; font-weight:bold; color:#003C7B; TEXT-DECORATION:none }
+
+.Titulo{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:bold; color:#FFF;  background-color:#6487d4}
+
+.MarcoPrincipal{ background-color:#6487d4}
+
+.Cabecera{background-color:#003c7b; font-family:Arial,Helvetica,sans-serif; font-size:18px; font-style:normal; font-weight:bold; font-variant:normal; color:#FFF}
+
+.nav{ background-color:#C4D6E2; color:#000; font-family:Arial,Helvetica,sans-serif; font-size:12px; TEXT-INDENT:4px}
+.navi{ background-color:#F6FBFF; color:#000;  font-family:Arial,Helvetica,sans-serif; font-size:12px;  TEXT-INDENT:4px}
+.nov{ background-color:#C4D6E2; color:#000;  font-family:Arial,Helvetica,sans-serif; font-size:12px;  TEXT-INDENT:4px}
+.novi{ background-color:#EBF1F4; color:#000; font-family:Arial,Helvetica,sans-serif; font-size:12px;  TEXT-INDENT:4px}
+
+.textoalerta{font-family:Arial,Helvetica,sans-serif; font-size:12px; font-style:normal; line-height:normal; font-weight:normal; font-variant:normal; color:red}
+.cajaMontoTotal{TEXT-ALIGN:left; border:1px solid #000; background-color:#fff;  FONT-SIZE:9px; COLOR:#000; FONT-FAMILY:Arial}
+
+a:link{text-decoration:none; color:black}
+a:link{text-decoration:none; color:black}
+a:visited{text-decoration:none; color:black}
+a:active{text-decoration:none; color:none}
+a:hover{text-decoration:none; color:red}

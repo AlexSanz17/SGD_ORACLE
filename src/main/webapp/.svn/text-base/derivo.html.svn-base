@@ -1,0 +1,38 @@
+
+<html>
+<head>
+<title>Sistema de Control de Asistencia</title>
+<link href="css/estilo.css" rel="stylesheet" type="text/css">
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+body {
+	background-color: #ffffff;
+}
+-->
+</style>
+</head>
+<body >
+
+<table width="100%" border="0">
+  <tr>
+    <td colspan="3" height="92" align="center" class="label">El expediente 001 se deriv&oacute; satisfactoriamente a los siguientes destinatarios :</td>
+  </tr>
+  <tr>
+    <td width="26%" align="center" class="label"></td>
+    <td width="47%" align="left" class="label">jfranco@osinerg.gob.pe</td>
+	<td width="27%" align="center" class="label"></td>
+  </tr>
+  <tr>
+     <td align="center" class="label"></td>
+    <td align="left" class="label">rperez@osinerg.gob.pe</td>
+	<td align="center" class="label"></td>
+  </tr>
+</table>
+
+</body>
+</html>
+ 
+ 
+

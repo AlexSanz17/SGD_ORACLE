@@ -1,0 +1,6 @@
+package org.osinerg.services;
+
+public interface SubMotivoService{
+
+	public Object[] findAllAjax(String motivo);
+}

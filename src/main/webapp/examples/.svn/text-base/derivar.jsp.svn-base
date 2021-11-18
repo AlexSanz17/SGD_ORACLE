@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<%@ page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+<%@ page import="com.btg.osinergmin.siged.domain.Proveido" %>
+<%@ page import="java.util.List" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+<head>
+<s:url id="autoUrl" action="autocompletarProceso1">
+	<s:param name="sTipoDerivacion" value="sTipoDerivacion" />
+</s:url>
+<s:if test="iddestinatario == null || iddestinatario == 0">
+	<s:if test="paraAprobar">
+		<title>Aprobar Documento</title>
+	</s:if>
+	<s:else>
+		<title>Transferir Documento</title>
+	</s:else>
+</s:if>
+<s:else>
+	<title>Rechazar Documento</title>
+</s:else>
+<link type="text/css" rel="stylesheet" href="css/styleSiged.css" />
+<link type="text/css" rel="stylesheet" href="js/dojo/css/styleDojo.css" />
+<style type="text/css">
+div.falso {
+	position: absolute;
+	/*top: -48px;*/
+	left: 80px;
+	z-index: 0;
+	/*width: 14px;
+            height: 3px;*/
+}
+
+input.file {
+	position: relative;
+	filter: alpha(opacity :   0);
+	opacity: 0;
+	z-index: 1;
+	/*top: -49px; 
+            text-align: left;
+            left: 80px;*/
+	width: 50px;
+	left: 10px;
+}
+
+.copia {
+	margin-right: 5px;
+}
+</style>
+
+<%
+	List<Proveido> proveidos = (List<Proveido>)request.getAttribute("proveidos");
+%>
+
+<script type="text/javascript">
+			var djConfig = {
+				isDebug: false,
+				parseOnLoad: true
+			};
+		</script>
+<script type="text/javascript" src="js/dojo/dojo/dojo.js"></script>
+<script type="text/javascript" src="js/siged/upload.js"></script>
+<%--<script type='text/javascript' src='./dwr/engine.js'> </script>
+		<script type='text/javascript' src='./dwr/util.js'> </script>
+		<script type='text/javascript' src='./dwr/interface/toolDwr.js'></script>--%>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/siged/siged.js"></script>
+<script type="text/javascript" src="js/siged/siged.forms.js"></script>
+<script type="text/javascript" src="js/siged/siged.string.js"></script>
+<script type="text/javascript" src="js/siged/derivacion.js"></script>
+
+<script type="text/javascript">
+         var OPCION = "<s:property value='sOpcion' />";
+         var idRemitente = "<s:property value='objDD.iIdRemitente' />";
+         var paraAprobar = "<s:property value='paraAprobar'/>";
+         var provieneDeMail = "<s:property value='provieneDeMail'/>";
+
+         console.debug("(derivar.jsp) OPCION [%s]", OPCION);
+         console.debug("(derivar.jsp) idRemitente [%s]", idRemitente);
+         console.debug("(derivar.jsp) paraAprobar [%s]", paraAprobar);
+         console.debug("(derivar.jsp) provieneDeMail [%s]", provieneDeMail);
+         dojo.require("dijit.Editor");
+         dojo.require("dijit._editor.plugins.FontChoice");  // 'fontName','fontSize','formatBlock'  
+         dojo.require("dijit._editor.plugins.TextColor");  
+         dojo.require("dijit._editor.plugins.LinkDialog");
+         dojo.require("dojo.io.iframe");
+         dojo.require("dojo.rpc.JsonService");
+         dojo.require("dijit.form.FilteringSelect" );
+         dojo.require("dojo.data.ItemFileReadStore");
+         //dojo.require("dijit.form.NumberTextBox");
+         dojo.require("dijit.form.TextBox");
+         //dojo.require("dijit.form.TimeTextBox");
+         dojo.require("dijit.form.DateTextBox");
+		   dojo.require("dijit.Dialog");
+         dojo.require("dijit.form.Button");
+		   dojo.require("dojox.grid.DataGrid");
+
+         var service = new dojo.rpc.JsonService("SMDAction.action");
+         var store = null;
+		 var storePrioridades = new dojo.data.ItemFileReadStore({url: "Parametro_getPrioridades.action"});
+         
+         if (OPCION == "reenviar") {
+            store = new dojo.data.ItemFileReadStore({url: "getFavorito.action"});
+         } else {
+            store = new dojo.data.ItemFileReadStore({url: "<s:property value='autoUrl' />&sOpcion=<s:property value='sOpcion' />"});
+         }
+
+         var strDerivarCC = new dojo.data.ItemFileReadStore({url: "derivarCC.action"});
+         
+         function validarForm(){
+				//Validaciones del formulario caso general
+                                var mostrarEtapa =<s:property value='mostrarEtapa' />;                                
+                                if (mostrarEtapa) {
+                                    if(dijit.byId("objExpediente.idetapa.idetapa").state||dijit.byId("objExpediente.idetapa.idetapa").value==""){
+					alert("Debe especificar la etapa.");
+					dijit.byId("fsEtapaProceso").focus();
+					return false;
+                                    }
+                                }
+				if(dijit.byId("iddestinatario").state||dijit.byId("iddestinatario").value==""){
+					alert("Debe especificar Para.");
+					dijit.byId("iddestinatario").focus();
+					return false;
+				}
+				if(document.getElementById("iddia")!=null && document.getElementById("idfecha")!=null && document.getElementById("idSinPLazo")!=null){
+					if(document.getElementById("iddia").checked==false&&document.getElementById("idfecha").checked==false&&document.getElementById("idSinPLazo").checked==false){
+						alert("Debe seleccionar\n Fecha por plazos o \n Fecha fija o \n Sin Plazo.");
+						return false;
+					}
+				}
+
+				var asunto=$("#asunto").val();
+				if(asunto.length>300){
+					if(confirm("El asunto tiene mas de 300 caracteres, desea que sea truncado a 300 caracteres?")){
+						$("#asunto").val(asunto.substring(0,300));
+					}
+					else{
+						return false;
+					}
+				}
+
+				var contenido=dijit.byId("contenid").getValue();
+				//alert(contenido);
+				if(contenido.length>3990){
+					if(confirm("El contenido no debe tener mas de 3990 caracteres, desea que sea truncado a 3990 caracteres?")){
+						dijit.byId("contenid").setValue(contenido.substring(0,3990));
+					}
+					else{
+						return false;
+					}
+				}
+             
+             /*if(document.getElementById("iddia").checked==true){
+	             if(document.getElementById("dia").value==""){
+	                 alert("Debe registrar dias de plazo.");
+	                 dijit.byId("dia").focus();
+	                 return false;
+	              }
+              }
+             if(document.getElementById("idfecha").checked==true){
+	             if(document.getElementById("fecha").value==""){
+	                 alert("Debe registrar fecha.");
+	                 dijit.byId("fecha").focus();
+	                 return false;
+	              }
+              }*/
+             
+ 			return true;
+ 		}
+		
+        function ordenarAcciones(){
+        	var arrAccT = [];
+	        dojo.query("input[name='acciones']").forEach(function(node){
+	     		if(node.checked){
+	     			arrAccT.push(node.id.substr(4));
+	     		}
+	     	});
+	        return arrAccT;
+        }
+        
+		var derivando=false;
+		function derivar(){
+			if(!derivando){
+				if(validarForm()){
+					derivando=true;
+					
+					document.getElementById("objDD.strTexto").value = dijit.byId("contenid").getValue(false);
+					if(OPCION != "rechazar"){
+						document.getElementById("acciones").value = ordenarAcciones();	
+					}
+					dijit.byId("dlgProgresBar").show();
+					document.getElementById("derivar").submit();
+				} 
+			}
+		}
+
+         function subir() {
+            document.forms[0].action = 'doUploadUserManual.action' ;
+            document.forms[0].submit();
+         }
+
+         function refrescar() {
+            //window.opener.parent.location.href = "inicio.action?sTipoFrame=grid";
+            console.debug(window.opener.sTipoGridActual);
+            console.debug(window.opener.TIPO_GRID_SEGUIMIENTO);
+            
+        	 try {
+        		 if(window.opener.sTipoGridActual != window.opener.TIPO_GRID_SEGUIMIENTO){
+        			 window.opener.eliminarRegistro();
+                  	 window.opener.filtrarSeguimiento();
+        		 }else{
+        			window.opener.refrescarDetalle(); 
+        		 }
+        	}catch(err){ 
+     			  //console.debug("errror : "+err);
+     			  this.window.close();
+             }
+
+            if (provieneDeMail == "true") {
+               window.opener.close();
+            }
+            
+            this.window.close();
+         }
+
+         function formshowhide(id){
+        	 if(id == "quote"){
+	         clearfecha();
+	         //console.debug("habilitnado quotef");
+	         document.getElementById('quotef').style.display = "block";
+	         document.getElementById('otherf').style.display = "none";
+	         document.getElementById('idInputSinPlazo').value = "";
+	         //document.getElementById('fecha').value="";
+	         }if (id == "other"){
+	        // clear();     
+	          document.getElementById('dia').value="";
+	          document.getElementById('hora').value="";
+	         //console.debug("habilitnado otherf");
+	         document.getElementById('quotef').style.display = "none";
+	         document.getElementById('otherf').style.display = "block";
+	         document.getElementById('idInputSinPlazo').value = "";
+	         }if (id == "sPlazo") {
+	 	        // clear();     
+	 	          clearfecha();
+		          document.getElementById('dia').value="";
+		          document.getElementById('hora').value="";
+		         //console.debug("habilitnado otherf");
+		         document.getElementById('quotef').style.display = "none";
+		         document.getElementById('otherf').style.display = "none";
+		         document.getElementById('idInputSinPlazo').value = "sinPlazo";
+		         }
+         }
+         
+  		
+    	
+  		function clearfecha(){
+    			document.getElementById('fecha').value="";
+    	}
+		
+         
+         function calculaFechaLimite2opcion() {
+         /*var iIdDocumento = "<s:property value='iIdDoc' />";
+
+             var fechaTexto=document.getElementById("fecha");
+             if(fechaTexto.value!=""){
+                var service = new dojo.rpc.JsonService("SMDAction.action");
+                service.calcularEnFechaTexto(iIdDocumento,fechaTexto.value).addCallback(function(data){
+                   document.getElementById("warningFechaLimite").innerHTML=data>0?"<span style='color:#e22;'>La fecha ingresada supera el limite.</span>":"";
+                });
+	 		     /*toolDwr.calcularEnFechaTexto(iIdDocumento,fechaTexto.value, function(data){
+	 		         document.getElementById("warningFechaLimite").innerHTML=data>0?"<span style='color:#e22;'>La fecha ingresada supera el limite.</span>":"";
+	 		     });*
+             }
+             */
+          }	
+         
+         function limpiarCampoWarning(){
+        	 document.getElementById("warningFechaLimite").innerHTML="";
+         }
+
+			function ocultafecha (){             
+				$("#fechaLimite").html(""); 
+			}
+
+        	dojo.addOnLoad(function() {
+        		
+				var idDestinatarioAux = "<s:property value='objDD.iIdRemitente'/>";
+				var iddestinatario = "<s:property value='iddestinatario'/>";
+				var paraAprobar = "<s:property value='paraAprobar'/>";		
+				var componente = dijit.byId("iddestinatario");
+
+				if( (paraAprobar=="true" || (!Siged.String.isEmpty(iddestinatario))) && !Siged.String.isEmpty(componente)){
+					dijit.byId("iddestinatario").setValue(idDestinatarioAux);
+					dijit.byId("iddestinatario").attr("readonly", "true");
+				}
+
+				if(paraAprobar=="true"){
+					validarRemitente(idDestinatarioAux);
+				} else if(!Siged.String.isEmpty(iddestinatario) && !Siged.String.isEmpty(componente)){
+               		dijit.byId("iddestinatario").attr("value", iddestinatario);
+            }
+         });
+		</script>
+</head>
+<body class="soria"
+	<s:if test='cerrar!=null'>onload="refrescar();"</s:if>>
+	<s:if test="cerrar==null">
+		<table width="100%">
+			<tr>
+				<td height="14" colspan="6"
+					style='padding: 6px 8px; font-weight: bold'><s:property
+						value="fechaEnTexto" />
+				</td>
+			</tr>
+			<tr align="center">
+				<td width="1%" align="center"></td>
+				<td colspan="4" align="left"><img src="images/enviar.bmp"
+					alt="Enviar" style="float: left;" onclick="javascript:derivar();" />
+					<s:if test="iddestinatario == null || iddestinatario == 0">
+						<s:if test="#session._RECURSO.UsuFinBtnUpl">
+							<s:form id="frmUploadFile1" action="doUploadFile" method="post"
+								enctype="multipart/form-data">
+								<div id="divUpload" style="float: left; display: none;">
+									<input name="upload" type="file" class="file" size="1"
+										onchange="uploadIt(1)" />
+									<div class="falso">
+										<img src="images/adjunto.bmp" alt="Adjuntar Archivo" />
+									</div>
+								</div>
+							</s:form>
+						</s:if>
+					</s:if></td>
+			</tr>
+			<tr>
+				<td colspan="5" align="left" class="plomo">
+					<div id="divShowFile1">
+						<%@include file="/pages/upload/lstUploadWithOutTextArea.jsp"%>
+					</div></td>
+			</tr>
+			<tr>
+				<td height="16" colspan="5" align="left" class="plomo">
+					<form id="derivar" action="doDerivarUSER.action" method="post">
+						<s:hidden name="objDD.iIdDocumento" />
+						<s:hidden name="objDD.iIdProceso" id="objDD.iIdProceso" />
+						<s:hidden name="sTipoDerivacion" />
+						<s:hidden name="sOpcion" />
+						<s:hidden name="destinatarioIgualRemitente" />
+						<s:hidden name="objDD.iIdRemitente" />
+						<table width="100%">
+							<tr>
+								<td></td>
+								<td width="27%" height="16" align="left" class="plomo"><s:if
+										test="!paraAprobar && (iddestinatario == null || iddestinatario == 0)">
+										<button dojoType="dijit.form.Button" type="button"
+											id="btnPara" jsId="btnPara"
+											onClick="showGrdPara('iddestinatario')" showLabel="true">Para</button>
+									</s:if> <s:else>
+                              Para :
+                           </s:else></td>
+								<td colspan="2">
+									<s:if test=" !paraAprobar && (iddestinatario == null || iddestinatario == 0) ">
+										<s:hidden name="objDD.strAccion" value="reenviar" />
+										<div id="fsPara"></div>
+									</s:if> 
+									<s:else>
+										<s:if test="objDD.iIdAccion == 24 || objDD.iIdAccion == 23 ||objDD.iIdAccion == 7 ||objDD.iIdAccion == 2">
+											<s:hidden name="objDD.strAccion" value="rechazaruser" />
+										</s:if>
+										<s:elseif test="objDD.iIdAccion == 8">
+											<s:hidden name="objDD.strAccion" value="aprobar" />
+										</s:elseif>
+										<s:elseif test="objDD.iIdAccion == 13 || objDD.iIdAccion==14 || objDD.iIdAccion=4">
+											<s:hidden name="objDD.strAccion" value="rechazar" />
+										</s:elseif>
+										<select dojoType="dijit.form.FilteringSelect" store="store"
+											required="false" id="iddestinatario" idAttr="id"
+											labelAttr="label" searchAttr="label" name="iddestinatario"
+											value="<s:property value='iddestinatario' />" size="25"
+											readonly="true">
+										</select>
+									</s:else>
+								</td>
+								<s:if test="iddestinatario == null || iddestinatario == 0">
+									<td width="100%">
+										<table width="100%" border="0">
+											<tbody id="tbPlazo">
+												<tr>
+													<td><input type="radio" id="iddia" name="ShowHide"
+														value="quote"
+														onclick="formshowhide('quote');limpiarCampoWarning()"
+														checked="checked" /> Fecha por plazos:</td>
+													<td>
+														<div id="warningFechaLimite"></div>
+														<div id="quotef">
+															d&iacute;a: <input
+																<%--dojoType="dijit.form.NumberTextBox"--%> id="dia"
+																name="objDD.iPlazoDia" style="width: 35px;"
+																maxlength="2" type="text" /> hora: <input
+																<%--dojoType="dijit.form.NumberTextBox"--%> id="hora"
+																name="objDD.iPlazoHora" style="width: 35px;"
+																maxlength="2" type="text" />
+														</div></td>
+													<td><s:checkbox value="false" name="paraAprobar"
+															label="Para Aprobar "></s:checkbox> Para Aprobar</td>
+
+												</tr>
+												<tr>
+													<td><input type="radio" id="idfecha" name="ShowHide"
+														value="other"
+														onclick="formshowhide('other');  ocultafecha ();limpiarCampoWarning();" />
+														Fechas fijas:</td>
+													<td>
+														<div id="otherf" style="display: none;">
+															<input type="text" id="fecha"
+																name="objDD.strFechaLimiteAtencion" size="10"
+																dojoType="dijit.form.DateTextBox" required="true"
+																onchange="calculaFechaLimite2opcion()"
+																promptMessage="dd/MM/aaaa"
+																constraints="{min: new Date() ,datePattern:'dd/MM/yyyy'}"
+																invalidMessage="Fecha no valida.  Usar el formato dd/MM/aaaa." />
+														</div></td>
+													<td></td>
+
+												</tr>
+												<tr>
+													<td><input type="radio" id="idSinPLazo" name="ShowHide"
+														value="sPlazo"
+														onclick="formshowhide('sPlazo');limpiarCampoWarning()" />
+														Sin plazo</td>
+													<td>														
+													 		<input type="hidden" name="objDD.strSinPlazo" id="idInputSinPlazo" value="sinPlazo"/>
+															 																												
+															</td>
+													<td></td>
+
+												</tr>
+											</tbody>
+										</table></td>
+								</s:if>
+								<td width="29%">
+									<%--span style="background-color: #DEE7FF" id="fechaLimite"></span--%>
+									<!--<img onClick="location.href='derivar1.html'" src="/siged/images/signo_mas.gif" width="15" height="15" border="0" alt="Agregar"/>-->
+								</td>
+							</tr>
+							<s:if test="iddestinatario == null || iddestinatario == 0">
+								<tr>
+									<td>&nbsp;</td>
+									<td height="16" align="left" class="plomo">
+										<button dojoType="dijit.form.Button" type="button" id="btnCc"
+											jsId="btnCc" onClick="showGrdPara('idconcopia')"
+											showLabel="true">Cc</button></td>
+									<td colspan="4">
+										<div id="iddestinatarios"></div> <!--s:textfield id="ccdestinatario" name="ccdestinatario" cssClass="cajaMontoTotal" size="50"/> 
+					                  <span id="indicatorCCDest" style="display:none;"><img src="./images/indicator.gif"/></span
+					                  <s:textfield id="idccdestinatario" name="idccdestinatario" />
+					                  --></td>
+								</tr>
+								<tr>
+									<td colspan="2"></td>
+									<td colspan="4">
+										<div id="copias"></div></td>
+								</tr>
+								<tr>
+									<td colspan="6">&nbsp;</td>
+								</tr>
+								<%if(proveidos != null && !proveidos.isEmpty()){ %>
+								<tr>
+									<td colspan="6" >
+										<input type="hidden" name="strAcc" id="acciones"/>
+										<table style="width: 100%; margin-left:10px;" align="center">
+											<tr>
+											<%  int i = 0;
+	 											for(Proveido p : proveidos ){ 
+													if(i % 4 == 0 && i != proveidos.size()){%>
+													</tr>
+													<tr>
+													<%} %>
+													<td>
+														<input dojoType="dijit.form.CheckBox" id="PRO_<%=p.getIdProveido() %>"
+														name="acciones"><%=p.getNombre() %>
+													</td>
+												<%i++;
+												} %>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<%} %>
+								<tr>
+									<td colspan="6">&nbsp;</td>
+								</tr>
+							</s:if>
+							<s:if test="mostrarEtapa != null && mostrarEtapa == true">
+								<tr>
+									<td></td>
+									<td height="30" align="left" class="plomo">Etapa:</td>
+									<td colspan="3">
+										<div id="fsEtapaProceso" name="fsEtapaProceso" /></td>
+								</tr>
+							</s:if>
+							<tr>
+								<td></td>
+								<td height="16" align="left" class="plomo">Asunto:</td>
+								<td colspan="4"><s:textfield id="asunto"
+										name="objDD.strAsunto" cssClass="cajaMontoTotal" size="80"
+										required="false" maxlength="300" /></td>
+							</tr>
+
+							<tr>
+								<td>&nbsp;</td>
+								<td height="30px" align="left" class="plomo">Prioridad:</td>
+								<td colspan="4">
+									<select dojoType="dijit.form.FilteringSelect" 
+											id="objDD.prioridad"
+											name="objDD.prioridad" 
+											store="storePrioridades"
+											required="true"
+											searchAttr="label" 
+											value="<s:property value='objDD.prioridad'/>" 
+											size="25px">
+									</select>
+								</td>
+							</tr>
+
+							<s:if test="paraAprobar==false">
+						<!-- 	<tr>
+								<td></td>
+								<td height="16" align="left" class="plomo">Adjuntos</td>
+								<td colspan="4">
+								<s:if test="#session.UPLOADLIST.upload1 != null">
+									<s:iterator value="#session.UPLOAD_LIST.upload1">
+										<a href="<s:property value="sURL" />" target="_blank"><s:property value="nombreReal" /></a><br />
+									</s:iterator>
+								</s:if>
+								</td>
+							</tr>
+						-->
+								<!-- 
+	                     <tr>
+	                        <td></td>
+	                        <td height="16" align="left" class="plomo">Mantener en mi bandeja</td>
+	                        <td colspan="4">
+	                           <s:checkbox name="bBandeja" />
+	                        </td>
+	                     </tr>
+	                      -->
+	                      <%--
+								<s:if test="iddestinatario == null || iddestinatario == 0">
+									<s:if test="%{ownerproceso}">
+										<tr>
+											<td></td>
+											<td height="16" align="left" class="plomo">Asignar
+												Responsable de Expediente</td>
+											<td colspan="4"><s:checkbox name="bResponsable" /></td>
+										</tr>
+									</s:if>
+								</s:if>--%>
+							</s:if>
+ 						  
+
+							<tr>
+								<td></td>
+								<td colspan="5" class="normal"><s:hidden
+										id="objDD.strTexto" name="objDD.strTexto" /> <input
+									type="text" name="ta" id="ta"
+									value="<s:property value='ta' escape='false' />"
+									style="display: none;"> <%--<s:hidden id="ta" name="ta" />--%>
+										<div dojoType="dijit.Editor" jsid="contenid" id="contenid"
+											style="background-color: #FFF;"></div> <script
+											type="text/javascript">
+									  
+									   var cadena  = document.getElementById("ta").value;
+									   //document.getElementById("contenid").innerHTML = cadena;
+									   //cadena  =document.getElementById("contenid").innerHTML;
+									   //alert("cadena1:"+cadena);  
+									   cadena = cadena.replace(/<P><\/P>/g,"");      
+									   //alert("cadena2:"+cadena);
+									   document.getElementById("contenid").innerHTML = cadena.substring(0,3999);
+									    //cadena=document.getElementById("contenid").innerHTML;
+									   //alert(cadena);     
+									   
+										           
+									</script>
+								</td>
+							</tr>
+						</table>
+					</form></td>
+			</tr>
+			<tr>
+				<td height="14" colspan="6"></td>
+			</tr>
+		</table>
+		<%@ include file="../pages/util/progressBar.jsp"%>
+		<%@ include file="derivar-dialogs.jsp"%>
+	</s:if>
+	<s:else>
+		<p style="text-align: center;">Operaci&oacute;n realizada
+			satisfactoriamente</p>
+	</s:else>
+</body>
+</html>

@@ -1,0 +1,12 @@
+package org.osinerg.actions;
+
+import com.opensymphony.xwork2.Action;
+
+public class DocumentoSasAction {
+
+   public String Registrar()
+   {
+      return Action.SUCCESS;
+   }
+
+}

@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Courier;
+
+
+public interface CourierDAO {
+
+   public Courier findCod(String codigo);
+   
+   public List<Courier> findAll();
+   
+   public Courier findkey(int Id);
+
+}

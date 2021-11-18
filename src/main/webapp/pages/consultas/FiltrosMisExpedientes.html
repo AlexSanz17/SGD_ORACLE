@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Sistema de Gesti&oacute;n Documentaria - Filtro de B&uacute;squeda Avanzada B&aacute;sico</title>
+        <script language="JavaScript">
+        dojo.addOnLoad(function(){
+            /*
+        	new dijit.form.FilteringSelect({
+			      id             : "objME.cliente",
+			      jsId           : "objME.cliente",
+			      name           : "objME.cliente",
+			      searchAttr     : "label",			      					      
+			      autoComplete   : false,
+			      hasDownArrow   : false,
+			      highlightMatch : "all",
+			      required       : false,
+			      style          : "width:80%;",
+			      searchDelay    : 500,
+			      _onBlur		 : function(){this.value=dijit.byId("objFiltro.cliente");},
+			      store		     : new dojox.data.QueryReadStore({url: "QRS_autocompletarQRSCliente.action"})
+			}, "objME.cliente");
+        	
+            new dijit.form.FilteringSelect({
+            	id              : 'objME.proceso',
+                jsId            : 'objME.proceso',
+                name            : 'objME.proceso',
+    			store : new dojo.data.ItemFileReadStore({
+    				url : 'autocompletarProceso.action',
+    			}),
+    			searchAttr : "label",
+    			labelAttr : "label",
+    			value: 0,
+    			autoComplete : false,
+    			hasDownArrow : true,
+    			highlightMatch : "all",
+    			invalidMessage : "Seleccione el proceso",
+    			style: "width:80%;"
+    		}, "procesoME");*/
+        });
+        </script>
+    </head>
+    <body>
+        <div dojoType="dijit.form.Form" id="frmConsultaME" jsId="frmConsultaME">
+            <table width="100%">           
+            
+             <tr style="padding-top: 0.5em;">
+				<td width="10%">Nro Expediente </td>
+				<td width="35%"><div dojoType="dijit.form.TextBox"
+                       name="objME.numeroExpediente"
+                       style="width:80%;"
+                       trim="true" /></td>
+                <td width="10%">Asunto  </td>
+				<td width="35%"> <div dojoType="dijit.form.TextBox"
+                       name="objME.asuntoexpediente"
+                       style="width:80%;"
+                       trim="true" /></td>					
+			 </tr>	
+                 <!--
+			 <tr style="padding-top: 0.5em;">
+			   <td width="10%">Cliente</td>
+               <td  width="35%">
+                  <div id="objME.cliente" />
+               </td>
+               <td width="10%">Proceso</td>
+               <td width="35%">
+                  <div name="procesoME" id="procesoME"></div>                        
+               </td>
+			 </tr> -->
+                <!--
+			 <tr style="padding-top: 0.5em;">
+               <td>Fecha Creaci&oacute;n Expediente</td>
+               <td>
+                  Desde :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objME.fechaDesde"
+                         jsId="objME.fechaDesde"
+                         name="objME.fechaDesde"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Expediente (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objME.fechaHasta').constraints.min = this.getValue();" />
+               </td>
+               <td colspan="2">
+               	Hasta :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objME.fechaHasta"
+                         jsId="objME.fechaHasta"
+                         name="objME.fechaHasta"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Expediente (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objME.fechaDesde').constraints.max = this.getValue();" />
+               </td>
+            </tr>-->
+			    <tr>
+                    <td colspan="4" style="padding-top:10px;">
+                        <button dojoType=dijit.form.Button type="button" iconClass="siged16 sigedSearch16" onClick="doConsultaME()" showLabel="true">Buscar</button>
+                        <button dojoType=dijit.form.Button type="button" onClick="resetFormConsultaME('frmConsultaME')" iconClass="siged16 sigedEraser16" showLabel="true">Limpiar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4"><div id="showErrorConsultaME" style="color:red;font-weight:bold;">&nbsp;</div></td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

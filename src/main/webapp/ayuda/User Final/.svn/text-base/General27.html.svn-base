@@ -1,0 +1,67 @@
+﻿<html>
+	
+<head>
+	<title>B&uacute;squeda Simple</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <meta name="generator" content="HelpNDoc">
+	<link type="text/css" rel="stylesheet" media="all" href="css/reset.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/base.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/hnd.css" />
+	<!--[if lte IE 8]>
+		<link type="text/css" rel="stylesheet" media="all" href="css/ielte8.css" />
+	<![endif]-->
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/hnd.js"></script>
+	<script type="text/javascript"><!--
+		var sTopicId = top.location.href.substring(top.location.href.lastIndexOf("/") + 1, top.location.href.length);
+		if (top.frames.length == 0)
+			top.location.href = "User Final.htm?" + sTopicId
+		else if (top && top.FrameTOC && top.FrameTOC.SelectTocItem)
+			top.FrameTOC.SelectTocItem(sTopicId);
+	</script>
+</head>
+
+<body>
+
+	<div id="topic_header">
+			<div id="topic_header_content">
+				<h1>B&uacute;squeda Simple</h1>
+				
+				<div id="topic_breadcrumb">
+					<a href="General.html">General</a> &rsaquo;&rsaquo; </div>
+				</div>
+			<div id="topic_header_nav">
+				<a href="General.html"><img src="img/arrow_up.png" alt="Parent"/></a>
+				
+				<a href="General26.html"><img src="img/arrow_left.png" alt="Previous"/></a>
+				
+				<a href="General28.html"><img src="img/arrow_right.png" alt="Next"/></a>
+				
+				</div>
+			<div class="clear"></div>
+		</div>
+	<div id="topic_content">
+		
+<p class="rvps16"><span class="rvts17">Búsqueda Simple:</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Para que el usuario pueda realizar una Búsqueda Simple, nos situamos en la parte superior en el recuadro de color rojo como se muestra en la siguiente pantalla:</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">(*) En la Búsqueda Simple, sólo realiza la Búsqueda dentro del Área Funcional y puede ser por Asunto del Documento y Asunto del Expediente, no necesariamente se tiene que escribir en el filtro todo el asunto, sólo basta una palabra del asunto para realizar la Búsqueda.</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/BUSQUEDASIMPLE.jpg"></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Ingresamos una palabra del asunto de un Documento a Buscar y seleccionamos la Flecha para que realice la Búsqueda, como en la pantalla siguiente: En donde se muestra un listado de los Documentos los cuales tienen como parte del asunto la palabra </span><span class="rvts18">Conformidad.</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/BUSQUEDASIMPLE2.jpg"></p>
+<p class="rvps2"><span class="rvts6">Created with the Personal Edition of HelpNDoc: </span><a class="rvts7" href="http://www.helpndoc.com">Easily create Help documents</a></p>
+</div>
+	
+	<div id="topic_footer">
+
+			<div id="topic_footer_content">
+				SISTEMA DE GESTION DOCUMENTARIA - APN</div>
+		</div>
+	</body>
+	
+</html>
+

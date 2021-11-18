@@ -1,0 +1,798 @@
+package org.osinerg.services;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.apache.commons.lang.StringUtils;
+import org.osinerg.daos.DocumentoEnviadoDAO;
+import org.osinerg.daos.NotificacionDAO;
+import org.osinerg.daos.TrazabilidaddocumentoDAO;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.FechaLimite;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Accion;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Documentoenviado;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Notificacion;
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+import com.btg.osinergmin.siged.domain.Trazabilidadcopia;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class NotificacionServiceImpl implements NotificacionService{
+	
+	private static Logger log=LoggerFactory.getLogger(NotificacionServiceImpl.class);
+	private NotificacionDAO dao;
+    private TrazabilidaddocumentoService srvTrazDoc;
+	private TrazabilidaddocumentoDAO trazabilidaddocumentoDAO ;
+	private DocumentoEnviadoDAO documentoEnviadoDao;
+	private List<Usuario> listaUsuariosYaNotificados;
+	private List<Usuario> listaUsuariosYaNotificadosNoti;
+	private List<Usuario> listaUsuariosYaNotificadosMail;
+    private DocumentoService documentoService;
+   	private TrazabilidadcopiaService trazabilidadcopiaService;
+    private AccionService accionService;
+    private ManejoDeEmailService mailService;
+    private FechaLimite fechaLimite;
+    private TrazabilidadapoyoService trazabilidadapoyoService;
+    private EstadoService estadoService;
+	// ////////////////////////////////
+	// Constructors //
+	// ////////////////////////////////
+	public NotificacionServiceImpl(NotificacionDAO dao){
+		this.dao=dao;
+	}
+
+	// ////////////////////////////////
+	// Methods //
+	// ////////////////////////////////
+	public List<Notificacion> buscarLstPor(Integer iIdUsuario){
+		log.debug("-> [Service] NotificacionService - buscarLstPor():List<Notificacion> ");
+		
+		return dao.obtenerNotificacionesxUsuario(iIdUsuario);
+	}
+	
+	public Integer obtenerCantidadNotificacionesxUsuario(Integer iIdUsuario) {
+		log.debug("-> [Service] NotificacionService - obtenerCantidadNotificacionesxUsuario():Integer ");
+		
+		return dao.obtenerCantidadNotificacionesxUsuario(iIdUsuario); 
+	}
+
+//   public List<Notificacion> buscarLstPor(Integer iIdUsuario, Integer iTipoNotificacion) {
+//      return dao.buscarLstPor(iIdUsuario, iTipoNotificacion);
+//   }
+
+   public List<Notificacion> buscarLstPor(Integer iIdUsuario, Integer iTipoNotificacion, Character cLeido) {
+	   log.debug("-> [Service] NotificacionService - buscarLstPor():List<Notificacion> ");
+	   
+	   return dao.buscarLstPor(iIdUsuario, iTipoNotificacion, cLeido);
+   }
+
+   public List<Notificacion> buscarLastNotificacionesbyDocumento(Integer idDocumento, Integer tipoNotificacion) {
+	   log.debug("-> [Service] NotificacionService - buscarLastNotificacionesbyDocumento():List<Notificacion> ");
+	   
+	   return dao.buscarLastNotificacionesbyDocumento(idDocumento, tipoNotificacion);
+   }
+	
+	public Notificacion buscarObjPorID(Integer iIdNotificacion){
+		log.debug("-> [Service] NotificacionService - buscarObjPorID():Notificacion ");
+		
+		return dao.buscarObjPorID(iIdNotificacion);
+	}
+
+   public Notificacion findObjByIdDocumento(Integer iIdDocumento) {
+	   log.debug("-> [Service] NotificacionService - findObjByIdDocumento():Notificacion ");
+	   
+	   return dao.findObjByIdDocumento(iIdDocumento);
+   }
+
+	@Transactional
+	public Notificacion saveNotificacion(Notificacion objNotificacion){
+		log.debug("-> [Service] NotificacionService - saveNotificacion():Notificacion ");
+		
+		return dao.saveNotificacion(objNotificacion);
+	}
+
+	/**
+	 * Metodo que se encarga del envio de notificaciones por bandeja y correo
+	 * 
+	 * @author Germán Enríquez
+	 * 
+	 */
+	@Transactional
+	@Override
+	public boolean enviarNotificacion(Usuario remitente,Usuario receptor,Documento docOriginal,int tipo, String nombrePC,Boolean horarioPermitido,Documento  documentocopia){
+		log.debug("-> [Service] NotificacionService - enviarNotificacion():boolean ");
+		
+		Notificacion notificacion=new Notificacion();
+		notificacion.setIdusuario(receptor);
+		notificacion.setIddocumento(docOriginal);
+		//notificacion.setFechanotificacion(new Date());
+		Date fechaFueraHorario = new Date();	
+		if(horarioPermitido == false){			
+	        log.debug("Responder Documento:goDerivarApoyo  fuera de horario ");
+		    fechaFueraHorario = fechaLimite.fechaFueraHorarioHabil(fechaFueraHorario,receptor.getIdusuario().intValue());
+		    notificacion.setFechanotificacion(fechaFueraHorario);
+	     }else{
+	    	notificacion.setFechanotificacion(new Date());
+	     }
+		notificacion.setTiponotificacion(tipo);
+		notificacion.setEstado('A');
+		String asunto="";
+		String contenido="";
+		Accion accionCopia = accionService.findByNombre(Constantes.ACCION_COPIAR);
+		boolean aTraza = false;
+		
+		Trazabilidaddocumento trazabilidad=trazabilidaddocumentoDAO.findByMaxNroRegistro(docOriginal.getIdDocumento(),null, null);
+		asunto=docOriginal.getAsunto();
+		
+		// FIXME tal vez haya una forma mas elegante de hacer esto
+		if(tipo==Constantes.TIPO_NOTIFICACION_INFOADICIONAL){
+			//asunto="Aprobacion de Inicio de Procedimiento";
+			contenido=receptor.getNombres()+" "+receptor.getApellidos()+":<br /><br/>";
+			contenido+="Se le notifica que ";
+			contenido+=" <strong>"+remitente.getNombres()+" "+remitente.getApellidos();
+			contenido+="</strong>, solicita su aprobacion para el inicio del procedimiento: ";
+			contenido+="<strong>Requerimiento de Informacion</strong>";
+		}else if(tipo==Constantes.TIPO_NOTIFICACION_INSPECCIONCAMPO){
+			//asunto="Aprobacion de Inicio de Procedimiento";
+			contenido=receptor.getNombres()+" "+receptor.getApellidos()+":<br /><br/>";
+			contenido+="Se le notifica que ";
+			contenido+=" <strong>"+remitente.getNombres()+" "+remitente.getApellidos();
+			contenido+="</strong>, solicita su aprobacion para el inicio del procedimiento: ";
+			contenido+="<strong>Inspeccion de Campo</strong>";			
+		}else if(tipo==Constantes.TIPO_NOTIFICACION_AUDIENCIACONCILIACION){
+			//asunto="Aprobacion de Inicio de Procedimiento";
+			contenido=receptor.getNombres()+" "+receptor.getApellidos()+":<br /><br/>";
+			contenido+="Se le notifica que ";
+			contenido+=" <strong>"+remitente.getNombres()+" "+remitente.getApellidos();
+			contenido+="</strong>, solicita su aprobacion para el inicio del procedimiento: ";
+			contenido+="<strong>Audiencia de Conciliacion</strong>";			
+		}else if(tipo>=Constantes.TIPO_NOTIFICACION_RECHAZOTECNICO&&tipo<=Constantes.TIPO_NOTIFICACION_RECHAZO_CAMBIOSALA){
+			log.debug("Rechazo tecnico");
+			switch(tipo){
+			case 1004: {
+				asunto=Constantes.ASUNTO_RECHAZO_TECNICO.substring(4);
+				break;
+			}
+			case 1005: {
+				asunto=Constantes.ASUNTO_RECHAZO_LEGAL.substring(4);
+				break;
+			}
+			case 1006: {
+				asunto=Constantes.ASUNTO_RECHAZO_VB.substring(4);
+				break;
+			}
+			case 1007: {
+				asunto=Constantes.ASUNTO_RECHAZO_VB.substring(4);
+				break;
+			}
+			case 1008: {
+				asunto=Constantes.ASUNTO_RECHAZO_CAMBIO_SALA.substring(4);
+				break;
+			}
+			default: {
+				return false;
+			}
+			}
+			contenido=receptor.getNombres()+" "+receptor.getApellidos()+":<br /><br/>";
+			contenido+="Se le notifica que el usuario ";
+			contenido+=" <strong>"+remitente.getNombres()+" "+remitente.getApellidos();
+			contenido+="</strong>, realiz&oacute; un: <strong>"+asunto+"</strong> ";
+			contenido+="al "+docOriginal.getTipoDocumento().getNombre()+" Nro. "+docOriginal.getNumeroDocumento()+" .";			
+		}else if(tipo==Constantes.TIPO_NOTIFICACION_DUENO_EXPEDIENTE){
+			//asunto="Registro del Documento Nro. "+documento.getNumeroDocumento()+" en Mesa de Partes";
+			contenido=receptor.getNombres()+" "+receptor.getApellidos()+":<br /><br/>";
+			contenido+="Se le notifica que ";
+			contenido+=" <strong>"+remitente.getNombres()+" "+remitente.getApellidos();
+			contenido+="</strong>, ha registrado un nuevo documento con referencia al  ";
+			contenido+="Expediente Nro :  "+docOriginal.getExpediente().getNroexpediente()+"  - "+docOriginal.getExpediente().getAsunto()+" .";			
+		}else if(tipo==Constantes.TIPO_NOTIFICACION_NUEVO_DOCUMENTO){
+			//asunto="Registro de un Nuevo Documento por "+remitente.getNombres()+" "+remitente.getApellidos();
+			contenido=receptor.getNombres()+" "+receptor.getApellidos()+":<br /><br/>";
+			contenido+="Se le notifica que ";
+			contenido+=" <strong>"+remitente.getNombres()+" "+remitente.getApellidos();
+			contenido+="</strong>, ha registrado un nuevo documento con referencia al  ";
+			contenido+="Expediente Nro :  "+docOriginal.getExpediente().getNroexpediente()+"  - "+docOriginal.getExpediente().getAsunto()+" .";			
+		}else if(tipo==Constantes.TIPO_NOTIFICACION_DERIVACION || tipo==Constantes.TIPO_NOTIFICACION_DERIVACIONCONCOPIA){
+			//asunto="Derivaci&oacute;n del Documento Nro. "+documento.getNumeroDocumento();
+			contenido=docOriginal.getAcciones() != null ? docOriginal.getAcciones() : "" +"<br />";
+			contenido+=trazabilidad!=null&&StringUtils.isNotBlank(trazabilidad.getContenido())?trazabilidad.getContenido():" ";
+			aTraza = true;
+		}
+		else if(tipo==Constantes.TIPO_NOTIFICACION_APROBACION_QAS){
+			//asunto="Se aprobo el Documento Nro. "+documento.getNumeroDocumento()+" en Control de Calidad";
+			contenido="Se ha aprobado el documento "+docOriginal.getTipoDocumento().getNombre()+" - "+docOriginal.getNumeroDocumento()+" a "+docOriginal.getPropietario().getNombres()+" "+docOriginal.getPropietario().getApellidos();
+		}
+		else if(tipo==Constantes.TIPO_NOTIFICACION_RECHAZO){
+			//asunto="Rechazo del Documento Nro. "+documento.getNumeroDocumento();
+			contenido=trazabilidad!=null&&StringUtils.isNotBlank(trazabilidad.getContenido())?trazabilidad.getContenido():" ";
+		} else if (tipo == Constantes.TIPO_NOTIFICACION_AMARILLA) {
+         //asunto = "Primer Aviso Fecha Limite: Documento [" + documento.getTipoDocumento().getNombre() + "-" + documento.getNumeroDocumento() + "]";
+         contenido = "Le recordamos que el documento " + docOriginal.getTipoDocumento().getNombre() + "-" + docOriginal.getNumeroDocumento() + " esta proximo a pasar de la fecha limite [" + docOriginal.getFechaLimiteAtencion().toString() + "] para ser atendido";
+      } else if (tipo == Constantes.TIPO_NOTIFICACION_ROJA) {
+         //asunto = "Segundo Aviso Fecha Limite: Documento [" + documento.getTipoDocumento().getNombre() + "-" + documento.getNumeroDocumento() + "]";
+         contenido = "Le recordamos que el documento numero " + docOriginal.getTipoDocumento().getNombre() + "-" + docOriginal.getNumeroDocumento() + " esta proximo a pasar de la fecha limite [" + docOriginal.getFechaLimiteAtencion().toString() + "] para ser atendido";
+      }  else if(tipo== Constantes.TIPO_NOTIFICACION_REFERENCIA_DOCUMENTO) {
+    	 //asunto = "Documento referenciado Nro. " +documento.getNumeroDocumento();
+         //contenido = "Le recordamos que el documento numero " + documento.getTipoDocumento().getNombre() + "-" + documento.getNumeroDocumento() + " esta proximo a pasar de la fecha limite [" + documento.getFechaLimiteAtencion().toString() + "] para ser atendido";
+         contenido="Se le informa que el documento "+docOriginal.getTipoDocumento().getNombre()+" - "+docOriginal.getNumeroDocumento()+" se ha referenciado al Expediente Nro :  "+docOriginal.getExpediente().getNroexpediente()+" - "+docOriginal.getExpediente().getAsunto()+ " por el usuario "+remitente.getNombres()+" "+remitente.getApellidos(); 
+      } else if(Constantes.TIPO_NOTIFICACION_DOCUMENTO_ARCHIVADO.equals(tipo)){
+    	  //asunto = "Expediente Terminado: Expediente [" + documento.getExpediente().getNroexpediente() + "]";
+    	  contenido+="Se le notifica que el usuario <strong> ";
+    	  contenido+=remitente.getNombres()+" "+remitente.getApellidos();
+    	  contenido+="</strong>, ha archivado el Expediente Nro : <strong>";
+    	  contenido+= docOriginal.getExpediente().getNroexpediente()+"  - "+docOriginal.getExpediente().getAsunto()+"<strong> .<br /><br />";
+    	  contenido+="Observacion: "+docOriginal.getObservacion();
+      } else if(Constantes.TIPO_NOTIFICACION_DOCUMENTO_OEFA.equals(tipo)){
+    	  //asunto = "Expediente Enviado a OEFA: Expediente [" + documento.getExpediente().getNroexpediente() + "]";
+    	  contenido+="Se le notifica que el usuario <strong> ";
+    	  contenido+=remitente.getNombres()+" "+remitente.getApellidos();
+    	  contenido+="</strong>, ha enviado a OEFA el Expediente Nro : <strong>";
+    	  contenido+= docOriginal.getExpediente().getNroexpediente()+"  - "+docOriginal.getExpediente().getAsunto()+"<strong> .<br /><br />";
+    	  contenido+="Observacion: "+docOriginal.getObservacion();
+      } else if(Constantes.TIPO_NOTIFICACION_FIN_APOYO.equals(tipo)){
+    	  //asunto = "Apoyo Concluido: Expediente [" + documento.getExpediente().getNroexpediente() + "]";
+    	  contenido+="Se le notifica que el usuario <strong> ";
+    	  contenido+=remitente.getNombres()+" "+remitente.getApellidos();
+    	  contenido+="</strong>, ha concluido con el trabajo sobre el Expediente Nro : <strong>";
+    	  contenido+= docOriginal.getExpediente().getNroexpediente()+"  - "+docOriginal.getExpediente().getAsunto()+"<strong> .<br /><br />";
+    	  contenido+=docOriginal.getObservacion();
+    	  //notificacion.setIddocumento(documentoService.findByIdDocumento(documento.getDocumentoreferencia()));
+      }else{
+			// TODO crear el asunto y contenido para los demas tipos de notificacion
+			notificacion=null;
+			throw new UnsupportedOperationException();
+		}     
+		notificacion.setAsunto(asunto);
+		notificacion.setContenido(contenido);
+		notificacion.setLeido(Constantes.ESTADO_NO_LEIDO);
+		log.debug(notificacion.toString());
+		notificacion = dao.saveNotificacion(notificacion);
+		log.info("Notificacion enviada a "+receptor.getUsuario()+" con idNotificacion="+notificacion.getIdnotificacion());
+		if(aTraza){
+			trazabilidadcopiaService.guardarTrazabilidadcopia(trazabilidad, remitente, receptor, docOriginal, accionCopia, null, Constantes.TIPO_ORIGEN_TRAZADOCUMENTO, notificacion, nombrePC,horarioPermitido);
+		}
+		// Enviamos la notificacion por correo
+		//ManejoDeEmail.ChaskiMail(Constantes.MAIL_DERIVAR,remitente,receptor,documento);
+		// ManejoDeEmail.enviarMail(receptor.getCorreo(), remitente.getCorreo(),
+		// asunto, contenido);
+		
+		
+		/** wvcarrasco 15-11-2011 Crea una trazabiliapoyo, se realizar doble traza al responder documento
+		 */				
+				if(documentocopia!=null){				
+				
+				Accion accionApoyo = accionService.findByNombre(""+Constantes.ACCION_RESPONDER);
+				Trazabilidadapoyo tapoyo = new Trazabilidadapoyo();
+				tapoyo.setAccion(accionApoyo);
+				tapoyo.setDestinatario(receptor);
+				tapoyo.setRemitente(remitente);
+				tapoyo.setDocumento(documentocopia.getIdDocumento());
+				//tapoyo.setNombrePC(nombrePC);		
+				fechaFueraHorario = new Date();	
+				if(horarioPermitido == false){			
+			        log.debug("Responder Documento:goDerivarApoyo  fuera de horario ");
+				    fechaFueraHorario = fechaLimite.fechaFueraHorarioHabil(fechaFueraHorario,receptor.getIdusuario());
+				    tapoyo.setFechacreacion(fechaFueraHorario);
+			     }else{
+			        tapoyo.setFechacreacion(new Date());
+			     }				
+				
+				tapoyo.setTrazabilidad(trazabilidad);
+				tapoyo.setEstado(estadoService.findByCodigo(""+Constantes.ESTADO_CODIGO_RESPONDIDO));
+				tapoyo.setTexto(contenido);
+				tapoyo.setAsunto(asunto);
+				tapoyo.setNombrePC(nombrePC);
+				tapoyo.setFechalimiteatencion(tapoyo.getFechacreacion());
+				trazabilidadapoyoService.guardar(tapoyo);	
+			}
+		
+		return true;
+	}
+	
+
+	@Override
+	public void enviarNotificacion(Usuario remitente,Usuario receptor,Documento documento,Integer tipo,	Expediente expedienteNuevo) {
+		log.debug("-> [Service] NotificacionService - enviarNotificacion():void ");
+		
+		Notificacion notificacion=new Notificacion();
+		notificacion.setIdusuario(receptor);
+		notificacion.setIddocumento(documento);
+		notificacion.setFechanotificacion(new Date());
+		notificacion.setTiponotificacion(tipo);
+		notificacion.setEstado('A');
+		
+		String asunto = "Documento referenciado Nro. " +documento.getNumeroDocumento();        
+		String contenido="Se le informa que el documento "+documento.getTipoDocumento().getNombre()+" - "+documento.getNumeroDocumento()+" se ha referenciado al Expediente Nro :  "+documento.getExpediente().getNroexpediente()+" - "+documento.getExpediente().getAsunto()+ " por el usuario "+remitente.getNombres()+" "+remitente.getApellidos(); 
+
+		notificacion.setAsunto(asunto);
+		notificacion.setContenido(contenido);
+		notificacion.setLeido(Constantes.ESTADO_NO_LEIDO);
+		log.debug(notificacion.toString());
+		dao.saveNotificacion(notificacion);
+		log.info("Notificacion enviada a "+receptor.getUsuario()+" con idNotificacion="+notificacion.getIdnotificacion());
+		// Enviamos la notificacion por correo
+		//ManejoDeEmail.ChaskiMail(Constantes.MAIL_DERIVAR,remitente,receptor,documento);
+		// ManejoDeEmail.enviarMail(receptor.getCorreo(), remitente.getCorreo(),
+		// asunto, contenido);
+		
+	}
+   @Transactional
+   public Notificacion clonarNotificacion(Usuario remitente,Usuario receptor,Documento documento,int tipo,String asunto,String contenido, Integer idNotificacionPadre, String nombrePC, Boolean horarioPermitido) {
+	   log.debug("-> [Service] NotificacionService - clonarNotificacion():Notificacion ");
+	   
+	   Accion accionCopia = accionService.findByNombre(Constantes.ACCION_COPIAR);
+	   Notificacion notificacion=new Notificacion();
+	   notificacion.setIdusuario(receptor);
+	   notificacion.setIddocumento(documento);
+	   Date fechaFueraHorario = new Date();	
+		if(horarioPermitido == false){			
+	        log.debug("Notificar Documento:goNotificarUser()  fuera de horario ");
+	        log.debug("receptor.getIdusuario().intValue()"+receptor.getIdusuario().intValue());
+		    fechaFueraHorario = fechaLimite.fechaFueraHorarioHabil(fechaFueraHorario,receptor.getIdusuario().intValue());
+		    notificacion.setFechanotificacion(fechaFueraHorario);
+	     }else{
+	    	 notificacion.setFechanotificacion(new Date());
+	     }
+	   //notificacion.setFechanotificacion(new Date());
+	   notificacion.setTiponotificacion(tipo);
+	   notificacion.setEstado('A');
+	   notificacion.setAsunto(asunto);
+	   notificacion.setContenido(contenido);
+	   notificacion.setLeido(Constantes.ESTADO_NO_LEIDO);
+	   log.debug(notificacion.toString());
+	   notificacion = dao.saveNotificacion(notificacion);
+	   log.info("Notificacion enviada a "+receptor.getUsuario()+" con idNotificacion="+notificacion.getIdnotificacion());
+	   // Enviamos la notificacion por correo
+	   //ManejoDeEmail.ChaskiMail(Constantes.MAIL_DERIVAR,remitente,receptor,documento);
+	   int iEvento = Constantes.CONFIGNOTIFMAIL_ENUMERACION_COPIA;
+	   Usuario propietario = documento.getPropietario();
+	   documento.setPropietario(receptor);
+	   informarViaNotifAndMail(remitente, documento, iEvento, Constantes.TIPO_NOTIFICACION_NUMERACION_DOCUMENTOCONCOPIA, nombrePC);
+	   documento.setPropietario(propietario);
+		if(tipo==Constantes.TIPO_NOTIFICACION_DERIVACION || tipo==Constantes.TIPO_NOTIFICACION_DERIVACIONCONCOPIA){
+			try{
+				if(idNotificacionPadre != null){
+					Trazabilidadcopia trazacopia = trazabilidadcopiaService.buscarPorNotificacion(idNotificacionPadre);
+					//wcarrasco 20-10-2010 falta revisar  al clonarNotificacion() La Fecha dia siguiente
+					log.debug("if Fuera de horario clonarNotificacion() false = "+horarioPermitido+ "guardarTrazabilidadcopia");
+					trazabilidadcopiaService.guardarTrazabilidadcopia(trazacopia.getIdorigen(), remitente, receptor, documento, accionCopia, null, Constantes.TIPO_ORIGEN_TRAZACOPIA, notificacion, nombrePC,horarioPermitido);
+				}else{
+					Trazabilidaddocumento origen = trazabilidaddocumentoDAO.encontrarUltimaTrazabilidadPorDocumento(documento.getIdDocumento());
+					trazabilidadcopiaService.guardarTrazabilidadcopia(origen, remitente, receptor, documento, accionCopia, null, Constantes.TIPO_ORIGEN_TRAZADOCUMENTO, notificacion, nombrePC,horarioPermitido);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				log.debug("No se ha podido guardar la traza de la copia",e.fillInStackTrace());
+			}
+		}
+		
+		//wcarrasco 27-10-2011 Cuando se realiza una notificacion desde Informativos recibidos se registra en documentoenvio
+		Documentoenviado documentoenviado = new Documentoenviado();
+	    documentoenviado.setIdTrazabilidadEnvio(notificacion.getIdnotificacion());
+		documentoenviado.setUsuario(remitente);
+		documentoenviado.setEstado("" + Constantes.ESTADO_ACTIVO);
+		documentoenviado.setTipoEnvio(""+ Constantes.TIPO_ENVIO_NOTIFICAR);
+		documentoEnviadoDao.saveDocumento(documentoenviado);
+		return notificacion;
+   }
+
+	@Transactional
+	public void enviarNotificacionSAS(Usuario remitente,Usuario destinatario,Documento documento,String observacion,Etapa etapaRemiten){
+		log.debug("-> [Service] NotificacionService - enviarNotificacionSAS():void ");
+		
+		Notificacion notificacion=new Notificacion();
+		notificacion.setIdusuario(destinatario);
+		notificacion.setIddocumento(documento);
+		notificacion.setFechanotificacion(new Date());
+		notificacion.setEstado('A');
+		String asunto="";
+		String contenido="";
+		int tipo=0;
+		if(documento.getAccion().getNombre().equals(Constantes.ACCION_APROBAR)||documento.getAccion().getNombre().equals(Constantes.ACCION_REGISTRAR)){
+			asunto=(documento.getAccion().getNombre().equals(Constantes.ACCION_REGISTRAR)==true ? "Registro" : "Aprobacion")+" del "+documento.getExpediente().getNroexpediente()+" por "+"Usuario: "+remitente.getNombres()+" - "+documento.getExpediente().getProceso().getNombre();
+			tipo=(documento.getAccion().getNombre().equals(Constantes.ACCION_REGISTRAR)==true ? Constantes.TIPO_NOTIFICACION_Resgistrado : Constantes.TIPO_NOTIFICACION_Aprobado);
+			contenido=destinatario.getNombres()+" :<br/><br/>";
+			contenido+="Se le notifica que el usuario ";
+			contenido+=" <strong>"+remitente.getNombres();
+			contenido+="</strong>, Aprobo el "+documento.getTipoDocumento().getNombre()+":"+documento.getNumeroDocumento()+" que pertenece al "+documento.getExpediente().getNroexpediente();
+			contenido+=" y tambien al proceso:<strong>"+documento.getExpediente().getProceso().getNombre()+"</strong>";
+			contenido+=" ,fue aprobada en la etapa:<strong>"+etapaRemiten.getDescripcion()+"</strong> y le comunicamos que encuentra pendiente su revision";
+		}else{
+			asunto="Rechazo del "+documento.getExpediente().getNroexpediente()+" por Usuario: "+remitente.getNombres()+" - "+documento.getExpediente().getProceso().getNombre();
+			tipo=Constantes.TIPO_NOTIFICACION_Desaprobado;
+			contenido=destinatario.getNombres()+" "+destinatario.getApellidos()+":<br/><br/>";
+			contenido+="Se le notifica que el usuario ";
+			contenido+=" <strong>"+remitente.getNombres();
+			contenido+="</strong>, Rechazo el "+documento.getTipoDocumento().getNombre()+":"+documento.getNumeroDocumento()+" que pertenece al "+documento.getExpediente().getNroexpediente();
+			contenido+=",que pertenece al proceso:<strong>"+documento.getExpediente().getProceso().getNombre()+"</strong>";
+			contenido+=",fue rechazada en la etapa:<strong>"+etapaRemiten.getDescripcion()+"</strong>.<br/><br/>";
+			contenido+="Observacion:"+observacion;
+		}
+		notificacion.setTiponotificacion(tipo);
+		notificacion.setLeido(Constantes.ESTADO_NO_LEIDO);
+		notificacion.setAsunto(asunto);
+		notificacion.setContenido(contenido);
+		dao.saveNotificacion(notificacion);
+		// Enviamos la notificacion por correo
+		// ManejoDeEmail.enviarMail(receptor.getCorreo(), remitente.getCorreo(),
+		// asunto, contenido);
+	}
+
+	@Override
+	public int getNroNotificacionesNL(Usuario usuario){
+		log.debug("-> [Service] NotificacionService - getNroNotificacionesNL():int ");
+		
+		return dao.nroNotificacionesNoLeidas(usuario);
+	}
+
+	@Transactional
+	public void updateTipoNotificacion(Integer idDocumento, Integer idUsuario, Integer tipoNotificacion) {
+		log.debug("-> [Service] NotificacionService - updateTipoNotificacion():void ");
+		
+		if(idUsuario==null||tipoNotificacion==null || idDocumento==null){
+			log.error("Argumentos nulos. No se hara ninguna actualizacion");
+			return;
+		}
+		List<Notificacion> listNotificaciones = this.findLastNotificacionbyUsuario(idDocumento, idUsuario);
+		if(listNotificaciones!=null && listNotificaciones.size()>0){
+			Notificacion objNotificacion = listNotificaciones.get(0);		
+			objNotificacion.setTiponotificacion(tipoNotificacion);
+			objNotificacion=this.saveNotificacion(objNotificacion);
+			log.debug("Tipo de la notificacion con ID ["+objNotificacion.getIdnotificacion()+"] actualizada a ["+objNotificacion.getTiponotificacion()+"]");			
+		}		
+	}
+	
+	@Transactional
+	public List<Notificacion> findLastNotificacionbyUsuario(Integer idDocumento,Integer idUsuario) {
+		log.debug("-> [Service] NotificacionService - findLastNotificacionbyUsuario():List<Notificacion> ");
+		
+		return dao.findLastNotificacionbyUsuario(idDocumento,idUsuario);
+	}
+	
+	@Transactional
+	public void updateEstadoNotificacion(Integer iIdNotificacion,Character cEstado){
+		log.debug("-> [Service] NotificacionService - updateEstadoNotificacion():void ");
+		
+		if(iIdNotificacion==null||cEstado==null){
+			log.error("Argumentos nulos. No se hara ninguna actualizacion");
+			return;
+		}
+		Notificacion objNotificacion=this.buscarObjPorID(iIdNotificacion);
+		objNotificacion.setEstado(cEstado);
+		objNotificacion=this.saveNotificacion(objNotificacion);
+		log.debug("Estado de la notificacion con ID ["+objNotificacion.getIdnotificacion()+"] actualizada a ["+objNotificacion.getEstado()+"]");
+	}
+	@Transactional
+	public void eliminarDocumentosEnviados(String[] ids){
+		log.debug("-> [Service] NotificacionService - eliminarDocumentosEnviados():void ");
+		
+		for(int i =0 ; i<ids.length ; i++ ){
+			log.debug(" id"+i+":"+ids[i]) ; 
+			Notificacion doc = getDao().buscarObjPorID(new Integer(ids[i]));
+			doc.setEstado(Constantes.ESTADO_INACTIVO) ;
+
+			this.saveNotificacion(doc);
+			
+		}    
+
+	}
+	public Integer getNotificacionesNoLeidas(Integer iIdUsuario) {
+		log.debug("-> [Service] NotificacionService - getNotificacionesNoLeidas():Integer ");
+		
+		return dao.getNotificacionesNoLeidas(iIdUsuario);
+	}
+
+	@Transactional
+	public Notificacion updateLeido(Integer iIdNotificacion) {
+		log.debug("-> [Service] NotificacionService - updateLeido():Notificacion ");
+		
+		Notificacion objNotificacionToUpdate = this.buscarObjPorID(iIdNotificacion);
+
+		objNotificacionToUpdate.setLeido('S');
+
+		objNotificacionToUpdate = this.saveNotificacion(objNotificacionToUpdate);
+
+		return objNotificacionToUpdate;
+	}
+
+   @Override
+   @Transactional
+   public Set informarViaNotifAndMail(Usuario remitente, Documento documento, int iTipoEvento, int iTipoNotificacion, String nombrePC) {
+	   log.debug("-> [Service] NotificacionService - informarViaNotifAndMail():Set ");
+
+	   if (documento == null) {
+		   log.error("Se recibio documento NULL, no se enviara nada");
+		   return null;
+	   }
+
+	   try {
+		   int iBegin = 1;
+		   int iConfig_Notif_Mail = documento.getExpediente().getProceso().getConfig_notif_mail().intValue();
+		   int iEnd = 0;
+		   int iMask = 1;
+		   List<Usuario> lstUsersToBeInformed = new ArrayList<Usuario>();
+		   Set usersInformed = new HashSet();
+		   Set usersMailed = new HashSet();
+		   String evento = null;
+		   Usuario destinatario = null;
+
+		   switch (iTipoEvento) {
+		   case Constantes.CONFIGNOTIFMAIL_INGRESO_DOCUMENTO_QAS:
+		   case Constantes.CONFIGNOTIFMAIL_INGRESO_DOCUMENTO_USERFINAL:
+		   case Constantes.CONFIGNOTIFMAIL_DOCUMENTO_REENVIAR:
+		   case Constantes.CONFIGNOTIFMAIL_DOCUMENTO_PORAPROBAR:
+		   case Constantes.CONFIGNOTIFMAIL_DOCUMENTO_APROBAR:
+			   destinatario = documento.getPropietario();
+
+			   if (usersMailed.add(destinatario)) {
+				   log.info("Enviando correo al usuario {}", destinatario.getUsuario());
+				   mailService.ChaskiMail(iTipoEvento, remitente, destinatario, documento);
+			   } else {
+				   log.debug("Ya se envio un correo al usuario {} previamente, no se enviara nuevo correo", destinatario.getUsuario());
+			   }
+
+			   break;
+		   case Constantes.CONFIGNOTIFMAIL_DOCUMENTO_RECHAZAR:
+			   destinatario = documento.getPropietario();
+
+			   if (usersMailed.add(destinatario)) {
+				   log.info("Enviando correo al usuario {}", destinatario.getUsuario());
+				   mailService.ChaskiMail(iTipoEvento, remitente, destinatario, documento);
+			   } else {
+				   log.debug("Ya se envio un correo al usuario {} previamente, no se enviara nuevo correo", destinatario.getUsuario());
+			   }
+
+			   break;
+		   case Constantes.CONFIGNOTIFMAIL_ENUMERACION_COPIA:
+			   destinatario = documento.getPropietario();
+
+			   if (usersMailed.add(destinatario)) {
+				   log.info("Enviando correo al usuario {}", destinatario.getUsuario());
+				   mailService.ChaskiMail(iTipoEvento, remitente, destinatario, documento);
+			   } else {
+				   log.debug("Ya se envio un correo al usuario {} previamente, no se enviara nuevo correo", destinatario.getUsuario());
+			   }
+
+			   break;
+		   case Constantes.CONFIGNOTIFMAIL_DOCUMENTO_ARCHIVADO:
+			   if (documento.getUsuariosDestinatarios() != null) {
+				   for (Usuario objDestinatario : documento.getUsuariosDestinatarios()) {
+					   if ((documento.getPropietario() != null /*&& objDestinatario.getIdusuario() != documento.getPropietario().getIdusuario()*/) || documento.getPropietario() == null) {
+						   if (usersInformed.add(objDestinatario)) {
+							   log.info("Enviando informativo/correo al usuario {}", objDestinatario.getUsuario());
+							 //wcarrasco 19-10-2010 falta revisar  al informarViaNotifAndMail La Fecha Notificacion
+							   this.enviarNotificacion(remitente, objDestinatario, documento, iTipoNotificacion, nombrePC,true, null);
+							   mailService.ChaskiMail(iTipoEvento, remitente, objDestinatario, documento);
+						   } else {
+							   log.debug("Ya se envio un informativo/correo al usuario {} previamente, no se enviara nada", objDestinatario.getUsuario());
+						   }
+					   }
+				   }
+			   }
+			   break;
+		   case Constantes.CONFIGNOTIFMAIL_DOCUMENTO_OEFA:
+			   if (documento.getUsuariosDestinatarios() != null) {
+				   for (Usuario objDestinatario : documento.getUsuariosDestinatarios()) {
+					   if (usersInformed.add(objDestinatario)) {
+						   log.info("Enviando informativo/correo al usuario {}", objDestinatario.getUsuario());
+						 //wcarrasco 19-10-2010 falta revisar  al informarViaNotifAndMail La Fecha Notificacion
+						   this.enviarNotificacion(remitente, objDestinatario, documento, iTipoNotificacion, nombrePC,true,null);
+						   mailService.ChaskiMail(iTipoEvento, remitente, objDestinatario, documento);
+					   } else {
+						   log.debug("Ya se envio un informativo/correo al usuario {} previamente, no se enviara nada", objDestinatario.getUsuario());
+					   }
+				   }
+			   }
+			   break;
+		   case Constantes.CONFIGNOTIFMAIL_CREACION_EXPEDIENTE:
+			   iBegin = Constantes.CONFIGNOTIFMAIL_CREACION_EXPEDIENTE_BEGIN;
+			   iEnd = Constantes.CONFIGNOTIFMAIL_CREACION_EXPEDIENTE_END;
+			   evento = "Creacion de Expediente";
+			   break;
+		   case Constantes.CONFIGNOTIFMAIL_ALARMA_AMARILLA:
+			   iBegin = Constantes.CONFIGNOTIFMAIL_ALARMA_AMARILLA_BEGIN;
+			   iEnd = Constantes.CONFIGNOTIFMAIL_ALARMA_AMARILLA_END;
+			   evento = "Alarma Amarilla";
+			   break;
+		   case Constantes.CONFIGNOTIFMAIL_ALARMA_ROJA:
+			   iBegin = Constantes.CONFIGNOTIFMAIL_ALARMA_ROJA_BEGIN;
+			   iEnd = Constantes.CONFIGNOTIFMAIL_ALARMA_ROJA_END;
+			   evento = "Alarma Roja";
+			   break;
+		   }
+
+		   if (iBegin > iEnd) {
+			   log.warn("Error al configurar los indices inicio y fin, no se enviara nada");
+			   return usersMailed;
+		   }
+
+		   log.debug("Configuracion de envio de Correo {} evento {} indice inicio {} indice final {}", new Object[]{iConfig_Notif_Mail, evento, iBegin, iEnd});
+
+		   if (Constantes.CONFIGNOTIFMAIL_CREACION_EXPEDIENTE == iTipoEvento) {
+			   lstUsersToBeInformed = documento.getExpediente().getProceso().getNotificadoList();
+
+			   if (lstUsersToBeInformed != null && lstUsersToBeInformed.size() > 0) {
+				   for (Usuario informed : lstUsersToBeInformed) {
+					   if (usersMailed.add(informed)) {
+						   log.info("Enviando correo al usuario {}", informed.getUsuario());
+						   mailService.ChaskiMail(iTipoEvento, remitente, informed, documento);
+					   } else {
+						   log.debug("Ya se envio un correo al usuario {} previamente, no se enviara nuevo correo", informed.getUsuario());
+					   }
+
+					   if (!usersInformed.add(informed)) {
+						   log.debug("El usuario {} ya ha sido informado previamente, no se enviara nuevo informativo", informed.getUsuario());
+						   continue;
+					   }
+
+					   log.info("Enviando informativo al usuario {}", informed.getUsuario());
+					 //wcarrasco 19-10-2010 falta revisar  al informarViaNotifAndMail La Fecha Notificacion
+					   this.enviarNotificacion(remitente, informed, documento, iTipoNotificacion, nombrePC,true,null);
+				   }
+			   }
+		   }
+
+		   iMask <<= iBegin;
+		   Constantes.ConfigNotifMailDestinatario arrDestinatario[] = Constantes.ConfigNotifMailDestinatario.values();
+
+		   for (int i = iBegin; i <= iEnd; i++, iMask <<= 1) {
+			   Usuario sendToA = null;
+			   Usuario sendToB = null;
+
+			   log.debug("Validando indice {}", i);
+
+			   if ((iConfig_Notif_Mail & iMask) > 0) {
+				   switch (arrDestinatario[i]) {
+				   case CreacionExpediente:
+					   sendToA = documento.getExpediente().getProceso().getResponsable();
+					   //sendToB = (documento.getPrincipal() == Constantes.DOCUMENTO_NO_PRINCIPAL) ? documento.getPropietario() : null;
+					   sendToB = documento.getPropietario();
+					   break;
+				   case AlarmaAmarillaRemitente:
+				   case AlarmaRojaRemitente:
+					   sendToA = srvTrazDoc.findByMaxNroRegistro(documento.getIdDocumento(), null, null, null).getRemitente();
+					   break;
+				   case AlarmaAmarillaDestinatario:
+				   case AlarmaRojaDestinatario:
+					   sendToA = documentoService.findDocumentoPrincipal(documento.getExpediente().getIdexpediente()).getPropietario();
+					   break;
+				   }
+			   }
+
+			   if (sendToA != null) {
+				   if (usersMailed.add(sendToA)) {
+					   log.info("Enviando correo al usuario {}", sendToA.getUsuario());
+					   mailService.ChaskiMail(iMask, remitente, sendToA, documento);
+				   } else {
+					   log.debug("Ya se envio un correo al usuario {} previamente, no se enviara nuevo correo", sendToA.getUsuario());
+				   }
+			   }
+
+			   if (sendToB != null) {
+				   if (usersMailed.add(sendToB)) {
+					   log.info("Enviando correo al usuario {}", sendToB.getUsuario());
+					   mailService.ChaskiMail(iMask, remitente, sendToB, documento);
+				   } else {
+					   log.debug("Ya se envio un correo al usuario {} previamente, no se enviara nuevo correo", sendToB.getUsuario());
+				   }
+			   }
+		   }
+
+		   return usersMailed;
+	   } catch (Exception e) {
+		   log.error(e.getMessage(), e);
+
+		   return null;
+	   }
+   }
+
+   // ////////////////////////////////
+	// Getters and Setters //
+	// ////////////////////////////////
+	public NotificacionDAO getDao(){
+		return dao;
+	}
+
+	public void setDao(NotificacionDAO dao){
+		this.dao=dao;
+	}
+
+   public TrazabilidaddocumentoService getSrvTrazDoc() {
+      return srvTrazDoc;
+   }
+
+   public void setSrvTrazDoc(TrazabilidaddocumentoService srvTrazDoc) {
+      this.srvTrazDoc = srvTrazDoc;
+   }
+
+	public TrazabilidaddocumentoDAO getTrazabilidaddocumentoDAO() {
+		return trazabilidaddocumentoDAO;
+	}
+
+	public void setTrazabilidaddocumentoDAO(
+			TrazabilidaddocumentoDAO trazabilidaddocumentoDAO) {
+		this.trazabilidaddocumentoDAO = trazabilidaddocumentoDAO;
+	}
+
+   public DocumentoService getDocumentoService() {
+      return documentoService;
+   }
+
+   public void setDocumentoService(DocumentoService documentoService) {
+      this.documentoService = documentoService;
+   }
+
+   public TrazabilidadcopiaService getTrazabilidadcopiaService() {
+	   return trazabilidadcopiaService;
+   }
+
+   public void setTrazabilidadcopiaService(
+		   TrazabilidadcopiaService trazabilidadcopiaService) {
+	   this.trazabilidadcopiaService = trazabilidadcopiaService;
+   }
+
+   public AccionService getAccionService() {
+	   return accionService;
+   }
+
+   public void setAccionService(AccionService accionService) {
+	   this.accionService = accionService;
+   }
+
+    /**
+     * @return the mailService
+     */
+    public ManejoDeEmailService getMailService() {
+        return mailService;
+    }
+
+    /**
+     * @param mailService the mailService to set
+     */
+    public void setMailService(ManejoDeEmailService mailService) {
+        this.mailService = mailService;
+    }
+
+	public FechaLimite getFechaLimite() {
+		return fechaLimite;
+	}
+
+	public void setFechaLimite(FechaLimite fechaLimite) {
+		this.fechaLimite = fechaLimite;
+	}
+
+	public DocumentoEnviadoDAO getDocumentoEnviadoDao() {
+		return documentoEnviadoDao;
+	}
+
+	public void setDocumentoEnviadoDao(DocumentoEnviadoDAO documentoEnviadoDao) {
+		this.documentoEnviadoDao = documentoEnviadoDao;
+	}
+
+	public TrazabilidadapoyoService getTrazabilidadapoyoService() {
+		return trazabilidadapoyoService;
+	}
+
+	public void setTrazabilidadapoyoService(
+			TrazabilidadapoyoService trazabilidadapoyoService) {
+		this.trazabilidadapoyoService = trazabilidadapoyoService;
+	}
+
+	public EstadoService getEstadoService() {
+		return estadoService;
+	}
+
+	public void setEstadoService(EstadoService estadoService) {
+		this.estadoService = estadoService;
+	}
+
+}

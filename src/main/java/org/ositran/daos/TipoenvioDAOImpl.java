@@ -1,0 +1,54 @@
+/*LICENCIA DE USO DEL SGD .TXT*/package org.ositran.daos;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+
+import com.btg.ositran.siged.domain.Tipoenvio;
+
+@Repository
+public class TipoenvioDAOImpl implements TipoenvioDAO {
+
+	private EntityManager em;
+
+	public Tipoenvio findbyNombre(String nombre) {
+
+		Tipoenvio data = (Tipoenvio) getEm()
+									.createNamedQuery("Tipoenvio.findByTipoenvio2")
+									.setParameter("tipoenvio2", nombre)
+									.getSingleResult();
+		return data;
+
+	}
+	
+	public List<Tipoenvio> findAll() {
+		List<Tipoenvio> est=getEm().createNamedQuery("Tipoenvio.findAll")
+							 .getResultList();
+		return est;
+	}
+	
+	public Tipoenvio findbyId(int Id){
+		Tipoenvio est = (Tipoenvio)getEm().createNamedQuery("Tipoenvio.findByIdtipoenvio")
+		.setParameter("idtipoenvio", Id)
+		.getSingleResult();
+		return est;
+	}
+	
+	
+	 //////////////////////
+	// Getter and Setter//
+   //////////////////////
+	
+	
+	private EntityManager getEm() {
+		return em;
+	}
+
+	@PersistenceContext(unitName="sigedPU")
+	private void setEm(EntityManager em) {
+		this.em = em;
+	}
+
+}

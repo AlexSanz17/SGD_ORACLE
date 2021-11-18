@@ -1,0 +1,605 @@
+ package org.osinerg.services;
+
+import com.antartec.alfresco.AlfrescoConnector;
+import com.antartec.alfresco.AlfrescoConnector.RETURN_CODE;
+import com.antartec.alfresco.AlfrescoNode;
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Unidad;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+import gob.osinergmin.siged.config.SigedProperties;
+import gob.osinergmin.siged.service.SeguridadService;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.alfresco.webservice.util.Constants;
+import org.apache.log4j.Logger;
+import org.osinerg.siged.service.AlfrescoWSService;
+import org.osinerg.daos.ArchivoDAO;
+import org.osinerg.daos.DocumentoDAO;
+import org.osinerg.daos.ExpedienteDAO;
+import org.osinerg.repositorio.EnlaceDocumento;
+import org.osinerg.repositorio.RepositorioUtils;
+import org.osinerg.utils.Constantes;
+import org.springframework.transaction.annotation.Transactional;
+
+public class RepositorioServiceWebservice implements RepositorioService{
+	
+	protected Logger log=Logger.getLogger(RepositorioServiceWebservice.class);
+	private ExpedienteDAO expedienteDAO=null;
+	private DocumentoDAO documentoDAO=null;
+	private ArchivoDAO archivoDAO=null;
+	private ArchivoService archivoService;
+	//private static final String RUTA_PADRE_EXPEDIENTE="Expedientes APN";
+	private static final String RUTA_PADRE_EXPEDIENTE=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.ALFRESCO_SPACE);
+	//private static final String COMPLETE_PATH_PADRE_EXPEDIENTE="/Company Home/" + RUTA_PADRE_EXPEDIENTE + "/";
+	private static final String COMPLETE_PATH_PADRE_EXPEDIENTE=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.ALFRESCO_ROOT) + RUTA_PADRE_EXPEDIENTE + "/";
+   	private AlfrescoConnector alfrescoConnector;
+   	private AlfrescoWSService alfrescoWebServiceClient;
+   	private SeguridadService seguridadService;
+
+        public RepositorioServiceWebservice(){
+            StringBuilder sb=new StringBuilder();
+            String alfrescoHost=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.ALFRESCO_HOST);
+            String alfrescoPort=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.ALFRESCO_PORT);
+            sb.append("http://");
+            sb.append(alfrescoHost);
+            sb.append(":");
+            sb.append(alfrescoPort);
+            sb.append("/alfresco");
+            alfrescoConnector = AlfrescoConnector.getInstance();
+            alfrescoConnector.setExternalServerURL(sb.toString());
+            alfrescoConnector.setServerHost(alfrescoHost);
+            alfrescoConnector.setServerPort(alfrescoPort);
+            alfrescoConnector.setServerURL(sb.toString());
+        }
+
+	public List<EnlaceDocumento> listarDocumentos(Integer idexpediente){
+		return listarDocumentos(getExpedienteDAO().findByIdExpediente(idexpediente));
+	}
+
+	public List<EnlaceDocumento> listarDocumentos(Expediente objExpediente){
+		return alfrescoWebServiceClient.listarDocumentos(obtenerRutaExpediente(objExpediente));
+	}
+
+   public boolean crearEstructuraExpediente(String sUsuario, String sPassword, Integer iIdExpediente) {
+      Expediente objExpediente = null;
+      Map<String, String> propiedades = null;
+
+      try {
+         objExpediente = expedienteDAO.findByIdExpediente(iIdExpediente);
+         propiedades = this.obtenerMetadata(objExpediente);
+
+         String sYear = new SimpleDateFormat("yyyy").format(objExpediente.getFechacreacion());
+         String sMonth = new SimpleDateFormat("MM").format(objExpediente.getFechacreacion());
+         String sDay = new SimpleDateFormat("dd").format(objExpediente.getFechacreacion());
+         StringBuilder sbRutaYear = new StringBuilder(COMPLETE_PATH_PADRE_EXPEDIENTE).append(sYear).append(Constantes.GENERAL_SLASH);
+         StringBuilder sbRutaMonth = new StringBuilder(sbRutaYear.toString()).append(sMonth).append(Constantes.GENERAL_SLASH);
+         StringBuilder sbRutaDay = new StringBuilder(sbRutaMonth.toString()).append(sDay).append(Constantes.GENERAL_SLASH);
+
+         if (!this.crearFolder(sUsuario, sPassword, COMPLETE_PATH_PADRE_EXPEDIENTE, sYear)) {
+            log.error("Ruta [" + sbRutaYear.toString() + "] NO ha sido creado en Alfresco");
+
+            return false;
+         }
+
+         if (!this.crearFolder(sUsuario, sPassword, sbRutaYear.toString(), sMonth)) {
+            log.error("Ruta [" + sbRutaMonth.toString() + "] NO ha sido creado en Alfresco");
+
+            return false;
+         }
+
+         if (!this.crearFolder(sUsuario, sPassword, sbRutaMonth.toString(), sDay)) {
+            log.error("Ruta [" + sbRutaDay.toString() + "] NO ha sido creado en Alfresco");
+
+            return false;
+         }
+
+         if (log.isDebugEnabled()) {
+            log.debug("usuario [" + sUsuario + "]");
+            log.debug("rutaDay [" + sbRutaDay.toString() + "]");
+            log.debug("idExpediente [" + objExpediente.getIdexpediente() + "] nroExpediente [" + objExpediente.getNroexpediente() + "]");
+            log.debug("typeExpediente [" + AlfrescoWSService.TYPE_EXPEDIENTE + "]");
+            log.debug("propiedades [" + propiedades + "]");
+            log.debug("cliente [" + objExpediente.getCliente().getIdCliente() + "]");
+         }
+
+         //Reference r=RepositorioUtils.crearNodo(RUTA_PADRE_EXPEDIENTE,exp.getNroexpediente(),RepositorioUtils.TYPE_EXPEDIENTE,propiedades);
+         AlfrescoNode node = alfrescoConnector.createCustomNode(sUsuario, seguridadService.desencriptar(sUsuario, sPassword), sbRutaDay.toString(), objExpediente.getNroexpediente(), AlfrescoWSService.TYPE_EXPEDIENTE, propiedades);
+
+         if (log.isDebugEnabled()) {
+            log.debug("alfrescoConnector.createCustomNode [" + objExpediente.getNroexpediente() + "]");
+         }
+
+         return node != null;
+      } catch (Exception e) {
+         log.error(e.getMessage(), e);
+
+         return false;
+      }
+   }
+
+   public boolean eliminarEstructuraExpediente(Expediente objExpediente) {
+   /*   boolean res = false;
+
+      try {
+         res = alfrescoWebServiceClient.eliminarNodo(this.obtenerRutaExpediente(objExpediente));
+      } catch (Exception e) {
+         //log.debug("error eliminarEstructuraExpediente ");
+         log.error(e.getMessage(), e);
+         res = false;
+      }
+      return res;*/
+	   return true;
+   }
+
+   @Override
+	@Transactional
+	public int subirArchivosTransformadosARepositorio(Integer iddocumento,boolean versionar) throws RuntimeException{
+		Documento doc=getDocumentoDAO().findByIdDocumento(iddocumento);
+                Date inicio = null;
+                Date fin = null;
+		// List<Archivo> listaArchivos=doc.getArchivoList();
+		Map<String,List<Archivo>> archivos=archivoService.findByIdDocumento(iddocumento);
+		if(archivos!=null){
+			List<Archivo> listaArchivos=archivos.get("upload1");
+			int narchivos=0;
+			for(Archivo arc : listaArchivos){
+				// Comprobar que ningun archivo esté "no disponible".
+				if(arc.getEstadoDigitalizacion()==Archivo.ESTADO_REGISTRADO){
+					throw new IllegalArgumentException("Este documento aún tiene archivos que no están disponibles");
+				}
+			}
+			Map<String,String> propiedades=obtenerMetadata(doc);
+			for(Archivo arc : listaArchivos){
+				//if(arc.getEstadoDigitalizacion()==Archivo.ESTADO_DISPONIBLE){
+					/*String rutaArchivo=arc.getNombre();
+					// eliminamos la extension y le ponemos .pdf;
+					int indofpt=-1;
+					if((indofpt=rutaArchivo.indexOf('.'))!=-1){
+						rutaArchivo=rutaArchivo.substring(0,indofpt);
+					}
+					rutaArchivo+=".pdf";
+					rutaArchivo=ValoresProperties.getProperty(ValoresProperties.DIRECTORIO_SALIENTE)+File.separator+arc.getNombre();
+					log.debug("rutaArchivo ["+rutaArchivo+"]");*/
+					File f=new File(arc.getRutaArchivoPdf());
+					if(log.isDebugEnabled()){
+						log.debug("Datos del archivo a subir");
+						log.debug("Ruta ["+f.getParent()+"] Nombre ["+f.getName()+"]");
+						log.debug("Existe ["+f.exists()+"] Es archivo ["+f.isFile()+"]");
+					}
+					if(f.exists()&&f.isFile()){
+						// Upload del archivo al Repositorio
+						String nombreArchivo=arc.getRutaArchivoPdf().substring(arc.getRutaArchivoPdf().indexOf(']')+1);
+						String rutaAlfresco=obtenerRutaDocumento(doc)+nombreArchivo;
+						RETURN_CODE result=null;
+                                                AlfrescoNode node=null;
+                                                String userName=doc.getPropietario().getUsuario();
+                                                String password=doc.getPropietario().getClave();
+                                                String basePath=obtenerRutaCompletaDocumento(doc);
+                                                String fullPath=obtenerRutaCompletaDocumento(doc) + nombreArchivo;
+                                                if (log.isDebugEnabled()) {
+                                                    inicio = new Date();
+                                                }
+                                                boolean existeNodo = alfrescoConnector.nodeExists(userName, seguridadService.desencriptar(userName, password), fullPath);
+                                                if (log.isDebugEnabled()) {
+                                                    fin = new Date();
+                                                    log.debug("## alfrescoConnector.nodeExists [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                                                }
+                                                if (!existeNodo){
+                                                    if (log.isDebugEnabled()) {
+                                                        inicio = new Date();
+                                                    }
+                                                    node = alfrescoConnector.createCustomNode(userName, seguridadService.desencriptar(userName, password), basePath, nombreArchivo, AlfrescoWSService.TYPE_ARCHIVO, propiedades);
+                                                    if (log.isDebugEnabled()) {
+                                                        fin = new Date();
+                                                        log.debug("## alfrescoConnector.createCustomNode [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                                                    }
+                                                    if (node!=null){
+                                                        if (log.isDebugEnabled()) {
+                                                            inicio = new Date();
+                                                        }
+                                                        result=alfrescoConnector.modifyBinaryContent(userName, seguridadService.desencriptar(userName, password), fullPath, f, "content");
+                                                        if (log.isDebugEnabled()) {
+                                                            fin = new Date();
+                                                            log.debug("## alfrescoConnector.modifyBinaryContent [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                                                        }
+                                                        if(result!= AlfrescoConnector.RETURN_CODE.SUCCESS){
+                                                            //alfrescoConnector.deleteNode(userName, seguridadService.desencriptar(userName, password), obtenerRutaCompletaDocumento(doc) + nombreArchivo);
+                                                            throw new RuntimeException("No se pudo subir el archivo.");
+                                                        }
+                                                        result=alfrescoConnector.addAspect(userName, seguridadService.desencriptar(userName, password), fullPath, "cm:versionable");
+                                                        if(result!= AlfrescoConnector.RETURN_CODE.SUCCESS){
+                                                            //alfrescoConnector.deleteNode(userName, seguridadService.desencriptar(userName, password), obtenerRutaCompletaDocumento(doc) + nombreArchivo);
+                                                            throw new RuntimeException("No se pudo establecer como versionable el archivo.");
+                                                        }
+                                                    }
+                                                }else{
+                                                    if (log.isDebugEnabled()) {
+                                                        inicio = new Date();
+                                                    }
+                                                    result=alfrescoConnector.modifyBinaryContent(userName, seguridadService.desencriptar(userName, password), fullPath, f, "content");
+                                                    if (log.isDebugEnabled()) {
+                                                        fin = new Date();
+                                                        log.debug("## alfrescoConnector.modifyBinaryContent [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                                                    }
+                                                    if(result!= AlfrescoConnector.RETURN_CODE.SUCCESS){
+                                                        //alfrescoConnector.deleteNode(userName, seguridadService.desencriptar(userName, password), obtenerRutaCompletaDocumento(doc) + nombreArchivo);
+                                                        throw new RuntimeException("No se pudo subir el archivo.");
+                                                    }
+                                                }
+						/*if(!versionar){
+							//ref=RepositorioUtils.anexarArchivo(obtenerRutaDocumento(doc),f,RepositorioUtils.TYPE_ARCHIVO,nombreArchivo,propiedades);
+                                                        
+						}else{
+							//String ruta=RepositorioServiceImpl.RUTA_PADRE_EXPEDIENTE+"/"+doc.getExpediente().getNroexpediente()+"/"+nombreArchivo;
+							try{   
+								log.debug("antes de intentar versionar " ) ;
+								if(!RepositorioUtils.checkInFiletoAlfresco(f,rutaAlfresco)){
+									log.error("No se pudo versionar .. es la primera vez que se sube desde qas ");
+									ref=RepositorioUtils.anexarArchivo(obtenerRutaDocumento(doc),f,RepositorioUtils.TYPE_ARCHIVO,nombreArchivo,propiedades);
+								}
+							}catch(Exception e){ 
+								log.error("No se pudo versionar .. es la primera vez que se sube desde qas ");
+								// e.printStackTrace() ;
+								ref=RepositorioUtils.anexarArchivo(obtenerRutaDocumento(doc),f,RepositorioUtils.TYPE_ARCHIVO,nombreArchivo,propiedades);
+							}
+						}*/
+						// TODO verificar quizas que el documento a subir es un pdf??
+						if((result==AlfrescoConnector.RETURN_CODE.SUCCESS)||versionar) // esta subido. Actualizar
+													// Archivo
+						{
+							//arc.setEstadoDigitalizacion(Archivo.ESTADO_IMPORTADO);
+							arc.setRutaAlfresco(rutaAlfresco);
+							archivoService.saveArchivo(arc);
+							// getArchivoDAO().saveArchivo(arc);
+							// TODO guardar la rutaAlfresco en BD.
+							narchivos++;
+						}
+					}else{
+						log.warn("Archivo \""+f.getAbsolutePath()+"\" no encontrado");
+					}
+				/*}else{
+					log.debug("Se encontro archivo ya importado a Alfresco "+arc.getRutaArchivoPdf());
+				}*/
+			}
+			return narchivos;
+		}
+		return 0;
+	}
+
+   	@Override
+	@Transactional
+	public void subirArchivosTransformadosARepositorio(Documento doc, List<Archivo> listaArchivos,boolean versionar) throws RuntimeException{
+	   Map<String,String> propiedades=obtenerMetadata(doc); 
+	   Date inicio = null;
+       Date fin = null;
+       for(Archivo arc : listaArchivos){
+			File f=new File(arc.getRutaArchivoPdf());
+			if(log.isDebugEnabled()){
+				log.debug("Datos del archivo a subir");
+				log.debug("Ruta ["+f.getParent()+"] Nombre ["+f.getName()+"]");
+				log.debug("Existe ["+f.exists()+"] Es archivo ["+f.isFile()+"]");
+			}
+			if(f.exists()&&f.isFile()){
+				// Upload del archivo al Repositorio
+				String nombreArchivo=arc.getRutaArchivoPdf().substring(arc.getRutaArchivoPdf().indexOf(']')+1);
+				String rutaAlfresco=obtenerRutaDocumento(doc)+nombreArchivo;
+				RETURN_CODE result=null;
+				AlfrescoNode node=null;
+                String userName=doc.getPropietario().getUsuario();
+                String password=doc.getPropietario().getClave();
+                String basePath=obtenerRutaCompletaDocumento(doc);
+                String fullPath=obtenerRutaCompletaDocumento(doc) + nombreArchivo;
+                if (log.isDebugEnabled()) {
+                	inicio = new Date();
+                }
+                boolean existeNodo = alfrescoConnector.nodeExists(userName, seguridadService.desencriptar(userName, password), fullPath);
+                	if (log.isDebugEnabled()) {
+                		fin = new Date();
+                        log.debug("## alfrescoConnector.nodeExists [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                    }
+                    if (!existeNodo){
+                    	if (log.isDebugEnabled()) {
+                    		inicio = new Date();
+                        }
+                        node = alfrescoConnector.createCustomNode(userName, seguridadService.desencriptar(userName, password), basePath, nombreArchivo, AlfrescoWSService.TYPE_ARCHIVO, propiedades);
+                        if (log.isDebugEnabled()) {
+                        	fin = new Date();
+                        	log.debug("## alfrescoConnector.createCustomNode [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                        }
+                        if (node!=null){
+                        	if (log.isDebugEnabled()) {
+                        		inicio = new Date();
+                            }
+                            result=alfrescoConnector.modifyBinaryContent(userName, seguridadService.desencriptar(userName, password), fullPath, f, "content");
+                            if (log.isDebugEnabled()) {
+                            	fin = new Date();
+                                log.debug("## alfrescoConnector.modifyBinaryContent [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                            }
+                            if(result!= AlfrescoConnector.RETURN_CODE.SUCCESS){
+                            	//alfrescoConnector.deleteNode(userName, seguridadService.desencriptar(userName, password), obtenerRutaCompletaDocumento(doc) + nombreArchivo);
+                                throw new RuntimeException("No se pudo subir el archivo.");
+                            }
+                            result=alfrescoConnector.addAspect(userName, seguridadService.desencriptar(userName, password), fullPath, "cm:versionable");
+                            if(result!= AlfrescoConnector.RETURN_CODE.SUCCESS){
+                            	//alfrescoConnector.deleteNode(userName, seguridadService.desencriptar(userName, password), obtenerRutaCompletaDocumento(doc) + nombreArchivo);
+                                throw new RuntimeException("No se pudo establecer como versionable el archivo.");
+                            }
+                        }
+                    }else{
+                    	if (log.isDebugEnabled()) {
+                    		inicio = new Date();
+                        }
+                        result=alfrescoConnector.modifyBinaryContent(userName, seguridadService.desencriptar(userName, password), fullPath, f, "content");
+                        if (log.isDebugEnabled()) {
+                        	fin = new Date();
+                            log.debug("## alfrescoConnector.modifyBinaryContent [" + fullPath + "]: " + ((fin.getTime() - inicio.getTime()) / 1000.0) + " segundos" );
+                        }
+                        if(result!= AlfrescoConnector.RETURN_CODE.SUCCESS){
+                        	//alfrescoConnector.deleteNode(userName, seguridadService.desencriptar(userName, password), obtenerRutaCompletaDocumento(doc) + nombreArchivo);
+                            throw new RuntimeException("No se pudo subir el archivo.");
+                        }
+                    }
+					if((result==AlfrescoConnector.RETURN_CODE.SUCCESS)||versionar){
+						arc.setRutaAlfresco(rutaAlfresco);
+						archivoService.saveArchivo(arc);
+					}
+			}else{
+				log.warn("Archivo \""+f.getAbsolutePath()+"\" no encontrado");
+			}
+		}
+	}
+   
+   public String obtenerRutaExpediente(Expediente objExpediente) {
+      String sFecha = new SimpleDateFormat("yyyy/MM/dd").format(objExpediente.getFechacreacion());
+
+      return RUTA_PADRE_EXPEDIENTE + Constantes.GENERAL_SLASH + sFecha + Constantes.GENERAL_SLASH + objExpediente.getNroexpediente() + Constantes.GENERAL_SLASH;
+   }
+
+   public String obtenerRutaCompletaExpediente(Expediente objExpediente) {
+      String sFecha = new SimpleDateFormat("yyyy/MM/dd").format(objExpediente.getFechacreacion());
+
+      return COMPLETE_PATH_PADRE_EXPEDIENTE + sFecha + Constantes.GENERAL_SLASH + objExpediente.getNroexpediente() + Constantes.GENERAL_SLASH;
+   }
+
+   public String obtenerRutaDocumento(Documento objDocumento) {
+      String sFecha = new SimpleDateFormat("yyyy/MM/dd").format(objDocumento.getExpediente().getFechacreacion());
+
+      return RUTA_PADRE_EXPEDIENTE + Constantes.GENERAL_SLASH + sFecha + Constantes.GENERAL_SLASH + objDocumento.getExpediente().getNroexpediente() + Constantes.GENERAL_SLASH;
+   }
+
+   public String obtenerRutaCompletaDocumento(Documento objDocumento) {
+      String sFecha = new SimpleDateFormat("yyyy/MM/dd").format(objDocumento.getExpediente().getFechacreacion());
+
+      return COMPLETE_PATH_PADRE_EXPEDIENTE + sFecha + Constantes.GENERAL_SLASH + objDocumento.getExpediente().getNroexpediente() + Constantes.GENERAL_SLASH;
+   }
+
+	/**
+	 * @return the expedienteDAO
+	 */
+	public ExpedienteDAO getExpedienteDAO(){
+		return expedienteDAO;
+	}
+
+	/**
+	 * @param expedienteDAO
+	 *            the expedienteDAO to set
+	 */
+	public void setExpedienteDAO(ExpedienteDAO expedienteDAO){
+		this.expedienteDAO=expedienteDAO;
+	}
+
+	/**
+	 * @return the documentoDAO
+	 */
+	public DocumentoDAO getDocumentoDAO(){
+		return documentoDAO;
+	}
+
+	/**
+	 * @param documentoDAO
+	 *            the documentoDAO to set
+	 */
+	public void setDocumentoDAO(DocumentoDAO documentoDAO){
+		this.documentoDAO=documentoDAO;
+	}
+
+	/**
+	 * @return the archivoDAO
+	 */
+	public ArchivoDAO getArchivoDAO(){
+		return archivoDAO;
+	}
+
+	/**
+	 * @param archivoDAO
+	 *            the archivoDAO to set
+	 */
+	public void setArchivoDAO(ArchivoDAO archivoDAO){
+		this.archivoDAO=archivoDAO;
+	}
+
+	@Override
+	public Map<String,String> obtenerMetadata(Documento doc){
+		Map<String,String> propiedades=new HashMap<String,String>();
+		propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"idDocumento"),doc.getIdDocumento().toString());
+                if (doc.getTipoDocumento().getNombre()!=null){
+                    propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"tipoDocumento"),doc.getTipoDocumento().getNombre());
+                }
+		if (doc.getNumeroDocumento()!=null){
+                    propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"numDocumento"),doc.getNumeroDocumento());
+                }
+                propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"numFolios"),String.valueOf(doc.getNumeroFolios()));
+
+                try{
+                        propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"fechaCreacionDocumento"),RepositorioUtils.darFormatoFecha(doc.getFechaCreacion()));
+                }catch(Exception ex){
+                        log.error(ex.getMessage(),ex);
+                }
+                if (doc.getNumeroMesaPartes()!=null){
+                    propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"nroMP"),String.valueOf(doc.getNumeroMesaPartes()));
+                }
+		return propiedades;
+	}
+
+	private Map<String,String> obtenerMetadata(Expediente exp){
+		Map<String,String> propiedades=new HashMap<String,String>();
+		propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"numExpediente"),exp.getNroexpediente());
+		propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"fechaCreacionExpediente"),RepositorioUtils.darFormatoFecha(exp.getFechacreacion()));
+		try{
+			propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"nombreProceso"),exp.getProceso().getNombre().length() > 50 ? exp.getProceso().getNombre().substring(0, 49) : exp.getProceso().getNombre());
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+			propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"areaDestino"),getUnidad(exp.getProceso()).getNombre());
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+			Usuario usr=getUsuario(exp.getProceso());
+			propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"destinatario"),usr.getNombres()+" "+usr.getApellidos());
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+			propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"correntista"),exp.getConcesionario().getRazonSocial());
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+			propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"tipoDocumentoTram"),exp.getCliente().getTipoIdentificacion().getNombre());
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+			propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"numDocumentoTram"),exp.getCliente().getNumeroIdentificacion());
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+         if (exp.getCliente().getRazonSocial() != null) {
+            propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"razonSocialTram"),exp.getCliente().getRazonSocial());
+         }
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+         if (exp.getCliente().getDireccionPrincipal() != null) {
+            propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"direccionTram"),exp.getCliente().getDireccionPrincipal());
+         }
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		try{
+         if (exp.getCliente().getDireccionAlternativa() != null) {
+            propiedades.put(Constants.createQNameString(AlfrescoWSService.NAMESPACE_OSINERG_MODEL,"direccionTram2"),exp.getCliente().getDireccionAlternativa());
+         }
+		}catch(NullPointerException npe){
+			log.debug(npe);
+		}
+		return propiedades;
+	}
+
+	// TODO revisar esto cuando se obtengan los usuarios por AD
+	private Unidad getUnidad(Proceso proc){
+		return proc.getResponsable().getUnidad();
+	}
+
+	// TODO revisar esto cuando se obtengan los usuarios por AD
+	private Usuario getUsuario(Proceso proc){
+		return proc.getResponsable();
+	}
+
+	public List<EnlaceDocumento> busquedaArchivos(String textoABuscar,Map<String,String> propiedades){
+		return alfrescoWebServiceClient.buscarContenidos(textoABuscar,propiedades);
+	}
+
+	public List<Integer> busquedaIdDocumentos(String textoABuscar,Map<String,String> propiedades){
+		return alfrescoWebServiceClient.buscarIdDocumentos(textoABuscar,propiedades);
+	}
+
+	public void setArchivoService(ArchivoService archivoService){
+		this.archivoService=archivoService;
+	}
+
+   public boolean existeNodo(String sUsuario, String sPassword, String sRutaNodo) throws Exception{
+	   return alfrescoConnector.nodeExists(sUsuario, seguridadService.desencriptar(sUsuario, sPassword), sRutaNodo);
+   }
+
+   public boolean crearFolder(String sUsuario, String sPassword, String sRuta, String sFolder) {
+      try {
+         StringBuilder sbRutaFolder = new StringBuilder(sRuta).append(sFolder);
+
+         if (!this.existeNodo(sUsuario, sPassword, sbRutaFolder.toString())) {
+            alfrescoConnector.createDirectory(sUsuario, seguridadService.desencriptar(sUsuario, sPassword), sRuta, sFolder);
+         }
+
+         return true;
+      } catch (Exception e) {
+         log.error(e.getMessage(), e);
+
+         return false;
+      }
+   }
+
+   public boolean moverNodo(String sUsuario, String sPassword, String sNodo, String sRutaOrigen, String sRutaDestino) {
+      try {
+         StringBuilder sbRutaNodo = new StringBuilder(sRutaOrigen).append(sNodo);
+
+         if (this.existeNodo(sUsuario, sPassword, sbRutaNodo.toString())) {
+            alfrescoConnector.moveNode(sUsuario, seguridadService.desencriptar(sUsuario, sPassword), sbRutaNodo.toString(), sRutaDestino);
+
+            return true;
+         }
+
+         return false;
+      } catch (Exception e) {
+         log.error(e.getMessage(), e);
+
+         return false;
+      }
+   }
+
+   @Override
+   public boolean eliminarNodo(String usuario, String password, String rutaNodo) {
+   /*   try {
+         if (log.isDebugEnabled()) {
+            log.debug("usuario [" + usuario + "]");
+            log.debug("rutaNodo [" + rutaNodo + "]");
+         }
+
+         if (this.existeNodo(usuario, password, rutaNodo)) {
+            alfrescoWebServiceClient.eliminarNodo(rutaNodo);
+
+            return true;
+         }
+
+         return false;
+      } catch (Exception e) {
+         log.error(e.getMessage(), e);
+
+         return false;
+      }*/
+	   return true;
+   }
+
+    public AlfrescoWSService getAlfrescoWebServiceClient() {
+        return alfrescoWebServiceClient;
+    }
+
+    public void setAlfrescoWebServiceClient(AlfrescoWSService alfrescoWebServiceClient) {
+        this.alfrescoWebServiceClient = alfrescoWebServiceClient;
+    }
+
+    public void setSeguridadService(SeguridadService seguridadService) {
+        this.seguridadService = seguridadService;
+    }
+}

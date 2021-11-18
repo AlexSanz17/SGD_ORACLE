@@ -1,0 +1,15 @@
+@CHARSET "ISO-8859-1";
+
+body{margin:0; background:url(../images/gradient.jpg) repeat-x; background-color:#3E7AAE}
+
+table{border-collapse:collapse; font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  color:#000}
+.TxtTitulo{background-color:#789bbf; font-family: Arial,Verdana; font-size:20px; font-style:normal; FONT-WEIGHT:normal; color:#FFF}
+table.tableForm{}
+.tableForm tr, .tableForm input, .tableForm select{ font-family:verdana,arial,helvetica,sans-serif; font-size:8pt;  vertical-align:baseline; color:#000}
+
+.tableForm tr.cabecera{background-color:#669BCD; color:#fff; border-color:#000;border-style: solid;border-width: 0.02em;}
+.tableForm tr.fila{background-color:#fff;border-color:#fff; border-color:#000;border-style: solid;border-width: 0.02em;}
+.tableForm th{text-align:center; border:#789bbf; vertical-align:middle}
+.tableForm td{vertical-align:middle; border:#A4C0DD}
+.tableForm td.cent{text-align:center;border-right-color:#7E7E7E;border-right-style: solid;border-right-width: 0.02em;}
+.tableForm td.num{text-align:right}

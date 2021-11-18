@@ -1,0 +1,15 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.NotificacionxEnumerar;
+
+public interface NotificacionxEnumerarDAO {
+
+	public void guardar(NotificacionxEnumerar notificacionxEnumerar);
+	
+	public List<NotificacionxEnumerar> buscarLastNotificacionesbyDocumento(Integer idDocumento, Integer tipoNotificacion);
+	
+	public List<NotificacionxEnumerar> findByDocumento(Documento objDocumento, Integer tn);
+}

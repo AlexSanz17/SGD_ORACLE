@@ -1,0 +1,8 @@
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Documentoxexpediente;
+
+public interface DocumentoxexpedienteService {
+
+   public Documentoxexpediente guardarObj(Documentoxexpediente objDocXExp);
+}

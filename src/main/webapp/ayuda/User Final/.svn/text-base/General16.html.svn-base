@@ -1,0 +1,66 @@
+﻿<html>
+	
+<head>
+	<title>Retirar del Seguimiento</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <meta name="generator" content="HelpNDoc">
+	<link type="text/css" rel="stylesheet" media="all" href="css/reset.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/base.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/hnd.css" />
+	<!--[if lte IE 8]>
+		<link type="text/css" rel="stylesheet" media="all" href="css/ielte8.css" />
+	<![endif]-->
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/hnd.js"></script>
+	<script type="text/javascript"><!--
+		var sTopicId = top.location.href.substring(top.location.href.lastIndexOf("/") + 1, top.location.href.length);
+		if (top.frames.length == 0)
+			top.location.href = "User Final.htm?" + sTopicId
+		else if (top && top.FrameTOC && top.FrameTOC.SelectTocItem)
+			top.FrameTOC.SelectTocItem(sTopicId);
+	</script>
+</head>
+
+<body>
+
+	<div id="topic_header">
+			<div id="topic_header_content">
+				<h1>Retirar del Seguimiento</h1>
+				
+				<div id="topic_breadcrumb">
+					<a href="General.html">General</a> &rsaquo;&rsaquo; </div>
+				</div>
+			<div id="topic_header_nav">
+				<a href="General.html"><img src="img/arrow_up.png" alt="Parent"/></a>
+				
+				<a href="General15.html"><img src="img/arrow_left.png" alt="Previous"/></a>
+				
+				<a href="General17.html"><img src="img/arrow_right.png" alt="Next"/></a>
+				
+				</div>
+			<div class="clear"></div>
+		</div>
+	<div id="topic_content">
+		
+<p class="rvps16"><span class="rvts17">Retirar del Seguimiento:</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Una vez el usuario haya seleccionado Marcar para Seguimiento, el Documento pasa a la </span><span class="rvts18">Bandeja de Documentos Importantes , </span><span class="rvts17">donde el Jefe puede darle seguimiento al Flujo del Documento. Sin embargo, si el usuario desea retirar el Documento de esta Lista, sólo necesita seleccionar el Documento y seleccionar en el Botón "Retirar del Seguimiento".</span></p>
+<p class="rvps27"><span class="rvts17"><br></span></p>
+<p class="rvps27"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/DocumentosImpo.jpg"></p>
+<p class="rvps27"><span class="rvts17"><br></span></p>
+<p class="rvps27"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Una vez el usuario haya seleccionado el Documento que quiere retirar de la Lista de Documentos Importantes, selecciona:</span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/retirarseg.jpg"><span class="rvts17"> </span></p>
+<p class="rvps2"><span class="rvts6">Created with the Personal Edition of HelpNDoc: </span><a class="rvts7" href="http://www.helpndoc.com">Free help authoring tool</a></p>
+</div>
+	
+	<div id="topic_footer">
+
+			<div id="topic_footer_content">
+				SISTEMA DE GESTION DOCUMENTARIA - APN</div>
+		</div>
+	</body>
+	
+</html>
+

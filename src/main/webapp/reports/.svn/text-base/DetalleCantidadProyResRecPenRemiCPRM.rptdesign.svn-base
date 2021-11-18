@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.20" id="1">
+    <property name="createdBy">Eclipse BIRT Designer Version 2.5.1.v20090903 Build &lt;2.5.1.v20090922-0630></property>
+    <property name="units">in</property>
+    <property name="iconFile">/templates/blank_report.gif</property>
+    <property name="layoutPreference">auto layout</property>
+    <property name="bidiLayoutOrientation">ltr</property>
+    <parameters>
+        <scalar-parameter name="idProcedimiento" id="8">
+            <property name="valueType">static</property>
+            <property name="dataType">integer</property>
+            <property name="distinct">true</property>
+            <property name="paramType">simple</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+    </parameters>
+    <data-sources>
+        <oda-data-source extensionID="org.eclipse.birt.report.data.oda.jdbc" name="Data Source" id="6">
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>contentBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+                <ex-property>
+                    <name>metadataBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+            </list-property>
+            <property name="odaDriverClass">oracle.jdbc.OracleDriver</property>
+            <property name="odaURL">jdbc:oracle:thin:@11.160.125.15:1521:DESA</property>
+            <property name="odaUser">siged_preprod</property>
+            <encrypted-property name="odaPassword" encryptionID="base64">ZmFjaWxpdG8=</encrypted-property>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set extensionID="org.eclipse.birt.report.data.oda.jdbc.JdbcSelectDataSet" name="Data Set" id="27">
+            <structure name="cachedMetaData"/>
+            <method name="beforeOpen"><![CDATA[this.queryText = "select (select DISTINCT e.nroexpediente "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, etapa et "+  
+        "WHERE D.ESTADO ='A' "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        ") as expediente, "+
+        
+        "(select DISTINCT us.usuario  "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, usuario us, etapa et "+
+        "WHERE D.ESTADO ='A' "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        " and us.idusuario = ex.analista "+
+        ") as propietario, "+
+        
+        "(select DISTINCT co.razonsocial "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, concesionario co , etapa et "+
+        "WHERE D.ESTADO='A' "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        " and co.idconcesionario = e.concesionario "+
+        ") as concesionario, "+ 
+        
+        "(select DISTINCT un.nombre "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, unidad un , etapa et "+
+        "WHERE D.ESTADO='A'  "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        " and un.idunidad = ex.idunidad "+
+        " ) as unidad, "+
+        
+        "(select DISTINCT d.nrodocumento "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, unidad un , etapa et "+
+        "WHERE D.ESTADO='A'  "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        " and d.tipodocumento = 11 "+
+        " ) as NResolucion ,"+
+        
+        "(to_char((select DISTINCT d.fechadocumento "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, unidad un , etapa et "+
+        "WHERE D.ESTADO='A'  "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        " and d.tipodocumento = 11 "+
+        "),'dd/MM/yyyy HH12:mi:ss')) as fechaDocumento, "+
+        
+        "(select DISTINCT d.nrodocumento "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, unidad un , etapa et "+
+        "WHERE D.ESTADO='A'  "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        " and d.tipodocumento = 15 "+
+        ") as NResolucionRecon ,"+
+        
+        "(to_char((select DISTINCT d.fechadocumento "+
+        "from DOCUMENTO D , expediente e , expedientesas ex, unidad un , etapa et "+
+        "WHERE D.ESTADO='A' "+
+        "and e.idexpediente= d.expediente "+
+        "and ex.idexpediente= e.idexpediente "+
+        "and (et.codigo='G_PROYR_GFE' or et.codigo='G_PROYR_GG' ) "+
+        "and e.idetapa= et.idetapa "+
+        "and ex.idprocedimiento = "+params["idProcedimiento"]+
+        " and d.tipodocumento = 15 "+
+        "),'dd/MM/yyyy HH12:mi:ss')) as fechaDocumentoRecon "+
+"from dual";]]></method>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">EXPEDIENTE</property>
+                    <property name="nativeName">EXPEDIENTE</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">PROPIETARIO</property>
+                    <property name="nativeName">PROPIETARIO</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">CONCESIONARIO</property>
+                    <property name="nativeName">CONCESIONARIO</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">UNIDAD</property>
+                    <property name="nativeName">UNIDAD</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">5</property>
+                    <property name="name">NRESOLUCION</property>
+                    <property name="nativeName">NRESOLUCION</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">6</property>
+                    <property name="name">FECHADOCUMENTO</property>
+                    <property name="nativeName">FECHADOCUMENTO</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">7</property>
+                    <property name="name">NRESOLUCIONRECON</property>
+                    <property name="nativeName">NRESOLUCIONRECON</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">8</property>
+                    <property name="name">FECHADOCUMENTORECON</property>
+                    <property name="nativeName">FECHADOCUMENTORECON</property>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[select 
+from ]]></xml-property>
+        </oda-data-set>
+    </data-sets>
+    <styles>
+        <style name="crosstab-cell" id="4">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+        <style name="crosstab" id="5">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+    </styles>
+    <page-setup>
+        <simple-master-page name="Simple MasterPage" id="2">
+            <property name="orientation">landscape</property>
+            <property name="topMargin">1in</property>
+            <property name="leftMargin">0.125in</property>
+            <property name="bottomMargin">1in</property>
+            <property name="rightMargin">0in</property>
+        </simple-master-page>
+    </page-setup>
+    <body>
+        <table id="50">
+            <property name="width">100%</property>
+            <property name="dataSet">Data Set</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">EXPEDIENTE</property>
+                    <text-property name="displayName">EXPEDIENTE</text-property>
+                    <expression name="expression">dataSetRow["EXPEDIENTE"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">PROPIETARIO</property>
+                    <text-property name="displayName">PROPIETARIO</text-property>
+                    <expression name="expression">dataSetRow["PROPIETARIO"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">CONCESIONARIO</property>
+                    <text-property name="displayName">CONCESIONARIO</text-property>
+                    <expression name="expression">dataSetRow["CONCESIONARIO"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">UNIDAD</property>
+                    <text-property name="displayName">UNIDAD</text-property>
+                    <expression name="expression">dataSetRow["UNIDAD"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">NRESOLUCION</property>
+                    <text-property name="displayName">NRESOLUCION</text-property>
+                    <expression name="expression">dataSetRow["NRESOLUCION"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">FECHADOCUMENTO</property>
+                    <text-property name="displayName">FECHADOCUMENTO</text-property>
+                    <expression name="expression">dataSetRow["FECHADOCUMENTO"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">NRESOLUCIONRECON</property>
+                    <text-property name="displayName">NRESOLUCIONRECON</text-property>
+                    <expression name="expression">dataSetRow["NRESOLUCIONRECON"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">FECHADOCUMENTORECON</property>
+                    <text-property name="displayName">FECHADOCUMENTORECON</text-property>
+                    <expression name="expression">dataSetRow["FECHADOCUMENTORECON"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <column id="94"/>
+            <column id="95"/>
+            <column id="96">
+                <property name="width">1.3541666666666667in</property>
+            </column>
+            <column id="97">
+                <property name="width">1.3020833333333333in</property>
+            </column>
+            <column id="98">
+                <property name="width">1.4583333333333333in</property>
+            </column>
+            <column id="99"/>
+            <column id="100">
+                <property name="width">1.8125in</property>
+            </column>
+            <column id="101"/>
+            <header>
+                <row id="51">
+                    <property name="fontFamily">"Verdana"</property>
+                    <property name="fontSize">7.5pt</property>
+                    <property name="fontWeight">bold</property>
+                    <cell id="52">
+                        <label id="32">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Expediente</text-property>
+                        </label>
+                    </cell>
+                    <cell id="54">
+                        <label id="103">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Encargado</text-property>
+                        </label>
+                    </cell>
+                    <cell id="56">
+                        <label id="104">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Entidad</text-property>
+                        </label>
+                    </cell>
+                    <cell id="58">
+                        <label id="105">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Unidad Técnica</text-property>
+                        </label>
+                    </cell>
+                    <cell id="60">
+                        <label id="106">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Número Resolución</text-property>
+                        </label>
+                    </cell>
+                    <cell id="62">
+                        <label id="107">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Fecha de notificación</text-property>
+                        </label>
+                    </cell>
+                    <cell id="64">
+                        <label id="108">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">N° Resolución Reconsideración</text-property>
+                        </label>
+                    </cell>
+                    <cell id="66">
+                        <label id="109">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="color">#FFFFFF</property>
+                            <property name="textAlign">center</property>
+                            <text-property name="text">Fecha de Notificación</text-property>
+                        </label>
+                    </cell>
+                </row>
+            </header>
+            <detail>
+                <row id="68">
+                    <property name="fontSize">8pt</property>
+                    <cell id="69">
+                        <data id="70">
+                            <property name="resultSetColumn">EXPEDIENTE</property>
+                        </data>
+                    </cell>
+                    <cell id="71">
+                        <data id="72">
+                            <property name="resultSetColumn">PROPIETARIO</property>
+                        </data>
+                    </cell>
+                    <cell id="73">
+                        <data id="74">
+                            <property name="resultSetColumn">CONCESIONARIO</property>
+                        </data>
+                    </cell>
+                    <cell id="75">
+                        <data id="76">
+                            <property name="resultSetColumn">UNIDAD</property>
+                        </data>
+                    </cell>
+                    <cell id="77">
+                        <data id="78">
+                            <property name="resultSetColumn">NRESOLUCION</property>
+                        </data>
+                    </cell>
+                    <cell id="79">
+                        <data id="80">
+                            <property name="resultSetColumn">FECHADOCUMENTO</property>
+                        </data>
+                    </cell>
+                    <cell id="81">
+                        <data id="82">
+                            <property name="resultSetColumn">NRESOLUCIONRECON</property>
+                        </data>
+                    </cell>
+                    <cell id="83">
+                        <data id="84">
+                            <property name="resultSetColumn">FECHADOCUMENTORECON</property>
+                        </data>
+                    </cell>
+                </row>
+            </detail>
+        </table>
+    </body>
+</report>

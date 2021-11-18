@@ -1,0 +1,1753 @@
+package org.osinerg.services;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.log4j.Logger;
+import org.jfree.util.Log;
+import org.osinerg.daos.DatosDAO;
+import org.osinerg.daos.GridDAO;
+import org.osinerg.daos.GridXGridColumnaDAO;
+import org.osinerg.daos.GridcolumnaxusuarioDAO;
+import org.osinerg.daos.ParametroDAO;
+import org.osinerg.daos.RolDAO;
+import org.osinerg.dojo.BusquedaAvanzada;
+import org.osinerg.dojo.grid.Estructura;
+import org.osinerg.dojo.grid.GridUsuario;
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.dojo.grid.ItemUF;
+import org.osinerg.utils.Constantes;
+import org.springframework.transaction.annotation.Transactional;
+
+import sun.util.logging.resources.logging;
+
+import com.btg.osinergmin.siged.domain.ArchivoPendiente;
+import com.btg.osinergmin.siged.domain.Campo;
+import com.btg.osinergmin.siged.domain.Cargo;
+import com.btg.osinergmin.siged.domain.Cliente;
+import com.btg.osinergmin.siged.domain.Concesionario;
+import com.btg.osinergmin.siged.domain.Datos;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.DocumentoAreaFuncional;
+import com.btg.osinergmin.siged.domain.Documentoenviado;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.FilaBandejaEnviados;
+import com.btg.osinergmin.siged.domain.Grid;
+import com.btg.osinergmin.siged.domain.GridColumna;
+import com.btg.osinergmin.siged.domain.GridXGridColumna;
+import com.btg.osinergmin.siged.domain.Gridcolumnaxusuario;
+import com.btg.osinergmin.siged.domain.Lista;
+import com.btg.osinergmin.siged.domain.Mensajeria;
+import com.btg.osinergmin.siged.domain.Notificacion;
+import com.btg.osinergmin.siged.domain.Parametro;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Reemplazo;
+import com.btg.osinergmin.siged.domain.Rol;
+import com.btg.osinergmin.siged.domain.Tipoenvio;
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class GridcolumnaxusuarioServiceImpl implements GridcolumnaxusuarioService {
+
+	private static Logger _log = Logger.getLogger(GridcolumnaxusuarioServiceImpl.class);
+	private ArchivoService srvArchivo;
+	private ArchivopendienteService srvArchivoPendiente;
+	private CarpetabusquedaService srvCarpetaBusqueda;
+	private CargoService cargoService;
+	private DocumentoService documentoService;
+	private DocumentoEnviadoService srvDocumentoEnviado;
+	private ExpedienteService srvExpediente;
+	private GridcolumnaxusuarioDAO dao;
+	private TrazabilidaddocumentoService srvTrazabilidadDocumento;
+	private TrazabilidadapoyoService trazabilidadApoyoService;
+	private MensajeriaService srvMensajeria;
+	private NotificacionService srvNotificacion;
+	private ProcesoService srvProceso;
+	private ReemplazoService srvReemplazo;
+	private RolDAO rolDao;
+	private GridDAO gridDao;
+	private ParametroDAO parametroDAO;
+	private GridXGridColumnaDAO gridXGridColumnaDao;
+	private PlantillaService srvPlantilla;
+	private ListaService srvLista;
+	private ItemService srvItem;
+	//   private DatosService datosService;\
+	private DatosDAO datosDAO;
+	private SeguimientoXUsuarioService seguimientoXUsuarioService;
+	private ParametroService srvParametro;
+	// ////////////////////////////////
+	// Constructors //
+	// ////////////////////////////////
+	public GridcolumnaxusuarioServiceImpl(GridcolumnaxusuarioDAO dao) {
+		setDao(dao);
+	}
+
+	// ////////////////////////////////
+	// Methods //
+	// ////////////////////////////////
+	// @Transactional (propagation = Propagation.REQUIRED, readOnly = true)
+	@Override
+	public List<Estructura> buildEstructura(List<Gridcolumnaxusuario> lstGridColumnaXUsuario, List<GridXGridColumna> columnas, Integer iIdUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - buildEstructura():List<Estructura> ");
+
+		if (columnas == null) {
+			_log.warn("No hay columnas");
+
+			return null;
+		}
+
+		List<Estructura> lstEstructura = new ArrayList<Estructura>();
+		Estructura[] estructura = new Estructura[columnas.size()];
+		for (int i = 0; i < estructura.length; i++) {
+			GridXGridColumna porGrid = columnas.get(i);
+			GridColumna columna = porGrid.getGridColumna();
+			int posicion = i;
+			String width = columna.getWidth();
+			int hidden = columna.getHidden();
+			boolean ordenado = false;
+			boolean ascendente = false;
+			Gridcolumnaxusuario objGridColumnaXUsuario = new Gridcolumnaxusuario(iIdUsuario, porGrid.getId());
+			if (lstGridColumnaXUsuario != null && lstGridColumnaXUsuario.contains(objGridColumnaXUsuario)) {
+				objGridColumnaXUsuario = lstGridColumnaXUsuario.get(lstGridColumnaXUsuario.indexOf(objGridColumnaXUsuario));
+				width = objGridColumnaXUsuario.getWidth();
+				hidden = objGridColumnaXUsuario.getHidden();
+				posicion = objGridColumnaXUsuario.getPosition() - 1;
+				char orden = objGridColumnaXUsuario.getOrdenado();
+				if (orden != 'N') {
+					ordenado = true;
+					if (orden == 'A') {
+						ascendente = true;
+					}
+				}
+			}
+			if (posicion >= estructura.length) {
+				posicion = i;
+			}
+			if (estructura[posicion] != null) {
+				posicion = getUltimaPosicionDisponible(estructura);
+			}
+			estructura[posicion] = new Estructura(porGrid.getId(), columna.getField(), columna.getName(), columna.getNoresize(), width, hidden, columna.getFormater(), ordenado, ascendente);
+		}
+		for (Estructura e : estructura) {
+			lstEstructura.add(e);
+		}
+		return lstEstructura;
+	}
+
+	private int getUltimaPosicionDisponible(Estructura[] estructuras) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getUltimaPosicionDisponible():int ");
+		
+		for (int i = 0; i < estructuras.length; i++) {
+			if (estructuras[i] == null) {
+				return i;
+			}
+		}
+		return estructuras.length - 1;
+	}
+
+	public List<Item> buildItems(List<Estructura> lstEstructura, Usuario objUsuario, Integer iTipoGrid) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - buildItems():List<Item> ");
+		
+		List<Item> lstItem = null;
+
+		switch (iTipoGrid) {
+		case 1:
+			lstItem = this.convertFromDocumentoToItem(lstEstructura, objUsuario);
+			break;
+		}
+
+		return lstItem;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Item> convertFromDocumentoToItem(List<Estructura> lstEstructura, Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - convertFromDocumentoToItem():List<Item> ");
+		
+		List<Documento> lstDocumento = null;
+		List<Item> lstItem = new ArrayList<Item>();
+		Trazabilidaddocumento objTrazabilidadDocumento = null;
+		_log.debug("Obteniendo documentos");
+		lstDocumento = documentoService.findDocumentos(objUsuario);
+		if (lstDocumento != null) {
+			_log.debug("Se encontraron " + lstDocumento.size() + " documentos para el usuario " + objUsuario.getUsuario());
+			for (Documento objDocumento : lstDocumento) {
+				if (objDocumento != null) {
+					Item objItem = new Item();
+
+					if (objDocumento.isEsTransient()) {
+						objItem.setHistorico(objDocumento.getHistorico());
+					}
+					//_log.debug("IdDocumento ["+objDocumento.getIdDocumento()+"]");
+					for (Estructura estructura : lstEstructura) {
+						//_log.debug("Campo [" + estructura.getField() + "]");
+						if (estructura != null) {
+							String campo = estructura.getField();
+							if (campo != null) {
+								if (campo.equals("estado")) {
+									objItem.setEstado(objDocumento.getAccion().getDescripcion());
+								} else if (campo.equals("asunto")) {
+									Rol rol = objUsuario.getRol();
+									String perfil = "";
+									if (rol != null) {
+										perfil = rol.getIdperfil().getNombre();
+									}
+									if (perfil.equals(Constantes.PERFIL_MP) || perfil.equals(Constantes.PERFIL_DIG) || perfil.equals(Constantes.PERFIL_QAS)) {
+										objItem.setAsunto(objDocumento.getAsunto());
+									} else {
+										objItem.setAsunto(objDocumento.getExpediente().getAsunto());
+									}
+								} else if (campo.equals("concesionario")) {
+									if (objDocumento.isEsTransient()) {
+										if (objDocumento.getRazonSocialConcesionario() != null) {
+											objItem.setConcesionario(objDocumento.getRazonSocialConcesionario());
+										}
+									} else {
+										if (objDocumento.getExpediente().getConcesionario() != null) {
+											objItem.setConcesionario(objDocumento.getExpediente().getConcesionario().getRazonSocial());
+										}
+									}
+								} else if (campo.equals("documento")) {
+									if (objDocumento.isEsTransient()) {
+										objItem.setDocumento(objDocumento.getNombreTipoDocumento());
+									} else {
+										objItem.setDocumento(objDocumento.getTipoDocumento().getNombre() + " - " + objDocumento.getNumeroDocumento());
+									}
+								} else if (campo.equals("fecharecepcion")) {
+									objItem.setFecharecepcion(objDocumento.getFechaAccion());
+									objItem.setLfecharecepcion(objDocumento.getFechaAccion().getTime());
+								} else if (campo.equals("id")) {
+									objItem.setId(objDocumento.getIdDocumento());
+								} else if (campo.equals("remitente")) {
+									if (objDocumento.isEsTransient()) {
+									} else {
+									}
+									if (!objDocumento.isEsTransient()) {
+										objTrazabilidadDocumento = getSrvTrazabilidadDocumento().findByMaxNroRegistro(objDocumento.getIdDocumento(), Constantes.ACCION_CONSULTAR, null, null);
+									}
+									Rol rol = objUsuario.getRol();
+									if (rol != null && rol.getIdperfil().getNombre().equals(Constantes.PERFIL_MP)) {
+										if (objDocumento.isEsTransient()) {
+											if (objDocumento.getClienteTipoIdentificacion().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+												objItem.setCliente(objDocumento.getClienteRazonSocial());
+											} else {
+												objItem.setCliente(objDocumento.getClienteNombre());
+											}
+										} else {
+											if (objDocumento.getExpediente().getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+												objItem.setRemitente(objDocumento.getExpediente().getCliente().getRazonSocial());
+											} else if (objDocumento.getExpediente().getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI)) {
+												objItem.setRemitente(objDocumento.getExpediente().getCliente().getNombres() + " " + objDocumento.getExpediente().getCliente().getApellidoPaterno());
+											} else if (objDocumento.getExpediente().getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+												objItem.setRemitente((objDocumento.getExpediente().getCliente().getRazonSocial() != null ? objDocumento.getExpediente().getCliente().getRazonSocial() : "") + " " + (objDocumento.getExpediente().getCliente().getNombres() != null ? objDocumento.getExpediente().getCliente().getNombres() : "") + " " + (objDocumento.getExpediente().getCliente().getApellidoPaterno() != null ? objDocumento.getExpediente().getCliente().getApellidoPaterno() : ""));
+											}
+										}
+									} else {
+										if (objDocumento.isEsTransient()) {
+											objItem.setRemitente(objDocumento.getNombreRemitente());
+										} else {
+											objItem.setRemitente((objTrazabilidadDocumento != null && objTrazabilidadDocumento.getRemitente() != null ? objTrazabilidadDocumento.getRemitente().getNombres() : "") + " " + (objTrazabilidadDocumento != null && objTrazabilidadDocumento.getRemitente() != null ? objTrazabilidadDocumento.getRemitente().getApellidos() : ""));
+										}
+									}
+								} else if (campo.equals("urlarchivo")) {
+									/*
+									 * List<Archivo> lstArchivo =
+									 * getSrvArchivo().getArchivoList
+									 * (objDocumento
+									 * .getExpediente().getIdexpediente(),
+									 * objDocumento.getIdDocumento(),
+									 * objUsuario.getRol().getNombre());
+									 *
+									 * if (lstArchivo != null &&
+									 * lstArchivo.size() > 0) {
+									 * _log.debug("Numero de archivos [" +
+									 * lstArchivo.size() + "]");
+									 * objItem.setUrlarchivo(lstArchivo
+									 * .get(0).getSURL()); }
+									 */
+									if (objDocumento.getArchivos() != null && objDocumento.getArchivos().size() > 0) {
+										objItem.setUrlarchivo(objDocumento.getArchivos().get(0).getRutaAlfresco());
+										_log.debug("Ruta Alfresco [" + objDocumento.getArchivos().get(0).getRutaAlfresco() + "]");
+									}
+								} else if (campo.equals("fechalimite")) {
+									// lo siguiente es temporal solo para probar
+									// en la
+									// mesa de partes
+									Date fechaLimite = objDocumento.getFechaLimiteAtencion();
+									if (fechaLimite != null) {
+										objItem.setFechalimite(fechaLimite);
+										objItem.setLfechalimite(fechaLimite.getTime());
+									}
+								} else if (campo.equals("tipoalerta")) {
+									objItem.setTipoalerta("<img src='images/bolitaRoja.gif' alt='Casi por expirar'/>"); // hardcode
+									// temporal
+								} else if (campo.equals("expediente")) {
+									if (objDocumento.isEsTransient()) {
+										objItem.setExpediente(objDocumento.getNroexpediente());
+									} else {
+										objItem.setExpediente(objDocumento.getExpediente().getNroexpediente());
+									}
+								} else if (campo.equals("proceso")) {
+									objItem.setProceso(objDocumento.getExpediente().getProceso().getNombre());
+								} else if (campo.equals("cliente")) {
+									Cliente cliente = objDocumento.getExpediente().getCliente();
+									if (cliente != null) {
+										String sTipoIdentificacion = cliente.getTipoIdentificacion().getNombre();
+										String sNombre = null;
+										if (sTipoIdentificacion.equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+											sNombre = objDocumento.getExpediente().getCliente().getRazonSocial();
+										} else {
+											sNombre = objDocumento.getExpediente().getCliente().getNombres() + " " + objDocumento.getExpediente().getCliente().getApellidoPaterno();
+										}
+										objItem.setCliente(sNombre);
+									}
+									objItem.setCliente("");
+								} else if (campo.equals("fechaexpediente")) {
+									objItem.setFechaexpediente(objDocumento.getExpediente().getFechacreacion());
+								} else if (campo.equals("numeroMesaPartes")) {
+									objItem.setNumeroMesaPartes(objDocumento.getNumeroMesaPartes());
+								}
+							}
+						}
+					}
+					lstItem.add(objItem);
+				}
+			}
+		}
+		return lstItem;
+	}
+
+	public List<Gridcolumnaxusuario> findByIdUsuario(Integer iIdUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - convertFromDocumentoToItem():List<Gridcolumnaxusuario> ");
+		
+		return getDao().findByIdUsuario(iIdUsuario);
+	}
+
+	public List<Item> convertFromCarpetaBusquedaToItem(Integer iIdCarpetaBusqueda) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - convertFromCarpetaBusquedaToItem():List<Item> ");
+
+		//List<Expedienfindadvance> lstE = null;
+		List<Documento> lstDocumento = null;
+		List<Item> lstItem = new ArrayList<Item>();
+
+		_log.debug("Se recibio carpeta de busqueda con ID [" + iIdCarpetaBusqueda + "]");
+
+		lstDocumento = srvCarpetaBusqueda.findLstByFiltro(iIdCarpetaBusqueda);
+		//lstE = srvCarpetaBusqueda.findbyAllid(iIdCarpetaBusqueda.intValue());
+
+		if (lstDocumento != null) {
+			_log.debug("Numero de documentos asociados a la carpeta de busqueda [" + lstDocumento.size() + "]");
+
+			for (Documento objDocumento : lstDocumento) {
+				Item objItem = new Item();
+
+				objItem.setExpediente(objDocumento.getExpediente().getNroexpediente());
+				objItem.setDocumento(objDocumento.getNumeroDocumento());
+				objItem.setTipodocumento(objDocumento.getTipoDocumento().getNombre());
+				objItem.setFecharecepcion(objDocumento.getFechaCreacion());
+				objItem.setProceso(objDocumento.getExpediente().getProceso().getNombre());
+				objItem.setArea(objDocumento.getAutor().getUnidad().getNombre());
+
+				if (objDocumento.getExpediente().getConcesionario() != null) {
+					objItem.setConcesionario(objDocumento.getExpediente().getConcesionario().getRazonSocial());
+				}
+
+				objItem.setId(objDocumento.getIdDocumento());
+				objItem.setIdproceso(objDocumento.getExpediente().getProceso().getIdproceso());
+				objItem.setAsunto(objDocumento.getAsunto());
+				objItem.setAsuntoExpediente(objDocumento.getExpediente().getAsunto());
+
+				objItem.setCliente(objDocumento.getExpediente().getCliente() != null ? objDocumento.getExpediente().getCliente().getNombreRazon() : "");
+				Trazabilidaddocumento traza = srvTrazabilidadDocumento.findByMaxtrazabyIddocumento(objDocumento.getIdDocumento()).get(0);
+				if(traza != null){
+					objItem.setAreadestino(traza.getDestinatario() != null? traza.getDestinatario().getUnidad().getNombre() : "-");
+				}else{
+					objItem.setAreadestino("-");
+				}
+				if(objDocumento.getPrioridad() != null){
+					objItem.setPrioridad("images/Prioridad_"+objDocumento.getPrioridad()+".png");
+					
+					List<Parametro> listaPrioridad = parametroDAO.getPrioridades();
+					for(Parametro p: listaPrioridad){		
+						if(String.valueOf(objDocumento.getPrioridad()).equals(p.getValor())){
+							objItem.setExcprioridad(String.valueOf(p.getDescripcion()));
+						}				
+					}
+				}
+
+				String estado = "";
+				switch (objDocumento.getEstado()){
+				case Constantes.ESTADO_ACTIVO:
+					estado = "Activo";
+					break;
+				case Constantes.ESTADO_ANULADO:
+					estado = "Anulado";
+					break;
+				case Constantes.ESTADO_CERRADO:
+					estado = "Archivado";
+					break;
+				case Constantes.ESTADO_INACTIVO:
+					estado = "Inactivo";
+					break;
+				};
+
+				objItem.setEstado(estado);
+
+				lstItem.add(objItem);
+			}
+		}
+
+		return lstItem;
+	}
+
+	public Map<String, List<Estructura>> getStructuresByRol(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getStructuresByRol():Map<String, List<Estructura>> ");
+		
+		Rol rol = objUsuario.getRol();
+		if (rol == null) {
+			rol = rolDao.encontrarPorNombre(Constantes.ROL_USUARIO_FINAL);
+		}
+		List<Grid> lstGrid = gridDao.findByRol(rol.getIdrol());
+		Map<String, List<Estructura>> salida = new HashMap<String, List<Estructura>>();
+		for (Grid g : lstGrid) {
+			salida.put(g.getCodigo(), buildEstructura(dao.findByIdUsuario(objUsuario.getIdusuario()), gridXGridColumnaDao.encontrarPorGrid(g.getIdGrid()), objUsuario.getIdusuario()));
+		}
+		return salida;
+		/*
+		 * //Estructura objStr1A = new Estructura("formatterLeido", 0, 1,"leido", "<img src='images/sigedIconos/EmailRead16.gif' alt=''/>","30px");
+		 * Estructura objStrA = new Estructura(null, 1, 0, "id", "ID","30px");
+		 * Estructura objStrB = new Estructura("formatterImg", 0, 1,"tipoalerta", "<img src='images/bolita.gif' alt=''/>", "30px");
+		 * Estructura objStrC = new Estructura(null, 0, 0, "remitente","Remitente", "150px");
+		 * Estructura objStrD = new Estructura(null, 0,0, "asunto", "Asunto", "150px");
+		 * Estructura objStrE = new Estructura("formatterDate", 0, 0, "fecharecepcion", "Fecha","150px");
+		 * Estructura objStrF = new Estructura("formatterDate", 0, 0,"fechalimite", "Fecha Limite", "150px");
+		 * Estructura objStrG = new Estructura(null, 0, 0, "documento", "Documento", "300px");
+		 * Estructura objStrH = new Estructura(null, 0, 0, "expediente", "Expediente","150px");
+		 * Estructura objStrI = new Estructura(null, 1, 0, "proceso","Proceso", "150px");
+		 * Estructura objStrJ = new Estructura(null, 1, 0,"cliente", "Cliente", "150px");
+		 *
+		 * //lstDocStr.add(objStr1A); lstDocStr.add(objStrA);
+		 * lstDocStr.add(objStrB); lstDocStr.add(objStrC);
+		 * lstDocStr.add(objStrD); lstDocStr.add(objStrE);
+		 * lstDocStr.add(objStrF); lstDocStr.add(objStrG);
+		 * lstDocStr.add(objStrH); lstDocStr.add(objStrI);
+		 * lstDocStr.add(objStrJ);
+		 *
+		 * lstAllStructures.add(lstDocStr);
+		 *
+		 * List<Estructura> lstArchPend = new ArrayList<Estructura>();
+		 *
+		 * Estructura objStrAA = new Estructura(null, 1, 1, "id", "ID", "30px");
+		 * Estructura objStrBB = new Estructura(null, 0, 0, "remitente",
+		 * "Remitente", "150px"); Estructura objStrCC = new Estructura(null, 0,
+		 * 0, "asunto", "Asunto", "150px"); Estructura objStrDD = new
+		 * Estructura(null, 0, 0, "documento", "Documento", "150px"); Estructura
+		 * objStrEE = new Estructura("formatterDate", 0, 0, "fecharecepcion",
+		 * "Fecha", "150px"); Estructura objStrFF = new Estructura(null, 1, 0,
+		 * "concesionario", "Concesionario", "150px"); Estructura objStrGG = new
+		 * Estructura(null, 0, 0, "estado", "Estado", "150px");
+		 *
+		 * lstArchPend.add(objStrAA); lstArchPend.add(objStrBB);
+		 * lstArchPend.add(objStrCC); lstArchPend.add(objStrDD);
+		 * lstArchPend.add(objStrEE); lstArchPend.add(objStrFF);
+		 * lstArchPend.add(objStrGG);
+		 *
+		 * lstAllStructures.add(lstArchPend);
+		 *
+		 * List<Estructura> lstDocEnv = new ArrayList<Estructura>();
+		 *
+		 * Estructura objStr13 = new Estructura(null, 1, 0, "id", "ID", "30px");
+		 * Estructura objStr14 = new Estructura(null, 0, 0, "asunto", "Asunto",
+		 * "150px"); Estructura objStr15 = new Estructura(null, 0, 0, "cliente",
+		 * "Cliente", "150px"); Estructura objStr16 = new Estructura(null, 0, 0,
+		 * "documento", "Documento", "150px"); Estructura objStr17 = new
+		 * Estructura("formatterDate", 0, 0, "fecharecepcion", "Fecha",
+		 * "150px"); Estructura objStr18 = new Estructura(null, 0, 0,
+		 * "destinatario", "Destinatario", "150px");
+		 *
+		 * lstDocEnv.add(objStr13); lstDocEnv.add(objStr14);
+		 * lstDocEnv.add(objStr15); lstDocEnv.add(objStr16);
+		 * lstDocEnv.add(objStr17); lstDocEnv.add(objStr18);
+		 *
+		 * lstAllStructures.add(lstDocEnv);
+		 *
+		 * List<Estructura> lstMsjStr = new ArrayList<Estructura>();
+		 *
+		 * Estructura objStr20 = new Estructura(null, 0, 0, "usuario",
+		 * "Usuario", "150px"); Estructura objStr21 = new Estructura(null, 0, 0,
+		 * "nrointerno", "Nro Interno", "150px"); Estructura objStr22 = new
+		 * Estructura(null, 0, 0, "tipodocumento", "Tipo de Documento",
+		 * "150px"); Estructura objStr23 = new Estructura(null, 0, 0,
+		 * "destinatario", "Destinatario", "150px"); Estructura objStr24 = new
+		 * Estructura(null, 0, 0, "asunto", "Asunto", "150px"); Estructura
+		 * objStr25 = new Estructura(null, 0, 0, "estado", "Estado", "150px");
+		 * Estructura objStr26 = new Estructura(null, 0, 0, "etapa", "Etapa",
+		 * "150px"); Estructura objStr27 = new Estructura("formatterDate", 0, 0,
+		 * "fecharecepcion", "Fecha Recepcion", "150px"); Estructura objStr28 =
+		 * new Estructura(null, 1, 0, "id", "ID", "150px");
+		 *
+		 * lstMsjStr.add(objStr20); lstMsjStr.add(objStr21);
+		 * lstMsjStr.add(objStr22); lstMsjStr.add(objStr23);
+		 * lstMsjStr.add(objStr24); lstMsjStr.add(objStr25);
+		 * lstMsjStr.add(objStr26); lstMsjStr.add(objStr27);
+		 * lstMsjStr.add(objStr28);
+		 *
+		 * lstAllStructures.add(lstMsjStr);
+		 *
+		 * List<Estructura> lstNotif = new ArrayList<Estructura>();
+		 *
+		 * Estructura objStr1A = new Estructura("formatterLeido", 0, 1, "leido",
+		 * "<img src='images/sigedIconos/EmailRead16.gif' alt=''/>", "30px");
+		 * Estructura objStr29 = new Estructura(null, 1, 0, "id", "ID",
+		 * "150px"); Estructura objStr30 = new Estructura(null, 0, 0, "asunto",
+		 * "Asunto", "400px"); Estructura objStr31 = new Estructura(null, 0, 0,
+		 * "fecharecepcion", "Fecha", "150px");
+		 *
+		 * lstNotif.add(objStr1A); lstNotif.add(objStr29);
+		 * lstNotif.add(objStr30); lstNotif.add(objStr31);
+		 *
+		 * lstAllStructures.add(lstNotif);
+		 *
+		 * List<Estructura> lstProc = new ArrayList<Estructura>();
+		 *
+		 * Estructura objStr32 = new Estructura(null, 1, 0, "id", "ID",
+		 * "150px"); Estructura objStr33 = new Estructura(null, 0, 0, "nombre",
+		 * "Nombre", "150px"); Estructura objStr34 = new Estructura(null, 0, 0,
+		 * "tiempoatencion", "Tiempo de Atencion", "150px");
+		 *
+		 * lstProc.add(objStr32); lstProc.add(objStr33); lstProc.add(objStr34);
+		 *
+		 * lstAllStructures.add(lstProc);
+		 *
+		 * List<Estructura> lstExp = new ArrayList<Estructura>();
+		 *
+		 * Estructura objStr35 = new Estructura(null, 1, 0, "id", "ID",
+		 * "150px"); Estructura objStr36 = new Estructura(null, 0, 0,
+		 * "expediente", "Expediente", "150px"); Estructura objStr37 = new
+		 * Estructura(null, 0, 0, "proceso", "Proceso", "150px"); Estructura
+		 * objStr38 = new Estructura(null, 0, 0, "cliente", "Cliente", "150px");
+		 * Estructura objStr39 = new Estructura(null, 0, 0, "fecharecepcion",
+		 * "Fecha de Recepcion", "150px");
+		 *
+		 * lstExp.add(objStr35); lstExp.add(objStr36); lstExp.add(objStr37);
+		 * lstExp.add(objStr38); lstExp.add(objStr39);
+		 *
+		 * lstAllStructures.add(lstExp);
+		 *
+		 * List<Estructura> lstDocRegistrados = new ArrayList<Estructura>();
+		 *
+		 * Estructura objStr40 = new Estructura(null, 1, 0, "id", "ID", "30px");
+		 * Estructura objStr41 = new Estructura(null, 0, 0, "remitente",
+		 * "Remitente", "150px"); Estructura objStr42 = new Estructura(null, 0,
+		 * 0, "asunto", "Asunto", "150px"); Estructura objStr43 = new
+		 * Estructura("formatterDate", 0, 0, "fecharecepcion", "Fecha",
+		 * "150px"); Estructura objStr44 = new Estructura("formatterDate", 0, 0,
+		 * "fechalimite", "Fecha Limite", "150px"); Estructura objStr45 = new
+		 * Estructura(null, 0, 0, "documento", "Documento", "300px"); Estructura
+		 * objStr46 = new Estructura(null, 0, 0, "expediente", "Expediente",
+		 * "150px"); Estructura objStr47 = new Estructura(null, 1, 0, "proceso",
+		 * "Proceso", "150px"); Estructura objStr48 = new Estructura(null, 1, 0,
+		 * "cliente", "Cliente", "150px");
+		 *
+		 * lstDocRegistrados.add(objStr40); lstDocRegistrados.add(objStr41);
+		 * lstDocRegistrados.add(objStr42); lstDocRegistrados.add(objStr43);
+		 * lstDocRegistrados.add(objStr44); lstDocRegistrados.add(objStr45);
+		 * lstDocRegistrados.add(objStr46); lstDocRegistrados.add(objStr47);
+		 * lstDocRegistrados.add(objStr48);
+		 *
+		 * lstAllStructures.add(lstDocRegistrados);
+		 */
+		// return lstAllStructures;
+	}
+
+	public void setRolDao(RolDAO rolDao) {
+		this.rolDao = rolDao;
+	}
+
+	public void setGridDao(GridDAO gridDao) {
+		this.gridDao = gridDao;
+	}
+
+	@SuppressWarnings("unused")
+	private List<Item> getItems_Usuario_Mensajeria(Usuario objUsuario, char estadoActivo) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Usuario_Mensajeria():List<Item> ");
+		
+		List<Mensajeria> lstMensajeria = null;
+		List<Item> lstItem = new ArrayList<Item>();
+		try {
+			//lstMensajeria = srvMensajeria.findidusuario(objUsuario.getIdusuario());
+			lstMensajeria = srvMensajeria.ViewEstado(String.valueOf(estadoActivo));
+			if (lstMensajeria == null) {
+				_log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene documentos en mensajeria");
+				return null;
+			}
+
+
+			_log.debug("Se encontraron [" + lstMensajeria.size() + "] documentos en mensajeria pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+			for (Mensajeria objMensajeria : lstMensajeria) {
+				Item objItem = new Item();
+				Datos datos = new Datos();
+				//AmbitoEnvio idAmbitoEnvio = new AmbitoEnvio();
+				objItem.setUsuario(objMensajeria.getIdusuario().getUsuario());
+				//no mostrar //objItem.setNrointerno(objMensajeria.getNumerointerno());
+				objItem.setTipodocumento(objMensajeria.getTipodocumento());
+				objItem.setDestinatario(objMensajeria.getDestinatario());
+				objItem.setEtapa(String.valueOf(objMensajeria.getEstadoingreso()));
+				objItem.setFecharecepcion(objMensajeria.getFechaderivacion());
+				//NO MOSTRAR//objItem.setId(objMensajeria.getIdmensajeria());
+
+				Tipoenvio tipEnvio = objMensajeria.getIdtipoenvio();
+				objItem.setTipoEnvio(tipEnvio.getTipoenvio2());
+				//
+
+				//                AmbitoEnvio idAmbitoEnvio = null;
+				//                if (objMensajeria.getDatos() != null) {
+				//                    idAmbitoEnvio = objMensajeria.getDatos().getIdambitoenvio();
+				//                    objItem.setAmbitoEnvio(idAmbitoEnvio.getNomambitoenvio().toString());
+				//                } else {
+				//                    objItem.setAmbitoEnvio("");
+				//                }
+
+
+
+				//datos = getDatosDAO().findId(objMensajeria.getIdmensajeria());\
+				//idAmbitoEnvio = datos.getIdambitoenvio();
+				//objItem.setAmbitoEnvio(idAmbitoEnvio.getNomambitoenvio());
+				Integer idDoc = objMensajeria.getIddocumento();
+				Documento doc = documentoService.findByIdDocumento(idDoc);
+				//NO MOSTRAR //  objItem.setDocumento(doc.getTipoDocumento().getNombre() + " - " + doc.getNumeroDocumento());
+				objItem.setExpediente(doc.getExpediente().getNroexpediente());
+
+				Cargo objCargo = cargoService.findkey(objMensajeria.getIdmensajeria());
+				objItem.setEstado(objCargo != null && objCargo.getEstado() != null && !objCargo.getEstado().equals("") ? objCargo.getEstado() : "");
+
+				objItem.setNrodocumento(objMensajeria.getNumerodocumento());
+
+				lstItem.add(objItem);
+				// objItem.setNrointerno(objMensajeria.getNumerointerno());
+				objItem.setId(objMensajeria.getIdmensajeria());
+				//objItem.setDocumento(doc.getTipoDocumento().getNombre() + " - " + doc.getNumeroDocumento());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return lstItem;
+	}
+
+	/**REN Se encarga de buscar los expedientes que irán en cada bandeja --------------------------*/
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public List getItems(String sTipoGrid, Usuario objUsuario, BusquedaAvanzada objFiltro) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems():List ");
+		
+		List lstItem = null;
+
+		if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_DOCUMENTO)) {
+			//lstItem = this.getBandejaDocUsuarioFinal(objUsuario, true); //wcarrasco 17-02-2012
+			lstItem = this.getBandejaDocUsuarioFinalFiltro(objUsuario, true,objFiltro);
+			
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_DOCUMENTOS_ARCHIVADOS)) {
+			lstItem = this.getBandejaDocAtendidosUsuarioFinal(objUsuario, objFiltro);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_QAS_DIGITALIZADOS)) {
+			lstItem = this.getItems_Documento(objUsuario);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_DOCUMENTO_RECIBIDO)) {
+			lstItem = this.getBandejaDocUsuarioFinal(objUsuario, true);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_ARCHIVOPENDIENTE)) {
+			lstItem = this.getItems_ArchivoPendiente(objUsuario);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_DOCUMENTOENVIADO)) {
+			lstItem = this.getItems_DocumentoEnviado(objUsuario, objFiltro);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_MENSAJERIA)) {
+			lstItem = this.getItems_Mensajeria(objUsuario);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_NOTIFICACION)) {
+			lstItem = this.getItems_Notificacion(objUsuario);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_PROCESO)) {
+			lstItem = this.getItems_Proceso(objUsuario);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_EXPEDIENTE)) {
+			//lstItem = this.getItems_Expediente(objUsuario);
+			lstItem = this.getBandejaDocUsuarioFinal(objUsuario, false);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_INFORMATIVO)) {
+			lstItem = this.getItems_Informativo(objUsuario, objFiltro);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_MENSAJERIA_RECIBIDOS)) {
+			lstItem = this.getItems_Usuario_Mensajeria(objUsuario, Constantes.ESTADO_ACTIVO);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_MENSAJERIA_CERRADOS)) {
+			lstItem = this.getItems_Usuario_Mensajeria(objUsuario, Constantes.ESTADO_CERRADO);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_SEGUIMIENTO)) {
+			lstItem = this.getItems_Usuario_Seguimiento(objUsuario);
+		}
+
+		return lstItem;
+	}
+
+	/**REN Se encarga de buscar los expedientes que irán en cada bandeja --------------------------*/
+	@SuppressWarnings("rawtypes")
+	public List getItemsDocumentosXExpediente(String sTipoGrid, Integer idDocumento, Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItemsDocumentosXExpediente():List ");
+		
+		if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_DOCUMENTO)) {
+			return documentoService.findDocumentosXExpediente(objUsuario, idDocumento, true);
+		} else if (sTipoGrid.equalsIgnoreCase(Constantes.TIPO_GRID_EXPEDIENTE)) {
+			return documentoService.findDocumentosXExpediente(objUsuario, idDocumento, false);
+		}
+
+		return null;
+	}
+
+	/** No incluye los expedientes de cada usuario que ha compartido */
+	@SuppressWarnings("rawtypes")
+	public List getItemsSinBandejaCompartida(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItemsSinBandejaCompartida():List ");
+		
+		return this.getBandejaUsuaruioSinBandejaCompartida(objUsuario);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public List getItems_Documento(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Documento():List ");
+		
+		Cliente objCliente = null;
+		List<Documento> lstDocumento = null;
+		List<Item> lstItem = new ArrayList<Item>();
+		String sNombre = null;
+		String sApellido = null;
+		String sRazonSocial = null;
+
+		lstDocumento = documentoService.findDocumentos(objUsuario);
+
+		if (lstDocumento == null) {
+			_log.info("El usuario [" + objUsuario.getIdusuario() + "] no tiene documentos");
+
+			return null;
+		}
+
+		_log.info("Se encontraron [" + lstDocumento.size() + "] documentos pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+		for (Documento objDocumento : lstDocumento) {
+			Item objItem = new Item();
+
+			objItem.setLeido(objDocumento.getLeido());
+			objItem.setId(objDocumento.getIdDocumento());
+			objItem.setTipoalerta("images/bolitaRoja.gif");
+			// objItem.setRemitente(objDocumento.getRemitente());
+			objItem.setAsunto(objDocumento.getAsunto());
+			objItem.setFecharecepcion(objDocumento.getFechaAccion());
+			objItem.setLfecharecepcion(objDocumento.getFechaAccion().getTime());
+			objItem.setFechalimite(objDocumento.getFechaLimiteAtencion());
+			objItem.setLfechalimite(objDocumento.getFechaLimiteAtencion() != null ? objDocumento.getFechaLimiteAtencion().getTime() : 0L);
+			objItem.setEtapa(objDocumento.getEtapa() != null ? objDocumento.getEtapa() : "");
+			objItem.setEstado(String.valueOf(objDocumento.getEstado()).equals(String.valueOf(Constantes.ESTADO_ACTIVO)) ? Constantes.EXPEDIENTE_ESTADO_ACTIVO : String.valueOf(objDocumento.getEstado()));
+			objItem.setActividad(objDocumento.getActividad() != null ? objDocumento.getActividad() : "");
+
+			if (objDocumento.getPorcentajealertaA() != null) {
+				objItem.setPorcentajealertaA(objDocumento.getPorcentajealertaA());
+			}
+			if (objDocumento.getPorcentajealertaR() != null) {
+				objItem.setPorcentajealertaR(objDocumento.getPorcentajealertaR());
+			}
+
+			if (objDocumento.getArchivos() != null && objDocumento.getArchivos().size() > 0) {
+				objItem.setUrlarchivo(objDocumento.getArchivos().get(0).getRutaAlfresco());
+				_log.debug("Ruta Alfresco [" + objDocumento.getArchivos().get(0).getRutaAlfresco() + "]");
+			}
+
+			if (!objDocumento.isEsTransient()) {
+				Trazabilidaddocumento trazabilidad = srvTrazabilidadDocumento.findByMaxNroRegistro(objDocumento.getIdDocumento(), null, null, null);
+				objItem.setRemitente("");
+
+				if (trazabilidad != null) {
+					Usuario remitente = trazabilidad.getRemitente();
+
+					if (remitente != null) {
+						objItem.setRemitente(remitente.getNombres() + " " + remitente.getApellidos());
+					}
+				}
+
+				objItem.setDocumento(objDocumento.getNumeroDocumento());
+				objItem.setExpediente(objDocumento.getExpediente().getNroexpediente());
+				if (objDocumento.getIdProceso() != null) {
+					objItem.setIdproceso(objDocumento.getIdProceso());
+				}
+				objItem.setProceso(objDocumento.getExpediente().getProceso().getNombre());
+
+
+
+				Concesionario concesionario = objDocumento.getExpediente().getConcesionario();
+
+				if (concesionario != null) {
+					objItem.setConcesionario(concesionario.getRazonSocial());
+				}
+
+				objCliente = objDocumento.getExpediente().getCliente();
+				sNombre = objDocumento.getExpediente().getClientenombres() != null ? objDocumento.getExpediente().getClientenombres() : objCliente.getNombres();
+				sApellido = objDocumento.getExpediente().getClienteapellidopaterno() != null ? objDocumento.getExpediente().getClienteapellidopaterno() : objCliente.getApellidoPaterno();
+				sRazonSocial = objDocumento.getExpediente().getClienterazonsocial() != null ? objDocumento.getExpediente().getClienterazonsocial() : objCliente.getRazonSocial();
+				objItem.setCliente(objCliente != null ? objCliente.getTipoIdentificacion().getNombre().equalsIgnoreCase(Constantes.TIPO_IDENTIFICACION_RUC) ? sRazonSocial : sNombre + " " + sApellido : null);
+			} else {
+				objItem.setRemitente(objDocumento.getNombreRemitente());
+				objItem.setDocumento(objDocumento.getNombreTipoDocumento());
+				objItem.setExpediente(objDocumento.getNroexpediente());
+				objItem.setProceso(objDocumento.getNombreProceso());
+
+				if (objDocumento.getRazonSocialConcesionario() != null) {
+					objItem.setConcesionario(objDocumento.getRazonSocialConcesionario());
+				}
+				if (objDocumento.getClienteTipoIdentificacion() != null) {
+					if (objDocumento.getClienteTipoIdentificacion().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+						objItem.setCliente(objDocumento.getClienteRazonSocial());
+					} else {
+						objItem.setCliente(objDocumento.getClienteNombre());
+					}
+				}
+				if (objDocumento.getIdProceso() != null) {
+					objItem.setIdproceso(objDocumento.getIdProceso());
+				}
+			}
+
+			lstItem.add(objItem);
+		}
+
+		return lstItem;
+	}
+
+	/**REN Busca los documentos para llenar la grilla -------------------------------------------------------------------------*/
+	@SuppressWarnings("rawtypes")
+	public List getBandejaDocUsuarioFinal(Usuario objUsuario, boolean enviados) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getBandejaDocUsuarioFinal():List ");
+		
+		return documentoService.findDocumentosUsuarioFinal(objUsuario, enviados);
+	}
+	
+	public List<ItemUF> getItems_Usuario_Seguimiento(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Usuario_Seguimiento():List ");
+		
+		return seguimientoXUsuarioService.getItemsSeguimientoXUsuario(objUsuario.getIdusuario());
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public List getBandejaUsuaruioSinBandejaCompartida(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getBandejaUsuaruioSinBandejaCompartida():List ");
+		
+		return documentoService.findByDataUFWithoutSharedInbox(objUsuario.getIdusuario());
+	}
+
+	@SuppressWarnings("rawtypes")
+	public List getBandejaDocAtendidosUsuarioFinal(Usuario objUsuario, BusquedaAvanzada objFiltro) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getBandejaDocAtendidosUsuarioFinal():List ");
+		
+		if(objFiltro == null){
+			return documentoService.findDocumentosAtendidosUsuarioFinal(objUsuario);
+		}else{
+			return documentoService.findDocumentosAtendidosUsuarioFinal(objUsuario, objFiltro);
+		}
+		
+	}
+
+	public List<Item> getItems_ArchivoPendiente(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_ArchivoPendiente():List<Item> ");
+		
+		List<ArchivoPendiente> lstArchivoPendiente = null;
+		List<Item> lstItem = new ArrayList<Item>();
+
+		lstArchivoPendiente = srvArchivoPendiente.findByIdusuario(objUsuario.getIdusuario());
+
+		if (lstArchivoPendiente == null) {
+			_log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene archivos pendientes");
+
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + lstArchivoPendiente.size() + "] archivos pendientes pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+		for (ArchivoPendiente objArchivoPendiente : lstArchivoPendiente) {
+			Item objItem = new Item();
+			Documento doc = objArchivoPendiente.getDocumento();
+
+			//   Documento doc = objArchivoPendiente.getDocumento();
+			objItem.setAsunto(objArchivoPendiente.getAsunto());
+			objItem.setConcesionario(objArchivoPendiente.getConcesionario() != null ? objArchivoPendiente.getConcesionario().getRazonSocial() : null);
+			objItem.setDocumento(doc.getNumeroDocumento());
+			objItem.setFecharecepcion(doc.getFechaDocumento());
+			objItem.setId(objArchivoPendiente.getIdArchivoPendiente());
+			objItem.setEstado(objArchivoPendiente.getEstado());
+			objItem.setRemitente(doc.getPropietario().getNombres() + " " + doc.getPropietario().getApellidos());
+
+			lstItem.add(objItem);
+		}
+
+		return lstItem;
+	}
+
+	public List<Item> getItems_DocumentoEnviado(Usuario objUsuario, BusquedaAvanzada objFiltro) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_DocumentoEnviado():List<Item> ");
+		
+		Cliente objCliente = null;
+		List<FilaBandejaEnviados> lstEnviados = null;
+		List<Item> lstItem = new ArrayList<Item>();
+		String sNombre = null;
+		String sApellido = null;
+		String sRazonSocial = null;
+		if(objFiltro == null){
+			lstEnviados = srvDocumentoEnviado.buscarEnviadosPorUsuario(objUsuario.getIdusuario());
+		}else{
+			lstEnviados = srvDocumentoEnviado.buscarEnviadosFiltrados(objUsuario.getIdusuario(), objFiltro);
+		}
+
+		if (lstEnviados == null) {
+			_log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene documentos enviados");
+
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + lstEnviados.size() + "] documentos enviados pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+		for (FilaBandejaEnviados fila : lstEnviados) {
+			Item objItem = new Item();
+			objItem.setAsunto(fila.getAsunto());
+			objItem.setCliente(fila.getCliente() != null ? fila.getCliente().getNombreRazon() : "");					
+			objItem.setDocumento(fila.getNroDocumento());
+			objItem.setFecharecepcion(fila.getFechaRecepcion());
+			objItem.setId(fila.getId());
+			objItem.setDestinatario(fila.getDestinatario());
+			objItem.setExpediente(fila.getNroExpediente());
+			objItem.setTipoEnvio(fila.getTipoEnvio());
+			if(fila.getPrioridad() != null){
+				objItem.setPrioridad("images/Prioridad_"+fila.getPrioridad()+".png");
+			}
+			objItem.setFechalimite(fila.getFechaLimite());
+			objItem.setAccion(fila.getAccion());
+			
+			lstItem.add(objItem);
+		}
+		return lstItem;
+	}
+
+	public List<Item> getItems_Mensajeria(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Mensajeria():List<Item> ");
+		
+		List<Mensajeria> lstMensajeria = null;
+		List<Item> lstItem = new ArrayList<Item>();
+
+		lstMensajeria = srvMensajeria.findidusuario(objUsuario.getIdusuario());
+
+		if (lstMensajeria == null) {
+			_log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene documentos en mensajeria");
+
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + lstMensajeria.size() + "] documentos en mensajeria pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+		for (Mensajeria objMensajeria : lstMensajeria) {
+			Item objItem = new Item();
+
+			objItem.setUsuario(objMensajeria.getIdusuario().getUsuario());
+			objItem.setNrointerno(objMensajeria.getNumerointerno());
+			objItem.setTipodocumento(objMensajeria.getTipodocumento());
+			objItem.setDestinatario(objMensajeria.getDestinatario());
+			objItem.setAsunto(objMensajeria.getAsunto());
+			objItem.setEstado(String.valueOf(objMensajeria.getEstado()));
+			objItem.setEtapa(String.valueOf(objMensajeria.getEstadoingreso()));
+			objItem.setFecharecepcion(objMensajeria.getFechaderivacion());
+			objItem.setId(objMensajeria.getIdmensajeria());
+			Documento doc = documentoService.findByIdDocumento(objMensajeria.getIddocumento());
+			objItem.setExpediente(doc.getExpediente().getNroexpediente());
+			objItem.setDocumento(doc.getTipoDocumento().getNombre() + "-" + doc.getNumeroDocumento());
+			objItem.setNrodocumento(doc.getNumeroDocumento());
+			lstItem.add(objItem);
+		}
+
+		return lstItem;
+	}
+
+	public List<Item> getItems_Notificacion(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Notificacion():List<Item> ");
+
+		List<Item> lstItem = srvItem.findLstNotificacionBy(objUsuario.getIdusuario(), Constantes.ESTADO_ACTIVO);
+
+		if (lstItem == null) {
+			_log.info("El usuario [" + objUsuario.getIdusuario() + "] no tiene notificaciones");
+
+			return null;
+		} else {
+			_log.debug("Se encontraron [" + lstItem.size() + "] notificaciones pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+		}
+
+
+		return lstItem;
+
+		/*List<Item> lstItem = new ArrayList<Item>();
+      List<Notificacion> lstNotificacion = null;
+
+      lstNotificacion = srvNotificacion.buscarLstPor(objUsuario.getIdusuario());
+
+      if (lstNotificacion == null) {
+      _log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene notificaciones");
+
+      return null;
+      }
+
+      _log.debug("Se encontraron [" + lstNotificacion.size() + "] notificaciones pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+      for (Notificacion objNotificacion : lstNotificacion) {
+      Item objItem = new Item();
+
+      objItem.setLeido(objNotificacion.getLeido());
+      objItem.setId(objNotificacion.getIdnotificacion());
+      objItem.setAsunto(objNotificacion.getAsunto());
+      objItem.setFecharecepcion(objNotificacion.getFechanotificacion());
+      objItem.setDocumento(objNotificacion.getiIdDocumento().toString());
+      objItem.setTiponotificacion(objNotificacion.getsTipoNotificacionDescripcion());
+
+      lstItem.add(objItem);
+      }
+
+      return lstItem;*/
+	}
+
+	public List<Item> getItems_Proceso(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Proceso():List<Item> ");
+		
+		List<Item> lstItem = new ArrayList<Item>();
+		List<Proceso> lstProceso = null;
+
+		lstProceso = srvProceso.findByIdResponsableOrAsistente(objUsuario.getIdusuario(), Constantes.ESTADO_ACTIVO);
+
+		if (lstProceso == null) {
+			_log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene procesos");
+
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + lstProceso.size() + "] procesos pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+		for (Proceso objProceso : lstProceso) {
+			Item objItem = new Item();
+
+			objItem.setId(objProceso.getIdproceso());
+			objItem.setProceso(objProceso.getNombre());
+			objItem.setTiempoatencion(objProceso.getTiempoatencion());
+			objItem.setFecharecepcion(objProceso.getFechacreacion());
+
+			lstItem.add(objItem);
+		}
+
+		return lstItem;
+	}
+
+	public List<Item> getItems_Expediente(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Expediente():List<Item> ");
+		/*Cliente objCliente = null;
+      Expediente objExpediente = null;
+      List<Documento> lstDocumento = null;
+      List<Item> lstItem = new ArrayList<Item>();
+      String sNombre = null;
+      String sApellido = null;
+      String sRazonSocial = null;
+
+      lstDocumento = documentoService.buscarLstDocumentoPor(Constantes.DOCUMENTO_PRINCIPAL, objUsuario.getIdusuario());
+
+      if (lstDocumento == null) {
+      _log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene expedientes");
+
+      return null;
+      }
+
+      _log.debug("Se encontraron [" + lstDocumento.size() + "] expedientes pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+      for (Documento objDocumento : lstDocumento) {
+      Item objItem = new Item();
+
+      objExpediente = objDocumento.getExpediente();
+      objItem.setId(objExpediente.getIdexpediente());
+      objItem.setExpediente(objExpediente.getNroexpediente());
+      objItem.setProceso(objExpediente.getProceso().getNombre());
+      objCliente = objExpediente.getCliente();
+      sNombre = objExpediente.getClientenombres() != null ? objExpediente.getClientenombres() : objCliente.getNombres();
+      sApellido = objExpediente.getClienteapellidopaterno() != null ? objExpediente.getClienteapellidopaterno() : objCliente.getApellidoPaterno();
+      sRazonSocial = objExpediente.getClienterazonsocial() != null ? objExpediente.getClienterazonsocial() : objCliente.getRazonSocial();
+      objItem.setCliente(objCliente != null ? objCliente.getTipoIdentificacion().getNombre().equalsIgnoreCase(Constantes.TIPO_IDENTIFICACION_RUC) ? sRazonSocial : sNombre + " " + sApellido : null);
+      objItem.setFecharecepcion(objExpediente.getFechacreacion());
+
+      lstItem.add(objItem);
+      }
+
+      return lstItem;*/
+
+		/*List<Expediente> lstExpediente = null;
+      List<Item> lstItem = new ArrayList<Item>();
+
+      lstExpediente = srvExpediente.findLstBy(objUsuario.getIdusuario());
+
+      if (lstExpediente == null) {
+      _log.debug("El usuario [" + objUsuario.getIdusuario() + "] no tiene expedientes");
+
+      return null;
+      }
+
+      _log.debug("Se encontraron [" + lstExpediente.size() + "] expedientes pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+      for (Expediente objExpediente : lstExpediente) {
+      Item objItem = new Item();
+
+      objItem.setId(objExpediente.getIdexpediente());
+      objItem.setExpediente(objExpediente.getNroexpediente());
+      objItem.setProceso(objExpediente.getsProceso());
+      objItem.setCliente(objExpediente.getsClienteTipoIdentificacion().equalsIgnoreCase(Constantes.TIPO_IDENTIFICACION_RUC) ? objExpediente.getClienterazonsocial() : objExpediente.getClientenombres() + " " + objExpediente.getClienteapellidopaterno() + " " + objExpediente.getClienteapellidomaterno());
+      objItem.setFecharecepcion(objExpediente.getFechacreacion());
+
+      lstItem.add(objItem);
+      }
+
+      return lstItem;*/
+
+		List<Item> lstItem = null;
+
+		lstItem = srvItem.findLstExpedienteBy(objUsuario.getIdusuario());
+
+		if (lstItem == null) {
+			_log.info("El usuario [" + objUsuario.getIdusuario() + "] no es ni propietario ni responsable ni asistente de ningun expediente");
+
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + lstItem.size() + "] expedientes asociados al usuario [" + objUsuario.getUsuario() + "]");
+
+		return lstItem;
+	}
+
+	public List<Item> getItems_Informativo(Usuario objUsuario, BusquedaAvanzada objFiltro) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Informativo():List<Item> ");
+		
+		List<Item> lstItem = null;
+
+		if(objFiltro == null){
+			lstItem = srvItem.findLstInformativoBy(objUsuario.getIdusuario(), Constantes.ESTADO_ACTIVO);
+		}else{
+			lstItem = srvItem.findLstInformativoBy(objUsuario.getIdusuario(), objFiltro);
+		}
+		
+
+		if (lstItem == null) {
+			_log.info("El usuario [" + objUsuario.getIdusuario() + "] no tiene informativos");
+
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + lstItem.size() + "] informativos pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+		/*
+      //return lstItem;
+
+
+
+
+
+
+
+      List<Mensajeria> lstMensajeria = null;
+      lstMensajeria = srvMensajeria.findidusuario(objUsuario.getIdusuario());
+      if (lstMensajeria == null) {
+      _log.debug("El usuario [" + objUsuario.getIdusuario()+ "] no tiene documentos en mensajeria");
+      return null;
+      }
+
+
+      _log.debug("Se encontraron [" + lstMensajeria.size()+ "] documentos en mensajeria pertenecientes al usuario ["+ objUsuario.getUsuario() + "]");
+
+      for (Mensajeria objMensajeria : lstMensajeria) {
+      Item objItem = new Item();
+      Integer idDoc=objMensajeria.getIddocumento();
+      Documento doc=documentoService.findByIdDocumento(idDoc);
+      objItem.setDocumento(doc.getTipoDocumento().getNombre()+" - "+doc.getNumeroDocumento());
+      lstItem.add(objItem);
+      //podria hacer  k este objItem
+      }*/
+		return lstItem;
+
+		/*List<Item> lstItem = new ArrayList<Item>();
+      List<Notificacion> lstNotificacion = null;
+
+      lstNotificacion = srvNotificacion.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_DERIVACION);
+      lstNotificacion.addAll(srvNotificacion.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_NUMERACION_DESTINATARIO));
+      lstNotificacion.addAll(srvNotificacion.buscarLstPor(objUsuario.getIdusuario(), Constantes.TIPO_NOTIFICACION_NUMERACION_DOCUMENTOCONCOPIA));
+
+      if (lstNotificacion == null) {
+      _log.info("El usuario [" + objUsuario.getIdusuario() + "] no tiene notificaciones");
+
+      return null;
+      }
+
+      _log.debug("Se encontraron [" + lstNotificacion.size() + "] informativos pertenecientes al usuario [" + objUsuario.getUsuario() + "]");
+
+      for (Notificacion objNotificacion : lstNotificacion) {
+      Item objItem = new Item();
+
+      objItem.setLeido(objNotificacion.getLeido());
+      objItem.setId(objNotificacion.getIdnotificacion());
+      objItem.setAsunto(objNotificacion.getAsunto());
+      objItem.setFecharecepcion(objNotificacion.getFechanotificacion());
+      objItem.setDocumento(objNotificacion.getiIdDocumento().toString());
+      objItem.setTipo(String.valueOf(objNotificacion.getTiponotificacion()));
+      objItem.setConcesionario(objNotificacion.getsConcesionario());
+      objItem.setExpediente(objNotificacion.getsNroExpediente());
+      objItem.setProceso(objNotificacion.getsProceso());
+      objItem.setCliente(objNotificacion.getsClienteTipoIdentificacion().equals(Constantes.TIPO_IDENTIFICACION_RUC) ? objNotificacion.getsClienteRazonSocial() : objNotificacion.getsClienteNombres() + " " + objNotificacion.getsClienteApellidoPaterno() + " " + objNotificacion.getsClienteApellidoMaterno());
+
+      lstItem.add(objItem);
+      }
+
+      return lstItem;*/
+	}
+
+	public List<Item> getItems_Reemplazo(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Reemplazo():List<Item> ");
+		
+		List<Item> lstItem = new ArrayList<Item>();
+		List<Proceso> lstProceso = null;
+		List<Reemplazo> lstReemplazo = null;
+
+		lstProceso = srvProceso.buscarProcesosxUsuarioParticipante(objUsuario);
+
+		if (lstProceso == null) {
+			_log.debug("El usuario [" + objUsuario.getIdusuario() + "] no participa en ningun proceso");
+
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + lstProceso.size() + "] procesos donde participa el usuario [" + objUsuario.getUsuario() + "]");
+
+		for (Proceso objProceso : lstProceso) {
+			Item objItem = new Item();
+
+			objItem.setProceso(objProceso.getNombre());
+			objItem.setIdproceso(objProceso.getIdproceso());
+			//         objItem.setPorcentajealerta1(objProceso.getPorcentajealertaA());
+			//         objItem.setPorcentajealerta2(objProceso.getPorcentajealertaR());
+			lstReemplazo = srvReemplazo.findByIdreemplazadoIdproceso(objProceso.getIdproceso(), objUsuario.getIdusuario());
+
+			if (lstReemplazo != null && lstReemplazo.size() > 0 && lstReemplazo.get(0) != null) {
+				objItem.setId(lstReemplazo.get(0).getIdreemplazo());
+				objItem.setFechainicio(lstReemplazo.get(0).getFechainicialreemplazo());
+				objItem.setFechafin(lstReemplazo.get(0).getFechafinalreemplazo());
+				objItem.setUsuarioreemplazante(lstReemplazo.get(0).getIdusuario().getNombres() + " " + lstReemplazo.get(0).getIdusuario().getApellidos());
+			} else {
+				_log.debug("No hay reemplazo para el proceso [" + objProceso.getNombre() + "]");
+			}
+
+			lstItem.add(objItem);
+		}
+
+		return lstItem;
+	}
+
+	public List<Item> getItems_MantReemplazo() {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_MantReemplazo():List<Item> ");
+		
+		List<Item> lstItem = new ArrayList<Item>();
+		List<Reemplazo> lstReemplazo = null;
+
+		lstReemplazo = srvReemplazo.findLstBy(Constantes.ESTADO_ACTIVO);
+
+		if (lstReemplazo != null) {
+			_log.debug("Se encontraron [" + lstReemplazo.size() + "] reemplazo(s)");
+
+			for (Reemplazo objReemplazo : lstReemplazo) {
+				Item objItem = new Item();
+
+				objItem.setId(objReemplazo.getIdreemplazo());
+				objItem.setReemplazado(objReemplazo.getNombreReemplazado());
+				objItem.setProceso(objReemplazo.getNombreProceso());
+				objItem.setReemplazante(objReemplazo.getIdusuario().getNombres() + " " + objReemplazo.getIdusuario().getApellidos());
+
+				lstItem.add(objItem);
+			}
+		}
+
+		return lstItem;
+	}
+
+	/**
+	 * Busca documentos del area donde furon creados asi como los documentos del area funcional.
+	 * 
+	 * @author Wilber Carrasco - 18-08-2011
+	 */
+	public List<Item> getItems_BusquedaSimple(String sParametroBusqueda, Usuario usuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_BusquedaSimple():List<Item> ");
+		
+		List<Item> items = new ArrayList<Item>();
+		//List<Expedienfindadvance> lstExpediente = null;
+		//List<Documento> resultados = documentoService.busquedaDocumentoSimple(sParametroBusqueda, usuario);//17-08-2011 wcarrasco en desuso
+
+
+		List<DocumentoAreaFuncional> resultados = documentoService.busquedaDocumentoAreaFuncionalSimple(sParametroBusqueda);//17-08-2011 wcarrasco requerimiento APN
+		//lstExpediente = srvExpediente.findbyadvancedinn(sParametroBusqueda);
+
+		/*if (lstExpediente == null) {
+      _log.debug("No se encontro ningun expediente con el filtro de busqueda [" + sParametroBusqueda + "]");
+
+      return null;
+      }*/
+		if (resultados == null || resultados.size() == 0) {
+			_log.info("No se encontro ningun documento con el filtro de busqueda [" + sParametroBusqueda + "]");
+			return null;
+		}
+
+		_log.debug("Se encontraron [" + resultados.size() + "] documentos para el filtro de busqueda [" + sParametroBusqueda + "]");
+
+
+		for (DocumentoAreaFuncional documento : resultados) {
+			Item item = new Item();
+			item.setId(documento.getId());
+			item.setIdproceso(documento.getIdProceso());
+			item.setAsuntodocumento(documento.getAsuntoDocumento()); 
+			item.setNrodocumento(documento.getNroDocumento());   
+			item.setFecharecepcion(documento.getFechaCreacion());
+			item.setExpediente(documento.getNroExpediente());
+			item.setAsuntoExpediente(documento.getAsuntoExpediente());
+			item.setCliente(documento.getCliente());             
+			item.setPropietario(documento.getPropietario());
+			item.setArea(documento.getAreaDestino());			
+			item.setAccion(documento.getAccion());
+			item.setFechalimite(documento.getFechaLimite());
+			item.setRemitente(documento.getRemitente());
+			item.setPrioridad(documento.getPrioridad());
+			items.add(item);
+		}
+
+		//17-08-2011 wcarrasco en desuso
+		/*
+      for (Documento documento : resultados) {
+         Item item = new Item();
+         item.setId(documento.getIdDocumento());
+         item.setIdproceso(documento.getExpediente().getProceso().getIdproceso());
+         item.setAsuntodocumento(documento.getAsunto());
+         item.setTipodocumento(documento.getTipoDocumento().getNombre());
+         item.setNrodocumento(documento.getNumeroDocumento());
+         item.setNumeroMesaPartes(documento.getNumeroMesaPartes());
+         item.setFecharecepcion(documento.getFechaCreacion());
+
+         Expediente expediente = documento.getExpediente();
+         if (expediente != null) {
+            item.setExpediente(expediente.getNroexpediente());
+            item.setAsuntoExpediente(expediente.getAsunto());
+            item.setProceso(expediente.getProceso().getNombre());
+            Concesionario concesionario = expediente.getConcesionario();
+            if (concesionario != null) {
+               item.setConcesionario(concesionario.getRazonSocial());
+            }
+            Cliente cliente = expediente.getCliente();
+            if (cliente != null) {
+               if (cliente.getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+                  item.setCliente(cliente.getRazonSocial());
+               } else {
+                  item.setCliente(cliente.getNombres() + " " + cliente.getApellidoPaterno() + " " + cliente.getApellidoMaterno());
+               }
+            }
+            char estado = expediente.getEstado();
+            if (estado == Constantes.ESTADO_ACTIVO) {
+               item.setEstado("Activo");
+            } else if (estado == Constantes.ESTADO_INACTIVO) {
+               item.setEstado("Archivado");
+            } else if (estado == Constantes.ESTADO_ANULADO) {
+               item.setEstado("Anulado");
+            }
+         }
+         Usuario propietario = documento.getPropietario();
+         if (propietario != null) {
+            item.setPropietario(propietario.getNombres() + " " + propietario.getApellidos());
+            item.setArea(propietario.getUnidad().getNombre());
+         }
+         items.add(item);
+      }*/
+		return items;
+	}
+
+	@Override
+	public List<Item> getItems_BusquedaAvanzada(String sTipoFiltro, BusquedaAvanzada objFiltro, String arrFecha[]) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_BusquedaAvanzada():List<Item> ");
+		
+		List<Item> items = new ArrayList<Item>();
+		//List<Expedienfindadvance> lstExpediente = null;
+
+		_log.debug("Se buscara segun el filtro [" + sTipoFiltro + "]");
+
+		/*if(sTipoFiltro.equalsIgnoreCase(Constantes.BUSQUEDA_AVANZADA_BASICO)) {
+      lstExpediente = srvExpediente.findbysuperadvanced(alfresco, objFiltro.getNumeroExpediente(), objFiltro.getNumeroDocumento(), objFiltro.getNumeroMesaPartes(), objFiltro.getTipoDocumento(), objFiltro.getConcesionario(), objFiltro.getCliente(), objFiltro.getAreaDestino(), objFiltro.getPropietario(), objFiltro.getProceso(), objFiltro.getContenido(), objFiltro.getTipoBusqueda(), objFiltro.getAsuntoexpediente(), objFiltro.getAsuntodocumento(), objFiltro.getEstadoexpediente());
+      }else if (sTipoFiltro.equalsIgnoreCase(Constantes.BUSQUEDA_AVANZADA_ADICIONAL)) {
+      lstExpediente = srvExpediente.busquedaAvanzadaAdicional(alfresco, objFiltro.getNumeroExpediente(), objFiltro.getTipoDocumento(), objFiltro.getNumeroDocumento(), objFiltro.getDocumentoIdentidadConcesionario(), objFiltro.getNumeroMesaPartes(), arrFecha[0], arrFecha[1], objFiltro.getConcesionario(), arrFecha[2], arrFecha[3], objFiltro.getCliente(), objFiltro.getDireccionPrincipalcliente(), objFiltro.getAreaDestino(), objFiltro.getPropietario(), objFiltro.getProceso(), objFiltro.getContenido(), objFiltro.getTipoBusqueda(), objFiltro.getAsuntoexpediente(), objFiltro.getAsuntodocumento(), objFiltro.getEstadoexpediente());
+      }
+      if (lstExpediente == null) {
+      _log.info("No se encontro ningun documento con el filtro de busqueda avanzada");
+      return null;
+      }*/
+		List<Documento> resultados = documentoService.busquedaDocumentoAvanzada(
+				objFiltro.getContenido(), objFiltro.getNumeroDocumento(),
+				objFiltro.getNumeroMesaPartes(), objFiltro.getAsuntodocumento(),
+				objFiltro.getNumeroExpediente(), objFiltro.getAsuntoexpediente(),
+				objFiltro.getEstadoexpediente(), objFiltro.getConcesionario(),
+				objFiltro.getCliente(), objFiltro.getProceso(),
+				objFiltro.getPropietario(), objFiltro.getAreaDestino(),
+				objFiltro.getTipoDocumento(), arrFecha[0], arrFecha[1],
+				arrFecha[2], arrFecha[3], objFiltro.getNroSuministro(), objFiltro.getTipoBusqueda(), objFiltro.getAreaOrigen(), objFiltro.getAreaAutor());
+		if (resultados == null || resultados.size() == 0) {
+			_log.info("No se encontro ningun documento con el filtro de busqueda avanzada");
+			return null;
+		}
+		_log.debug("Se encontraron [" + resultados.size() + "] documentos para el filtro de busqueda avanzada");
+
+		for (Documento documento : resultados) {
+			Item item = new Item();
+			item.setId(documento.getIdDocumento());
+			item.setIdproceso(documento.getExpediente().getProceso().getIdproceso());
+			item.setAsuntodocumento(documento.getAsunto());
+			item.setTipodocumento(documento.getTipoDocumento().getNombre());
+			item.setNrodocumento(documento.getTipoDocumento().getNombre() + " - " + documento.getNumeroDocumento());
+			item.setNumeroMesaPartes(documento.getNumeroMesaPartes());
+			item.setFecharecepcion(documento.getFechaCreacion());
+
+			Expediente expediente = documento.getExpediente();
+			if (expediente != null) {
+				item.setExpediente(expediente.getNroexpediente());
+				item.setAsuntoExpediente(expediente.getAsunto());
+				item.setProceso(expediente.getProceso().getNombre());
+				Concesionario concesionario = expediente.getConcesionario();
+				if (concesionario != null) {
+					item.setConcesionario(concesionario.getRazonSocial());
+				}
+				item.setCliente(expediente.getCliente().getNombreRazon());
+				char estado = documento.getEstado();
+				if (estado == Constantes.ESTADO_ACTIVO) {
+					item.setEstado("Activo");
+				} else if (estado == Constantes.ESTADO_INACTIVO || estado == Constantes.ESTADO_CERRADO) {
+					item.setEstado("Archivado");
+				} else if (estado == Constantes.ESTADO_ANULADO) {
+					item.setEstado("Anulado");
+				}else if (estado == Constantes.ESTADO_ATENDER) {
+					item.setEstado("Atendido");
+				}
+			}
+			Usuario propietario = documento.getPropietario();
+			if (propietario != null) {
+				item.setPropietario(propietario.getNombres() + " " + propietario.getApellidos());
+				item.setArea(propietario.getUnidad().getNombre());
+			}
+			
+			List<Parametro> listaPrioridad = parametroDAO.getPrioridades();
+			for(Parametro p: listaPrioridad){		
+				if(String.valueOf(documento.getPrioridad()).equals(p.getValor())){
+					item.setPrioridad(p.getDescripcion());
+				}				
+			}			
+			/*if(documento.getPrioridad() != null){
+				item.setPrioridad("images/Prioridad_"+documento.getPrioridad()+".png");
+			}*/
+			
+			Documento doc = documentoService.findByIdDocumento(documento.getIdDocumento());
+			item.setAccion(doc.getAccion().getDescripcion());
+			item.setFechalimite(documento.getFechaLimiteAtencion());
+			items.add(item);
+		}
+		return items;
+	}
+
+	public List<Item> getCamposPorPlantilla(Integer iTipoPlantilla) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getCamposPorPlantilla():List<Item> ");
+		
+		List<Item> lstItem = new ArrayList<Item>();
+
+		List<Campo> lstCampo = srvPlantilla.listCamposByTipoPlantilla(iTipoPlantilla);
+
+		for (Campo objCampo : lstCampo) {
+			Item objItem = new Item();
+
+			objItem.setId(objCampo.getIdCampo());
+			objItem.setCodigo(objCampo.getCodigo());
+			objItem.setDescripcion(objCampo.getDescripcion());
+			objItem.setTipo(objCampo.getTipo().equals("TX") ? "Caja de Texto" : "Texto Ampliado");
+			objItem.setValor(objCampo.getValorDefecto());
+
+			lstItem.add(objItem);
+		}
+
+		return lstItem;
+	}
+
+	public List<Item> getItems_Lista(Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getItems_Lista():List<Item> ");
+		
+		List<Item> lstItem = new ArrayList<Item>();
+		List<Lista> lstLista = null;
+
+		lstLista = srvLista.findLstBy(objUsuario, Constantes.ESTADO_ACTIVO);
+
+		if (lstLista == null) {
+			_log.debug("El usuario [" + objUsuario.getUsuario() + "] no administra ninguna lista");
+
+			return null;
+		}
+
+		_log.debug("El usuario [" + objUsuario.getUsuario() + "] administra [" + lstLista.size() + "] lista(s)");
+
+		for (Lista objLista : lstLista) {
+			Item objItem = new Item();
+
+			objItem.setId(objLista.getIdlista());
+			objItem.setNombre(objLista.getNombre());
+			objItem.setFechacreacion(objLista.getFechacreacion());
+
+			lstItem.add(objItem);
+		}
+
+		return lstItem;
+	}
+
+	public List<Estructura> getEstructura(String sTipoGrid, Usuario objUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getEstructura():List<Estructura> ");
+		
+		Integer iIdGrid = null;
+		List<Estructura> estructura = null;
+		List<Gridcolumnaxusuario> lstGridColumnaXUsuario = null;
+		List<GridXGridColumna> columnas = null;
+
+		iIdGrid = gridDao.findIDByCodigo(sTipoGrid);
+		lstGridColumnaXUsuario = dao.findByIdUsuario(objUsuario.getIdusuario());
+		columnas = gridXGridColumnaDao.encontrarPorGrid(iIdGrid);
+		estructura = buildEstructura(lstGridColumnaXUsuario, columnas, objUsuario.getIdusuario());
+
+		return estructura;
+	}
+
+	// ////////////////////////////////
+	// Getters and Setters //
+	// ////////////////////////////////
+	public ArchivoService getSrvArchivo() {
+		return srvArchivo;
+	}
+
+	public void setSrvArchivo(ArchivoService srvArchivo) {
+		this.srvArchivo = srvArchivo;
+	}
+
+	public GridcolumnaxusuarioDAO getDao() {
+		return dao;
+	}
+
+	public void setDao(GridcolumnaxusuarioDAO dao) {
+		this.dao = dao;
+	}
+
+	public TrazabilidaddocumentoService getSrvTrazabilidadDocumento() {
+		return srvTrazabilidadDocumento;
+	}
+
+	public void setSrvTrazabilidadDocumento(TrazabilidaddocumentoService srvTrazabilidadDocumento) {
+		this.srvTrazabilidadDocumento = srvTrazabilidadDocumento;
+	}
+
+	/**
+	 * Almacena el estado actual del grid en la bandeja para un usuario
+	 * determinado
+	 *
+	 * @param columnas
+	 *            las columnas que han sido modificadas por el usuario
+	 * @param idUsuario
+	 *            el identificador del usuario en sesion
+	 * @author German Enriquez
+	 */
+	@Override
+	@Transactional
+	public void guardarGridUsuario(GridUsuario[] columnas, int idUsuario) {
+		_log.debug("-> [Service] GridcolumnaxusuarioService - guardarGridUsuario():void ");
+		
+		for (GridUsuario columna : columnas) {
+			String field = columna.getField();
+			int id = columna.getIdGridXGridColumna();
+			if (id != -1) {
+				Gridcolumnaxusuario gridColumnaPorUsuario = dao.find(idUsuario, id);
+				if (gridColumnaPorUsuario == null) {
+					gridColumnaPorUsuario = new Gridcolumnaxusuario(idUsuario, id);
+				}
+				int hidden = columna.getHidden();
+				String width = columna.getWidth();
+				int position = columna.getPosition();
+				char ordenado = columna.getOrdenado();
+				gridColumnaPorUsuario.setHidden(hidden);
+				gridColumnaPorUsuario.setWidth(width);
+				gridColumnaPorUsuario.setPosition(position);
+				gridColumnaPorUsuario.setOrdenado(ordenado);
+				dao.guardar(gridColumnaPorUsuario);
+				_log.debug("Se guardo la columna \"" + field + "\" con atributos [Width:" + width + ",Hidden:" + hidden + ",Position:" + position + ",Ordenado:" + ordenado + "] para el usuario con id=" + idUsuario);
+			} else {
+				_log.warn("No existe la columna " + field + " en la tabla GridColumna");
+			}
+		}
+	}
+
+	/*private int getIdFromField(String field, List<GridColumna> columnas) {
+   for (GridColumna columna : columnas) {
+   if (columna.getField().equals(field)) {
+   return columna.getIdgridcolumna();
+   }
+   }
+   return -1;
+   }*/
+	public ArchivopendienteService getSrvArchivoPendiente() {
+		return srvArchivoPendiente;
+	}
+
+	public void setSrvArchivoPendiente(ArchivopendienteService srvArchivoPendiente) {
+		this.srvArchivoPendiente = srvArchivoPendiente;
+	}
+
+	public CarpetabusquedaService getSrvCarpetaBusqueda() {
+		return srvCarpetaBusqueda;
+	}
+
+	public void setSrvCarpetaBusqueda(CarpetabusquedaService srvCarpetaBusqueda) {
+		this.srvCarpetaBusqueda = srvCarpetaBusqueda;
+	}
+
+	public DocumentoEnviadoService getSrvDocumentoEnviado() {
+		return srvDocumentoEnviado;
+	}
+
+	public void setSrvDocumentoEnviado(DocumentoEnviadoService srvDocumentoEnviado) {
+		this.srvDocumentoEnviado = srvDocumentoEnviado;
+	}
+
+	public ExpedienteService getSrvExpediente() {
+		return srvExpediente;
+	}
+
+	public void setSrvExpediente(ExpedienteService srvExpediente) {
+		this.srvExpediente = srvExpediente;
+	}
+
+	public MensajeriaService getSrvMensajeria() {
+		return srvMensajeria;
+	}
+
+	public void setSrvMensajeria(MensajeriaService srvMensajeria) {
+		this.srvMensajeria = srvMensajeria;
+	}
+
+	public NotificacionService getSrvNotificacion() {
+		return srvNotificacion;
+	}
+
+	public void setSrvNotificacion(NotificacionService srvNotificacion) {
+		this.srvNotificacion = srvNotificacion;
+	}
+
+	public ProcesoService getSrvProceso() {
+		return srvProceso;
+	}
+
+	public void setSrvProceso(ProcesoService srvProceso) {
+		this.srvProceso = srvProceso;
+	}
+
+	public ReemplazoService getSrvReemplazo() {
+		return srvReemplazo;
+	}
+
+	public void setSrvReemplazo(ReemplazoService srvReemplazo) {
+		this.srvReemplazo = srvReemplazo;
+	}
+
+	public ParametroDAO getParametroDAO() {
+		return parametroDAO;
+	}
+
+	public void setParametroDAO(ParametroDAO parametroDAO) {
+		this.parametroDAO = parametroDAO;
+	}
+
+	public PlantillaService getSrvPlantilla() {
+		return srvPlantilla;
+	}
+
+	public void setSrvPlantilla(PlantillaService srvPlantilla) {
+		this.srvPlantilla = srvPlantilla;
+	}
+
+	public ListaService getSrvLista() {
+		return srvLista;
+	}
+
+	public void setSrvLista(ListaService srvLista) {
+		this.srvLista = srvLista;
+	}
+
+	public void setGridXGridColumnaDao(GridXGridColumnaDAO gridXGridColumnaDao) {
+		this.gridXGridColumnaDao = gridXGridColumnaDao;
+	}
+
+	public void setDocumentoService(DocumentoService documentoService) {
+		this.documentoService = documentoService;
+	}
+
+	public ItemService getSrvItem() {
+		return srvItem;
+	}
+
+	public void setSrvItem(ItemService srvItem) {
+		this.srvItem = srvItem;
+	}
+
+	public CargoService getCargoService() {
+		return cargoService;
+	}
+
+	public void setCargoService(CargoService cargoService) {
+		this.cargoService = cargoService;
+	}
+
+	public DatosDAO getDatosDAO() {
+		return datosDAO;
+	}
+
+	public void setDatosDAO(DatosDAO datosDAO) {
+		this.datosDAO = datosDAO;
+	}
+
+	public SeguimientoXUsuarioService getSeguimientoXUsuarioService() {
+		return seguimientoXUsuarioService;
+	}
+
+	public void setSeguimientoXUsuarioService(
+			SeguimientoXUsuarioService seguimientoXUsuarioService) {
+		this.seguimientoXUsuarioService = seguimientoXUsuarioService;
+	}
+
+	public TrazabilidadapoyoService getTrazabilidadApoyoService() {
+		return trazabilidadApoyoService;
+	}
+
+	public void setTrazabilidadApoyoService(
+			TrazabilidadapoyoService trazabilidadApoyoService) {
+		this.trazabilidadApoyoService = trazabilidadApoyoService;
+	}
+
+	public ParametroService getSrvParametro() {
+		return srvParametro;
+	}
+
+	public void setSrvParametro(ParametroService srvParametro) {
+		this.srvParametro = srvParametro;
+	}
+
+	@Override
+	public List getBandejaDocUsuarioFinalFiltro(Usuario objUsuario,
+			boolean enviados, BusquedaAvanzada objFiltro) {		
+		_log.debug("-> [Service] GridcolumnaxusuarioService - getBandejaDocUsuarioFinalFiltro():List<Item> ");
+		
+		if(objFiltro == null){		
+			return documentoService.findDocumentosUsuarioFinal(objUsuario, enviados);
+		}else{			
+			return documentoService.findDocumentosUsuarioFinalFiltro(objUsuario, enviados,objFiltro);
+		}
+	}	
+	
+}

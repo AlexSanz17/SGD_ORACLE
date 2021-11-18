@@ -1,0 +1,12 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Proveido;
+
+public interface ProveidoDAO {
+
+	List<Proveido> buscarPorCodigo(String codigoProveido);
+
+	Proveido buscarPorId(Integer id);
+}

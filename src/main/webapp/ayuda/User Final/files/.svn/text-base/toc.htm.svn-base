@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+
+  <head>
+    <meta name="generator" content="HelpNDoc Freeware Edition">
+    <link rel="StyleSheet" href="toc.css" type="text/css"/>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.cookie.js"></script>
+    <script type="text/javascript" src="jquery.treeview.min.js"></script>
+    <script type="text/javascript" src="searchdata.js"></script>
+    <script type="text/javascript"><!--
+      $(document).ready(function(){
+        $("#toc").treeview(
+        {collapsed: true}
+        )
+        $("#keywords").treeview({collapsed: true});
+        $(document.body).click(function(e){var $target = $(e.target); if($target.is("a")) return; hidePopup();});
+        $(function(){var tabContainers = $("div.tabs > div");tabContainers.hide().filter(":first").show();$("div.tabs ul.tabNavigation a").click(function(){tabContainers.hide();
+        tabContainers.filter(this.hash).show();$("div.tabs ul.tabNavigation a").removeClass("selected");$(this).addClass("selected");return false;}).filter(":first").click();});
+      });
+      function hidePopup() {if($("#popupMenu")) $("#popupMenu").remove();}
+      function showPopup(oSender,aLinks){hidePopup();if (aLinks==0) return true;var oParentDiv=document.createElement("DIV");oParentDiv.id="popupMenu";var oLink,oBr=null;
+      for (var nCnt=0;nCnt<aLinks.length;nCnt++){oLink=document.createElement("A");oLink.innerHTML=aLinks[nCnt][0];oLink.href=aLinks[nCnt][1];oLink.target="FrameMain";oLink.onclick=hidePopup;
+      oParentDiv.appendChild(oLink);if (nCnt<aLinks.length-1){oBr=document.createElement("BR");oParentDiv.appendChild(oBr);}}document.body.appendChild(oParentDiv);var pos=$(oSender).offset(); 
+      var height=$(oSender).height();$(oParentDiv).css({"backgroundColor": "#EEEEEE","border": "1px solid #999999","position": "absolute","left": (pos.left+20)+"px","top": (pos.top+height+5)+"px",
+      "padding": 5+"px"});$(oParentDiv).show();return false;}
+      function performSearch(){sValue = $("#search_value").val().toLowerCase();if (oSearchData[sValue]){$("#search_results").html("Found " + oSearchData[sValue].length + " results");for (var nCnt = 0; nCnt < oSearchData[sValue].length; nCnt++){var oElmt = document.createElement("DIV");oElmt.innerHTML = "<a href='" + oSearchData[sValue][nCnt][0] + "' target='FrameMain'>" + oSearchData[sValue][nCnt][1] + "</a> (" + oSearchData[sValue][nCnt][2] + ")<br/>";$(oElmt).appendTo($("#search_results"));}}else{$("#search_results").html("No result found");}}
+    //--></script>
+    <style type="text/css">
+      ul.tabNavigation{list-style: none;margin: 0;padding: 10px;}ul.tabNavigation li{display: inline;}ul.tabNavigation li A{padding: 3px 5px;background-color: #ccc;color: #000;
+      text-decoration: none;}ul.tabNavigation li A.selected,ul.tabNavigation li A:hover{background-color: #333;color: #fff;}ul.tabNavigation li A:focus{outline: 0;}
+      </style>
+  </head>
+
+  <body>
+  
+    <div class="tabs">
+      <ul class="tabNavigation">
+        <li><a href="#tab_toc">Contents</a></li>
+        <li><a href="#tab_keywords">Index</a></li>
+        <li><a href="#tab_search">Search</a></li>
+      </ul>
+      <div id="tab_toc">
+        <ul id="toc" class="filetree">
+          
+          <li>
+            <a href="BandejadeDocumentosRecibidos.html" class="folder" target="FrameMain">Bandeja de Documentos Recibidos</a>
+            <ul>
+              
+              <li>
+                <a href="DerivarMasivamente.html" class="file" target="FrameMain">Derivar Masivamente</a>
+              </li>
+              
+              <li>
+                <a href="Seguimiento.html" class="file" target="FrameMain">Seguimiento</a>
+              </li>
+              
+              <li>
+                <a href="NuevoDocumento.html" class="file" target="FrameMain">Nuevo Documento</a>
+              </li>
+              
+              <li>
+                <a href="BsquedadeDocumentos.html" class="file" target="FrameMain">B&uacute;squeda de Documentos</a>
+              </li>
+              
+              <li>
+                <a href="BsquedaSimple.html" class="file" target="FrameMain">B&uacute;squeda Simple</a>
+              </li>
+              
+              <li>
+                <a href="BsquedaAvanzada.html" class="folder" target="FrameMain">B&uacute;squeda Avanzada</a>
+                <ul>
+                  
+                  <li>
+                    <a href="BusquedaAvanzadaconDatosBasico.html" class="file" target="FrameMain">Busqueda Avanzada con Datos Basicos</a>
+                  </li>
+                  
+                  <li>
+                    <a href="BusquedaAvanzadaconDatosAvanza.html" class="file" target="FrameMain">Busqueda Avanzada con Datos Avanzados</a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          
+          <li>
+            <a href="DetalleDeDocumentosRecibidos.html" class="folder" target="FrameMain">Detalle De Documentos Recibidos</a>
+            <ul>
+              
+              <li>
+                <a href="General.html" class="folder" target="FrameMain">General</a>
+                <ul>
+                  
+                  <li>
+                    <a href="Derivar.html" class="file" target="FrameMain">Derivar</a>
+                  </li>
+                  
+                  <li>
+                    <a href="Rechazar.html" class="file" target="FrameMain">Rechazar</a>
+                  </li>
+                  
+                  <li>
+                    <a href="TrazabilidaddelExpediente.html" class="file" target="FrameMain">Trazabilidad del Expediente</a>
+                  </li>
+                  
+                  <li>
+                    <a href="ArchivarDocumento.html" class="file" target="FrameMain">Archivar  Documento</a>
+                  </li>
+                  
+                  <li>
+                    <a href="Plantilla.html" class="file" target="FrameMain">Plantilla</a>
+                  </li>
+                  
+                  <li>
+                    <a href="Adjuntar.html" class="file" target="FrameMain">Adjuntar</a>
+                  </li>
+                </ul>
+              </li>
+              
+              <li>
+                <a href="DocumentosAdicionales.html" class="file" target="FrameMain">Documentos Adicionales</a>
+              </li>
+            </ul>
+          </li>
+          
+          <li>
+            <a href="BandejadeDocumentosporenviar.html" class="file" target="FrameMain">Bandeja de Documentos por enviar</a>
+          </li>
+          
+          <li>
+            <a href="BandejadeDocumentosenviados.html" class="file" target="FrameMain">Bandeja de Documentos enviados</a>
+          </li>
+          
+          <li>
+            <a href="BandejadeDocumentosenmensajera.html" class="file" target="FrameMain">Bandeja de Documentos en mensajer&iacute;a</a>
+          </li>
+          
+          <li>
+            <a href="MisNotificaciones.html" class="file" target="FrameMain">Mis Notificaciones</a>
+          </li>
+          
+          <li>
+            <a href="CarpetasdeBsquedas.html" class="file" target="FrameMain">Carpetas de B&uacute;squedas</a>
+          </li>
+          
+          <li>
+            <a href="MisProcesos.html" class="file" target="FrameMain">Mis Procesos</a>
+          </li>
+          
+          <li>
+            <a href="Expedientes.html" class="file" target="FrameMain">Expedientes</a>
+          </li>
+          
+          <li>
+            <a href="AsignarReemplazos.html" class="file" target="FrameMain">Asignar Reemplazos</a>
+          </li>
+      </ul>
+    </div>
+    
+    <div id="tab_keywords">
+      <ul id="keywords" class="filetree">
+      </ul>
+    </div>
+    <div id="tab_search" style="padding:10px">
+      Search: <form onsubmit="performSearch(); return false;"><input id="search_value"></input><input type="submit" value="search"/></form><div id="search_results"></div>
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+	<head>
+		<title>Bienvenido</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="cache-control" content="no-cache">
+		<link href="css/estilo1.css" rel="stylesheet" type="text/css" />
+		<link type="image/x-icon" href="favicon.ico" rel="shortcut icon"/>
+		<%--script type="text/javascript" src="js/js_intranet.js"></script--%>
+		<script type="text/javascript" src="js/jquery.js"></script>		
+		<script type="text/javascript">
+			$(document).ready(function(){
+				$("#usuario").blur(function(){
+					var usuario=$(this).val();
+					$.getJSON("getRolesPorUsuario.action","sUsuario="+usuario,
+							function(data){
+								var select=$("#rol");
+								select.empty();
+								$.each(data.items,function(i,item){
+									var option="<option value=\""+item.id+"\">"+item.label+"</option>";
+									select.append(option);
+								});								
+							});
+				});
+			});
+		</script>
+		
+		<script type="text/javascript">
+
+         function init(){
+            // alert(parent.href);    
+             var padre = parent.frames.length ;           
+
+			 if(padre>0)     {          
+				       
+				  parent.location.href ="login.action"; 
+		     }else{          
+		    	 // alert('jouju');           
+			     }
+		    /* */   
+         }
+
+         function Inicio(){
+            location.href="inicio.html";
+         }
+
+         function selectChange() {
+            if (value = "1") {
+               location.href = "inicioMP.html";
+            }
+            if (value = "2") {
+               location.href = "inicioSSS.html";
+            }
+            if (value = "3") {
+               location.href = "inicioDDD.html";
+            }
+            if (value = "4") {
+               location.href = "inicioFFF.html";
+            }
+            if (value = "5") {
+               location.href = "inicio.html";
+            }
+
+         }
+
+		</script>
+		<style type="text/css">
+         <!--
+         .Estilo8 {
+            color: #FFFFFF;
+            font-weight: bold;
+            font-size: large;
+         }
+         body {
+            background-color: #c1dffd;
+         }
+         .Estilo15 {color: #FFFFFF; font-weight: bold; font-size: 11px; }
+         .Estilo16 {color: #000000}
+         -->
+		</style>
+	</head>
+
+	<body onload="init();">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+			<tr>
+				<td align="center" valign="middle">
+					<table width="780" border="0" cellpadding="0" cellspacing="0">
+						<tr>
+							<td valign="top">
+								<table width="100%" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td<%--width="10" height="30"--%>></td>
+										<td<%--width="773"--%>></td>
+										<td style="width:18px"></td>
+									</tr>
+									<tr>
+										<td style="height:373px"></td>
+										<td>
+											<table width="80%" style="background:url(images/fondolo.gif);" cellpadding="0" cellspacing="0"<%--bordercolor="#FFFFFF"--%> align="center">
+												<tr>
+													<td></td>
+												</tr>
+												<tr>
+													<td align="center" valign="middle" style="height:320px;">
+														<s:form action="doLogin" method="post">
+															<table width="100%" border="0" cellpadding="0" cellspacing="0">
+																<tr>
+																	<td></td>
+																	<td colspan="3" style="height:130px;">
+																		<div align="center">
+																			<span class="Estilo8">Sistema de Gesti&oacute;n Documentaria</span>
+																		</div>
+																	</td>
+																	<td width="2%" height="44" >&nbsp;</td>
+																</tr>
+																<tr>
+																	<td width="5%" >&nbsp;</td>
+																	<td width="57%">&nbsp;</td>
+																	<td width="16%">&nbsp;</td>
+																	<td width="2%">&nbsp;</td>
+																</tr>
+															</table>
+															<table width="100%" height="195" border="0" cellpadding="0" cellspacing="0">
+																<tr>
+																	<td width="11%" height="38" align="center"></td>
+																	<td align="right" class="Estilo15 Estilo16">Usuario:&nbsp;</td>
+																	<td width="33%" align="center">
+																		<input id="usuario" class="cajaMontoTotal" name="sUsuario" type="text" size="30px" />
+																	</td>
+																	<td width="31%" height="38"></td>
+																</tr>
+																<tr>
+																	<td width="11%">&nbsp;</td>
+																	<td width="25%" align="right" class="Estilo15 Estilo16">Contrase&ntilde;a:&nbsp;</td>
+																	<td  align="center">
+																		<input class="cajaMontoTotal" name="sClave" type="password" size="30px"/>
+																	</td>
+																	<td width="31%" height="38"></td>
+																</tr>
+																<tr>
+																	<td width="11%"></td>
+																	<td width="25%" align="right" class="Estilo15 Estilo16">Rol:</td>
+																	<td align="center"><select id="rol" name="parametroRol"></select></td>
+																	<td width="31%" height="25"></td>
+																</tr>
+																<tr>
+																	<td width="11%" height="22"></td>
+																	<td width="25%" align="right"></td>
+																	<td width="33%">
+																		<input type="submit" class="button" value="Aceptar" />
+																		<input type="reset" class="button" onclick="javascript:window.close()" value="Cancelar" />
+																	</td>
+																	<td width="31%" align="right"></td>
+																</tr>
+																<tr>
+																	<td width="11%" height="70"></td>
+																	<td width="25%"><s:actionerror /></td>
+																	<td width="33%"><s:fielderror /></td>
+																	<td width="31%">&nbsp;</td>
+																</tr>
+															</table>
+														</s:form>
+													</td>
+												</tr>
+											</table>
+										--</td>
+										<td>&nbsp;</td>
+									</tr>
+									<tr>
+										<td height="50">&nbsp;</td>
+										<td>&nbsp;</td>
+										<td>&nbsp;</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

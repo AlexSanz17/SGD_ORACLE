@@ -1,0 +1,22 @@
+package org.osinerg.dojo.tree;
+
+public class ReferenciaArbol {
+
+	   private String _reference;
+	   
+	   
+	   public ReferenciaArbol(String iReference) {
+		      this._reference = iReference;
+	   }
+
+ 
+	public String get_reference() {
+		return _reference;
+	}
+
+
+	public void set_reference(String _reference) {
+		this._reference = _reference;
+	}
+	   
+}

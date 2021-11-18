@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.20" id="1">
+    <property name="createdBy">Eclipse BIRT Designer Version 2.5.1.v20090903 Build &lt;2.5.1.v20090922-0630></property>
+    <property name="units">in</property>
+    <property name="iconFile">/templates/blank_report.gif</property>
+    <property name="layoutPreference">auto layout</property>
+    <property name="bidiLayoutOrientation">ltr</property>
+    <data-sources>
+        <oda-data-source extensionID="org.eclipse.birt.report.data.oda.jdbc" name="Data Source" id="6">
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>contentBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+                <ex-property>
+                    <name>metadataBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+            </list-property>
+            <property name="odaDriverClass">oracle.jdbc.OracleDriver</property>
+            <property name="odaURL">jdbc:oracle:thin:@11.160.125.15:1521:DESA</property>
+            <property name="odaUser">siged_preprod</property>
+            <encrypted-property name="odaPassword" encryptionID="base64">ZmFjaWxpdG8=</encrypted-property>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set extensionID="org.eclipse.birt.report.data.oda.jdbc.JdbcSelectDataSet" name="Data Set" id="7">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">IDPROCEDIMIENTO</property>
+                    <text-property name="displayName">IDPROCEDIMIENTO</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">NOMBRE</property>
+                    <text-property name="displayName">NOMBRE</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">PROY_RECONSIDERACION_PR</property>
+                    <text-property name="displayName">PROY_RECONSIDERACION_PR</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">PROY_RECONSIDERACION_TR</property>
+                    <text-property name="displayName">PROY_RECONSIDERACION_TR</text-property>
+                </structure>
+            </list-property>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">IDPROCEDIMIENTO</property>
+                        <property name="dataType">decimal</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">NOMBRE</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">PROY_RECONSIDERACION_PR</property>
+                        <property name="dataType">decimal</property>
+                    </structure>
+                    <structure>
+                        <property name="position">4</property>
+                        <property name="name">PROY_RECONSIDERACION_TR</property>
+                        <property name="dataType">decimal</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">IDPROCEDIMIENTO</property>
+                    <property name="nativeName">IDPROCEDIMIENTO</property>
+                    <property name="dataType">decimal</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">NOMBRE</property>
+                    <property name="nativeName">NOMBRE</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">PROY_RECONSIDERACION_PR</property>
+                    <property name="nativeName">PROY_RECONSIDERACION_PR</property>
+                    <property name="dataType">decimal</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">PROY_RECONSIDERACION_TR</property>
+                    <property name="nativeName">PROY_RECONSIDERACION_TR</property>
+                    <property name="dataType">decimal</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[SELECT  DISTINCT p.idprocedimiento,p.nombre, 
+fnc_proyrec_pr(p.idprocedimiento) as PROY_RECONSIDERACION_PR , 
+FNC_PROYREC_R(p.idprocedimiento) AS PROY_RECONSIDERACION_TR
+FROM  expedientesas ex  , procedimiento p , expediente e
+WHERE
+ex.idprocedimiento= p.idprocedimiento and
+e.idexpediente = ex.idexpediente and
+(
+fnc_proyrec_pr(p.idprocedimiento)<>0 or
+FNC_PROYREC_R(p.idprocedimiento)<>0
+)]]></xml-property>
+        </oda-data-set>
+    </data-sets>
+    <styles>
+        <style name="crosstab-cell" id="4">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+        <style name="crosstab" id="5">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+    </styles>
+    <page-setup>
+        <simple-master-page name="Simple MasterPage" id="2">
+            <property name="topMargin">1in</property>
+            <property name="leftMargin">0.4375in</property>
+            <property name="bottomMargin">1in</property>
+            <property name="rightMargin">0.3958333333333333in</property>
+        </simple-master-page>
+    </page-setup>
+    <body>
+        <table id="64">
+            <property name="width">7.59375in</property>
+            <property name="dataSet">Data Set</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">IDPROCEDIMIENTO</property>
+                    <text-property name="displayName">IDPROCEDIMIENTO</text-property>
+                    <expression name="expression">dataSetRow["IDPROCEDIMIENTO"]</expression>
+                    <property name="dataType">decimal</property>
+                </structure>
+                <structure>
+                    <property name="name">NOMBRE</property>
+                    <text-property name="displayName">NOMBRE</text-property>
+                    <expression name="expression">dataSetRow["NOMBRE"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">PROY_RECONSIDERACION_PR</property>
+                    <text-property name="displayName">PROY_RECONSIDERACION_PR</text-property>
+                    <expression name="expression">dataSetRow["PROY_RECONSIDERACION_PR"]</expression>
+                    <property name="dataType">decimal</property>
+                </structure>
+                <structure>
+                    <property name="name">PROY_RECONSIDERACION_TR</property>
+                    <text-property name="displayName">PROY_RECONSIDERACION_TR</text-property>
+                    <expression name="expression">dataSetRow["PROY_RECONSIDERACION_TR"]</expression>
+                    <property name="dataType">decimal</property>
+                </structure>
+            </list-property>
+            <column id="89">
+                <property name="width">1.9375in</property>
+            </column>
+            <column id="90">
+                <property name="width">2.7708333333333335in</property>
+            </column>
+            <column id="91">
+                <property name="width">2.8229166666666665in</property>
+            </column>
+            <header>
+                <row id="65">
+                    <property name="fontFamily">"Verdana"</property>
+                    <property name="fontSize">7.5pt</property>
+                    <cell id="68">
+                        <label id="69">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="fontWeight">bold</property>
+                            <property name="color">#FFFFFF</property>
+                            <text-property name="text">NOMBRE</text-property>
+                        </label>
+                    </cell>
+                    <cell id="70">
+                        <label id="71">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="fontWeight">bold</property>
+                            <property name="color">#FFFFFF</property>
+                            <text-property name="text">RECONCIDERACION POR REMITIR</text-property>
+                        </label>
+                    </cell>
+                    <cell id="72">
+                        <label id="73">
+                            <property name="backgroundColor">#31619C</property>
+                            <property name="fontWeight">bold</property>
+                            <property name="color">#FFFFFF</property>
+                            <text-property name="text">RECONCIDERACIONES REMITIDAS</text-property>
+                        </label>
+                    </cell>
+                </row>
+            </header>
+            <detail>
+                <row id="74">
+                    <property name="fontSize">8pt</property>
+                    <cell id="77">
+                        <data id="78">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">NOMBRE</property>
+                        </data>
+                    </cell>
+                    <cell id="79">
+                        <data id="80">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">PROY_RECONSIDERACION_PR</property>
+                            <structure name="action">
+                                <property name="linkType">drill-through</property>
+                                <property name="reportName">DetalleCantidadProyResRecPenRemiCPRM.rptdesign</property>
+                                <property name="targetWindow">_blank</property>
+                                <property name="targetFileType">report-design</property>
+                                <list-property name="paramBindings">
+                                    <structure>
+                                        <property name="paramName">idProcedimiento</property>
+                                        <expression name="expression">row["IDPROCEDIMIENTO"]</expression>
+                                    </structure>
+                                </list-property>
+                            </structure>
+                        </data>
+                    </cell>
+                    <cell id="81">
+                        <data id="82">
+                            <property name="textAlign">center</property>
+                            <property name="resultSetColumn">PROY_RECONSIDERACION_TR</property>
+                            <structure name="action">
+                                <property name="linkType">drill-through</property>
+                                <property name="reportName">DetalleCantidadProyResRecPenRemiCPRR.rptdesign</property>
+                                <property name="targetWindow">_blank</property>
+                                <property name="targetFileType">report-design</property>
+                                <list-property name="paramBindings">
+                                    <structure>
+                                        <property name="paramName">idProcedimiento</property>
+                                        <expression name="expression">row["IDPROCEDIMIENTO"]</expression>
+                                    </structure>
+                                </list-property>
+                            </structure>
+                        </data>
+                    </cell>
+                </row>
+            </detail>
+            <footer>
+                <row id="83">
+                    <cell id="85"/>
+                    <cell id="86"/>
+                    <cell id="87"/>
+                </row>
+            </footer>
+        </table>
+    </body>
+</report>

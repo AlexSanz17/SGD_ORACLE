@@ -1,0 +1,387 @@
+<html>
+<head>
+<title>Tramite Documentario</title>
+<link rel="stylesheet" type="text/css" href="../../css/estilo.css">
+<script language="javascript" src="../../js/form.js"> </script>
+<script language="Javascript" src="../../js/general.js"></script>
+<link rel="stylesheet" type="text/css" media="all"
+	href="../../css/calendar-green.css">
+<script type="text/javascript" src="../../js/calendar.js"></script>
+<script type="text/javascript" src="../../js/calendar-es.js"></script>
+<script type="text/javascript" src="../../js/calendar-setup.js"></script>
+
+<script language="JavaScript">
+function Abrir_ventana (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=620, height=280, top=180, left=200";
+window.open(pagina,"",opciones);
+}
+
+function Abrir_pagina (pagina) {
+var opciones="location=mainFrame";
+window.open(pagina,"",opciones);
+}
+
+function putTextOnTextBox(textToPut){
+document.all.reciveTheText.value = textToPut;
+}
+</script>
+
+<script type="text/javascript">
+
+function poorman_toggle(id)
+{
+	var tr = document.getElementById(id);
+	if (tr==null) { return; }
+	var bExpand = tr.style.display == '';
+	tr.style.display = (bExpand ? 'none' : '');
+}
+function poorman_changeimage(id, sMinus, sPlus)
+{
+	var img = document.getElementById(id);
+	if (img!=null)
+	{
+	    var bExpand = img.src.indexOf(sPlus) >= 0;
+		if (!bExpand)
+			img.src = sPlus;
+		else
+			img.src = sMinus;
+	}
+}
+
+function Toggle_repHeader2()
+{
+    poorman_changeimage('repHeader2_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader1()
+{
+    poorman_changeimage('repHeader1_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('trRow1');
+}
+</script>
+
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+body {
+	background-color: #ffffff;
+}
+-->
+</style>
+</head>
+
+<body topmargin="0" leftmargin="0" rigthmargin="0">
+<form>
+<table width="100%">
+	<tr>
+		<td height="14" colspan="6"></td>
+	</tr>
+	<tr>
+		<td height="14" colspan="6">
+		<table width="100%" align="left" bordercolor="#CCCCCC" border="1">
+			<td width="8%" height="13" align="center"><img
+				onClick="location.href='../../pages/tramite/ingreso.html'"
+				src="../../images/botonBuscar.gif" /></td>
+			<td width="92%" height="13"></td>
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td height="4" colspan="6"></td>
+	</tr>
+
+
+	<tr>
+		<td height="14" colspan="6">
+		<table width="100%" align="center" bordercolor="#000000"
+			bgcolor="#568BBF">
+			<td width="97%" height="13" align="left" class="titulo">Parametros
+			Generales</td>
+			<td width="3%" align="right"><img src="../../images/page.gif" /></td>
+		</table>
+		</td>
+	</tr>
+
+	<tr>
+		<td height="4" colspan="6" class="header"></td>
+	</tr>
+
+
+	<tr>
+		<td height="14" colspan="6">
+		<table width="95%" border="1" align="center" bordercolor="#669BCD"
+			bgcolor="#BFD9F1">
+			<tr>
+				<td height="100">
+				<table width="100%" height="97" align="center">
+					<tr>
+						<td width="1%"></td>
+						<td width="19%" height="5"></td>
+						<td width="32%"></td>
+						<td width="20%"></td>
+						<td width="27%"></td>
+						<td width="1%"></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td height="16" align="left">Empresa</td>
+						<td><input class="cajaMontoTotal" type="text"
+							name="reciveTheText"
+							onClick="putTextOnTextBox('Some Text To Fill The Text Box')" /></td>
+						<td align="left"></td>
+						<td align="left" width="27%"></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td height="16" align="left">Sucursal</td>
+						<td><input class="cajaMontoTotal" type="text"
+							name="reciveTheText"
+							onClick="putTextOnTextBox('Some Text To Fill The Text Box')" /></td>
+						<td align="left"></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td height="16" align="left">A&ntilde;o</td>
+						<td><input class="cajaMontoTotal" type="text"
+							name="reciveTheText"
+							onClick="putTextOnTextBox('Some Text To Fill The Text Box')" /></td>
+						<td align="left"></td>
+						<td align="left" width="27%"></td>
+						<td></td>
+					</tr>
+
+					<tr>
+						<td height="5"></td>
+					</tr>
+
+				</table>
+				</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+
+	<tr>
+		<td height="14" colspan="6"></td>
+	</tr>
+
+	<tr>
+		<td height="13" colspan="6" class="header">
+		<div align="left">Listado</div>
+		</td>
+	</tr>
+
+	<tr align="center">
+		<td colspan="6" align="center">&nbsp;</td>
+	</tr>
+
+
+
+	<tr>
+		<td colspan="4">
+		<table cellpadding="1" cellspacing="1" class="tableForm" width="80%"
+			align="center">
+			<tr class="header">
+				<th width="25%" class="data">Mes</th>
+				<th width="25%" class="data">Fecha Proceso</th>
+				<th width="25%" class="data">Estado</th>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">ENERO</div>
+				</td>
+				<td>
+				<div align="center">2008.01.31</div>
+				</td>
+				<td>
+				<div align="center">ACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">FEBRERO</div>
+				</td>
+				<td>
+				<div align="center">2008.02.28</div>
+				</td>
+				<td>
+				<div align="center">ACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">MARZO</div>
+				</td>
+				<td>
+				<div align="center">2008.03.31</div>
+				</td>
+				<td>
+				<div align="center">ACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">ABRIL</div>
+				</td>
+				<td>
+				<div align="center">2008.04.30</div>
+				</td>
+				<td>
+				<div align="center">ACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">MAYO</div>
+				</td>
+				<td>
+				<div align="center">2008.05.31</div>
+				</td>
+				<td>
+				<div align="center">ACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">JUNIO</div>
+				</td>
+				<td>
+				<div align="center">2008.06.30</div>
+				</td>
+				<td>
+				<div align="center">ACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">JULIO</div>
+				</td>
+				<td>
+				<div align="center">2008.07.31</div>
+				</td>
+				<td>
+				<div align="center">ACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">AGOSTO</div>
+				</td>
+				<td>
+				<div align="center">2008.08.01</div>
+				</td>
+				<td>
+				<div align="center">INACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">SETIEMBRE</div>
+				</td>
+				<td>
+				<div align="center">2008.09.01</div>
+				</td>
+				<td>
+				<div align="center">INACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">OCTUBRE</div>
+				</td>
+				<td>
+				<div align="center">2008.10.01</div>
+				</td>
+				<td>
+				<div align="center">INACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">NOVIEMBRE</div>
+				</td>
+				<td>
+				<div align="center">2008.11.01</div>
+				</td>
+				<td>
+				<div align="center">INACTIVO</div>
+				</td>
+			</tr>
+			<tr
+				onClick="location.href='../../pages/tramite/ingresoDocumentos.html'"
+				onMouseOver="overMouse(this)" onMouseOut="outMouse(this)"
+				class="altRow2" style="cursor: hand">
+				<td>
+				<div align="center">DICIEMBRE</div>
+				</td>
+				<td>
+				<div align="center">2008.12.01</div>
+				</td>
+				<td>
+				<div align="center">INACTIVO</div>
+				</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+
+
+
+
+	<tr>
+		<td height="14" colspan="6"></td>
+	</tr>
+	<tr>
+		<td colspan="6" align="center"></td>
+	</tr>
+	<tr>
+		<td height="14" colspan="6"></td>
+	</tr>
+
+
+</table>
+</form>
+
+</body>
+</html>

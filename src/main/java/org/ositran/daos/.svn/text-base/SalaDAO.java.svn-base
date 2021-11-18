@@ -1,0 +1,10 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Sala;
+
+public interface SalaDAO {
+   public List<Sala> findAll();
+   public Sala findByIdSala(Integer iIdSala);
+}

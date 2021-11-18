@@ -1,0 +1,81 @@
+.siged16{ width:16px; height:16px; cursor:pointer}
+
+.siged24{ width:24px; height:24px; cursor:pointer}
+
+.sigedBack16{ background:url(../images/sigedIconos/Back16.gif)}
+
+.sigedBack24{ background:url(../images/sigedIconos/Back24.gif)}
+
+.sigedDelete16{ background:url(../images/sigedIconos/Delete16.gif)}
+
+.sigedEraser16{ background:url(../images/sigedIconos/Eraser16.gif)}
+
+.sigedEraser24{ background:url(../images/sigedIconos/Eraser24.gif)}
+
+.sigedFilter16{ background:url(../images/sigedIconos/Filter16.gif)}
+
+.sigedFilter24{ background:url(../images/sigedIconos/Filter24.gif)}
+
+.sigedNew16{ background:url(../images/sigedIconos/New16.gif)}
+
+.sigedNew24{ background:url(../images/sigedIconos/New24.gif)}
+
+.sigedSave16{ background-image:url(../images/sigedIconos/Save16.gif)}
+
+.sigedSave24{ background-image:url(../images/sigedIconos/Save24.gif)}
+
+.sigedSearch16{ background:url(../images/sigedIconos/Search16.gif)}
+
+.sigedSearch24{ background:url(../images/sigedIconos/Search24.gif)}
+
+.sigedNuevoDoc16{ background:url(../images/sigedIconos/nuevoDocumento16.gif)}
+
+.siged16 sigedNew16{ background:url(../images/sigedIconos/Seguimiento16.gif)}
+
+.sigedUpload16{ background:url(../images/sigedIconos/Upload16.gif)}
+
+.marcoForm{ background-color:#BFD9F1; border:solid 1px #669BCD; padding-top:5px; padding-bottom:5px; padding-left:5px; padding-right:5px}
+
+.margen5PX{ margin-top:5px; margin-bottom:5px; margin-left:5px; margin-right:5px}
+
+.tituloPagina{ font-weight:bold; text-align:left; padding-top:5px; padding-bottom:5px; padding-left:5px; padding-right:5px; background-color:#A2C0DC; font-size:15px}
+
+.iconoAprobar{background:url(../images/sigedIconos/aprobar.png)}
+
+.iconoRechazar{background:url(../images/sigedIconos/rechazar.png)}
+
+.iconoAdjuntar{background:url(../images/sigedIconos/adjuntar.png)}
+
+.iconoVersionar{background:url(../images/sigedIconos/versionar.png)}
+
+.iconoPlantilla{background:url(../images/sigedIconos/plantilla.png)}
+
+.iconoTrazabilidad{background:url(../images/sigedIconos/trazabilidad.png)}
+
+.iconoNumerar{background:url(../images/sigedIconos/numerar.png)}
+
+.iconoProceso{background:url(../images/sigedIconos/proceso.png)}
+
+.iconoNotificar{background:url(../images/sigedIconos/EmailUnread16.gif)}
+
+.iconoAbierto16{background:url(../images/sigedIconos/abierto16.png)}
+
+.iconoCerrado16{background:url(../images/sigedIconos/cerrado16.png)}
+
+.iconoAgregar{background:url(../images/sigedIconos/Agregar.png)}
+
+.iconoAnular{background:url(../images/sigedIconos/Anular.png)}
+
+.iconoArchivar{background:url(../images/sigedIconos/Archivar.png)}
+
+.iconoHojaRuta{background:url(../images/sigedIconos/HojaRuta.png)}
+
+.iconoImprimir{background:url(../images/sigedIconos/Imprimir.png)}
+
+.iconoOk{background:url(../images/sigedIconos/Ok.png)}
+
+.iconoRemover{background:url(../images/sigedIconos/Remover.png)}
+
+.iconoAgrupacion{background:url(../images/sigedIconos/Agrupacion.png)}
+
+.iconoImprimir .iconoAgregar .iconoHojaRuta .iconoRemover .iconoAdjuntar, .iconoAprobar, .iconoRechazar, .iconoVersionar, .iconoPlantilla, .iconoTrazabilidad, .iconoNumerar, .iconoProceso{width:18px; height:18px; background-repeat:no-repeat; background-position:center center}

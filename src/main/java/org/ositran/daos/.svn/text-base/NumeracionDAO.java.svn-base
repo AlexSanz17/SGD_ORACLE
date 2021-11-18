@@ -1,0 +1,23 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Numeracion;
+import com.btg.osinergmin.siged.domain.Unidad;
+
+public interface NumeracionDAO {
+
+   public Numeracion findByIdNumeracion(Integer idUnidad, Integer IdTipoDocumento);
+
+   public Numeracion actualizarObj(Numeracion objNumeracion);
+
+   public Numeracion guardarObj(Numeracion objNumeracion);
+
+   public List<Numeracion> findAll();
+   
+   public List<Numeracion> findAllUnidadAndTipoDoc(Integer idunidad,Integer idtipodoc);
+   
+   public Numeracion findByIdNumeracionbyUnidad(Unidad iIdUnidad, Integer iIdTipoDocumento) ; 
+   
+   
+}

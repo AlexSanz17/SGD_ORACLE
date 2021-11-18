@@ -1,0 +1,6 @@
+package org.osinerg.services;
+
+//@Transactional(propagation=Propagation.REQUIRED)
+public class ValorcampoServiceImpl implements ValorcampoService  {
+
+}

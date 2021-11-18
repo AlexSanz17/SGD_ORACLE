@@ -1,0 +1,13 @@
+package org.osinerg.services;
+
+import java.util.List;
+import java.util.Map;
+
+import com.btg.osinergmin.siged.domain.Concesionario;
+
+public interface ConcesionarioService {
+   public Concesionario findByIdConcesionario(Integer iId) throws RuntimeException;
+   public Map getConcesionarioList() throws RuntimeException;
+   public List<Concesionario> findAll();
+   public Concesionario findByRUC(String strRUC);
+}

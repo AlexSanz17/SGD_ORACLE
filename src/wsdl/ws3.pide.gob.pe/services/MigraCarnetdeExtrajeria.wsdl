@@ -1,0 +1,72 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:tns="http://ws.consulta.usuarios.migraciones.gob.pe/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" targetNamespace="http://ws.consulta.usuarios.migraciones.gob.pe/">
+   <wsdl:types>
+      <xsd:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://ws.consulta.usuarios.migraciones.gob.pe/" version="1.0">
+         <xsd:element name="consultarDocumento" type="tns:consultarDocumento"/>
+         <xsd:element name="consultarDocumentoResponse" type="tns:consultarDocumentoResponse"/>
+         <xsd:complexType name="consultarDocumento">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="solicitud" type="tns:solicitudBean"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="solicitudBean">
+            <xsd:complexContent>
+               <xsd:extension base="tns:consulta">
+                  <xsd:sequence/>
+               </xsd:extension>
+            </xsd:complexContent>
+         </xsd:complexType>
+         <xsd:complexType abstract="true" name="consulta">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="strCodInstitucion" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strMac" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strNroIp" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strNumDocumento" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strTipoDocumento" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="consultarDocumentoResponse">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="return" type="tns:respuestaBean"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="respuestaBean">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="strCalidadMigratoria" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strNombres" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strNumRespuesta" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strPrimerApellido" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="strSegundoApellido" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:schema>
+   </wsdl:types>
+   <wsdl:message name="consultarDocumento">
+      <wsdl:part name="parameters" element="tns:consultarDocumento"/>
+   </wsdl:message>
+   <wsdl:message name="consultarDocumentoResponse">
+      <wsdl:part name="parameters" element="tns:consultarDocumentoResponse"/>
+   </wsdl:message>
+   <wsdl:portType name="MigraCarnetdeExtrajeriaPortType">
+      <wsdl:operation name="consultarDocumento">
+         <wsdl:input message="tns:consultarDocumento" wsaw:Action="consultarDocumento"/>
+         <wsdl:output message="tns:consultarDocumentoResponse" wsaw:Action="http://ws.consulta.usuarios.migraciones.gob.pe/EjecTransaccionCarExtraPcm/consultarDocumentoResponse"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="MigraCarnetdeExtrajeriaSoap11Binding" type="tns:MigraCarnetdeExtrajeriaPortType">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+      <wsdl:operation name="consultarDocumento">
+         <soap:operation soapAction="consultarDocumento" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="MigraCarnetdeExtrajeria">
+      <wsdl:port name="MigraCarnetdeExtrajeriaHttpsSoap11Endpoint" binding="tns:MigraCarnetdeExtrajeriaSoap11Binding">
+         <soap:address location="https://ws3.pide.gob.pe/services/MigraCarnetdeExtrajeria.MigraCarnetdeExtrajeriaHttpsSoap11Endpoint"/>
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

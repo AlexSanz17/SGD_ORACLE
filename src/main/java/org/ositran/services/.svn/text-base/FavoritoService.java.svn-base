@@ -1,0 +1,14 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Favorito;
+
+public interface FavoritoService {
+
+   public Favorito findObjectBy(Integer idPropietario, Integer idContacto, Character tipoContacto, Character estado);
+
+   public Favorito saveFavorito(Integer idPropietario, Integer idContacto, Character tipoContacto);
+
+   public List<Favorito> findLstBy(Integer idPropietario, Character estado, String mode);
+}

@@ -1,0 +1,70 @@
+﻿<html>
+	
+<head>
+	<title>Pesta&ntilde;a Expediente</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <meta name="generator" content="HelpNDoc">
+	<link type="text/css" rel="stylesheet" media="all" href="css/reset.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/base.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/hnd.css" />
+	<!--[if lte IE 8]>
+		<link type="text/css" rel="stylesheet" media="all" href="css/ielte8.css" />
+	<![endif]-->
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/hnd.js"></script>
+	<script type="text/javascript"><!--
+		var sTopicId = top.location.href.substring(top.location.href.lastIndexOf("/") + 1, top.location.href.length);
+		if (top.frames.length == 0)
+			top.location.href = "User Final.htm?" + sTopicId
+		else if (top && top.FrameTOC && top.FrameTOC.SelectTocItem)
+			top.FrameTOC.SelectTocItem(sTopicId);
+	</script>
+</head>
+
+<body>
+
+	<div id="topic_header">
+			<div id="topic_header_content">
+				<h1>Pesta&ntilde;a Expediente</h1>
+				
+				<div id="topic_breadcrumb">
+					<a href="General.html">General</a> &rsaquo;&rsaquo; </div>
+				</div>
+			<div id="topic_header_nav">
+				<a href="General.html"><img src="img/arrow_up.png" alt="Parent"/></a>
+				
+				<a href="Rechazar.html"><img src="img/arrow_left.png" alt="Previous"/></a>
+				
+				<a href="Adjuntar.html"><img src="img/arrow_right.png" alt="Next"/></a>
+				
+				</div>
+			<div class="clear"></div>
+		</div>
+	<div id="topic_content">
+		
+<p class="rvps6"><span class="rvts13">Pestaña Expediente:</span></p>
+<p class="rvps4"><span class="rvts13">Permite visualizar la historia del expediente asociada al documento visualizado. Muestra la fecha que se envío, el usuario que lo envió, el usuario que lo recepcionó, las acciones tomadas y los estados que ha tenido. </span></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><img border="0" alt hspace="1" vspace="1" src="lib/PESTANAEXEDIENTE.jpg"></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><span class="rvts13">Al seleccionar nos muestra la siguiente pantalla: En donde tenemos que dar click en el (+) para poder visualizar todo lo que contiene el Expediente.</span></p>
+<p class="rvps4"><img border="0" alt hspace="1" vspace="1" src="lib/desplegarpestaaexpediente.jpg"></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><span class="rvts13">Aparecerá la siguiente pantalla: En donde al seleccionar un Documento del Expediente, al lado derecho se muestra un detalle del Documento elegido, como Adjuntos si los hubiera y sólo se necesita seleccionar el Documento Adjunto para que se visualice de manera inmediata.</span></p>
+<p class="rvps4"><img border="0" alt hspace="1" vspace="1" src="lib/DETALLEPESTANAEXP.jpg"></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><span class="rvts13">(*) Tenemos también al lado derecho las opciones de </span><span class="rvts16">Trazabilidad y Hoja de Ruta</span><span class="rvts13"> que es la Trazabilidad por Documento según el Documento que selecciones:</span></p>
+<p class="rvps4"><span class="rvts13"><br></span></p>
+<p class="rvps4"><img border="0" alt hspace="1" vspace="1" src="lib/PEXPEDIENTETRAZHR.jpg"></p>
+<p class="rvps2"><span class="rvts6">Created with the Personal Edition of HelpNDoc: </span><a class="rvts7" href="http://www.helpndoc.com">Free HTML Help documentation generator</a></p>
+</div>
+	
+	<div id="topic_footer">
+
+			<div id="topic_footer_content">
+				SISTEMA DE GESTION DOCUMENTARIA - APN</div>
+		</div>
+	</body>
+	
+</html>
+

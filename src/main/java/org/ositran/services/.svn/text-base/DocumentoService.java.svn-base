@@ -1,0 +1,227 @@
+package org.osinerg.services;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.osinerg.dojo.BusquedaAvanzada;
+import org.osinerg.dojo.Recurso;
+import org.osinerg.dojo.tree.Nodo;
+import org.osinerg.dojo.tree.NodoArbol;
+import org.osinerg.pojos.jasper.CargoReporte;
+import org.osinerg.utils.ArchivoTemporal;
+import org.osinerg.utils.DocumentoDetail;
+import org.osinerg.utils.DocumentoList;
+import org.osinerg.utils.ExpedienteSearch;
+
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.ArchivoPendiente;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.DocumentoAreaFuncional;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Lista;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+@SuppressWarnings("rawtypes")
+public interface DocumentoService{
+
+	public Documento findByIdDocumento(Integer iIdDocumento);
+	
+	public Boolean aplicarJerarquia(Usuario objJefe,Proceso objProceso,Integer iIdDocumento);
+
+	public Documento buscarDocumentoMasAntiguoPor(Integer iIdExpediente);
+
+	public void anexarDocumento(Integer iIdDocumentoPrincipal,Integer[] arrIdDocumento);
+
+	public Documento clonarDocumento(Documento objDocumento,Usuario objPropietario,Expediente objExpediente);
+
+	public Documento findPropietarioByIdDocumento(Integer iIdDocumento);
+	
+	public Documento findDocExpedienteByIdDocumento(Integer iIdDocumento);
+
+	public Documento findDocumentoPrincipal(Integer iIdExpediente);
+
+	public DocumentoDetail getExpedienteData(Integer iIdExp) throws RuntimeException;
+
+	public DocumentoDetail getDocumentDetailOptimized (Integer iIdDoc,String strRol);
+	
+	public DocumentoDetail getDocumentDetail(Integer iIdDoc,String strRol) throws RuntimeException;
+
+	public DocumentoDetail saveDocumentTEMPORAL(DocumentoDetail objDD,String strAcc,Integer iIdDestinatario,Usuario usuario,String strRol, String nombrePC);
+	
+	public Documento crearDocumentoPorArchivo(DocumentoDetail objDD,Usuario objUsuario,Map<String,List<ArchivoTemporal>> mapUpload,Boolean changePrincipal,boolean quitarCorchete,String modulo,String opcion,boolean masivo);
+
+	public Integer findCantDocumentos(Usuario objUsuario);
+
+	public List<Documento> buscarLstPor(Integer iIdDocPrincipal,ExpedienteSearch objExpedienteSearch);
+
+	public List<Documento> buscarLstDocumentoPor(char cEstado,char cPrincipal,Integer iIdPropietario);
+
+	
+	public List findDocumentos(Usuario objUsuario);
+
+	public List<DocumentoList> getDocumentList(List<Documento> lstD,String strRol) throws RuntimeException;
+
+	public List<DocumentoList> getDocuments(Usuario objUsuario,char habilitado) throws RuntimeException;
+
+	//public String fillContenido(DocumentoDetail objDD);
+	
+	public List<Archivo> getArchivoList(Integer iIdDoc);
+
+	public void aplicarPlazosADocumentoPrincipal(DocumentoDetail objDD,Documento objDocumento,boolean bResponsable,Integer iIdDestinatario,String sOpcion, Usuario objUsuario, Date fechaLimiteAtencionAnterior,Boolean horarioPermitido);
+	
+	public void aplicarProcesoStor(DocumentoDetail objDD,Usuario objUsuario,String strAccion) throws Exception;
+
+	public Documento derivarDocumento(DocumentoDetail objDD,Usuario objRemitente,Integer iIdDestinatario,String sTipoDerivacion,DocumentoDetail objDDD,List<String> conCopia, String[] strAcciones, Documento documento, String nombrePC,Boolean horarioPermitido);
+
+	public Documento derivarDocumento(Documento documento,Usuario remitente,Usuario destinatario, String nombrePC);	
+	
+	public Documento rechazarDocumentoOpcional(Documento documento,Usuario remitente,Usuario destinatario, String nombrePC);
+	
+	public Documento derivarDocumento(Documento documento,Usuario remitente,Usuario destinatario,List<Usuario> conCopia,List<Lista> listaConCopia, String nombrePC);
+
+	public void inactivarDocumentos(Integer iIdExpediente);
+
+	public void rechazarQAS(Integer iIdDocumento,String sObservacion,Usuario objRemitente);
+
+    @Deprecated /** Usar el metodo sobrecargado -------------------------------------------------------------------------------*/
+	public void registrarDIG(Integer iIdDocumento,Map<String,List<ArchivoTemporal>> mapUpload,Usuario objRemitente);
+
+    public void registrarDIG(Integer iIdDocumento,Map<String,List<ArchivoTemporal>> mapUpload,Usuario objRemitente, String observacionDIG);
+
+	public Documento saveDocumento(Documento objDocumento);
+
+	public void saveDocumentoStor(Documento objD,DocumentoDetail objDD);
+
+	public String diasNoLaborables(String fechaInicio,String fechaFinal) throws RuntimeException;
+
+	public List<Documento> obtieneDocumentosNotificacionAmarilla();
+
+	public List<Documento> obtieneDocumentosNotificacionRoja();
+
+	public List<Documento> buscarLstDocumentoPor(char cPrincipal,Integer idReponsable);
+
+	public Documento subirConMetadata(Usuario usuario,Map<String,List<ArchivoTemporal>> mapUpload,Integer idDocumento,Documento objDocumento,DocumentoDetail objDD,String versionar,Integer[] fverionar);
+
+	public String[] obtenerListaFeriados();
+
+	public Date getFechaLimiteAtencion(Integer idDocumento);
+
+	public Integer getDocumentosPrincipalesNoLeidos(Integer iIdUsuario);
+
+	public Documento updateLeido(Integer iIdDocumento,Usuario remitente);
+
+	public void rechazarDocumento(Usuario remitente, Documento documento, String asunto, String contenido, String accion, String nombrePC);
+	
+	public void despacharDocumento_IG(Documento documento, String asunto, String contenido,String accion, String nombrePC, Integer idDestinatario);
+	
+	public void rechazarDocumento(Usuario remitente, Documento documento, String nombrePC);
+
+	public void anularDocumento(Usuario remitente, Documento documento, Expediente expediente, boolean unico, Usuario usuarioLogeado, String nombrePC);
+	
+	public void atenderDocumento(Usuario remitente, Documento documento, Expediente expediente, boolean unico, Usuario usuarioLogeado, String nombrePC);
+
+	public List<Documento> findDocumentosPorNumerar(Usuario logeado,Expediente expediente);
+
+	public List<Documento> busquedaDocumentoSimple(String campo, Usuario usuario);
+
+	public List<DocumentoAreaFuncional> busquedaDocumentoAreaFuncionalSimple(String campo );
+	
+    @Deprecated /**Usar el metodo sobrecargado --------------------------------------------------------------------------------*/
+	public List<Documento> busquedaDocumentoAvanzada(boolean alfresco,String contenido,String numeroDocumento,String numeroMesaPartes,String asuntoDocumento,String numeroExpediente,String asuntoExpediente,String estadoExpediente,String concesionario,String cliente,String proceso,String propietario,String areaDestino,String tipoDocumento,String fechaDocumentoDesde,String fechaDocuentoHasta,String FechaExpedienteDesde,String fechaExpedienteHasta,String operador);
+
+    public List<Documento> busquedaDocumentoAvanzada(String contenido,
+            String numeroDocumento, String numeroMesaPartes, String asuntoDocumento,
+            String numeroExpediente, String asuntoExpediente, String estadoExpediente,
+            String concesionario, String cliente, String proceso, String propietario,
+            String areaDestino, String tipoDocumento, String fechaDocumentoDesde,
+            String fechaDocuentoHasta, String fechaExpedienteDesde, String fechaExpedienteHasta,
+            String nroSuministro, String operador, String areaOrigen, String areaAutor);
+
+	public List<Documento> getDocumentosPorExpediente(int idExpediente);
+
+	List<Documento> getDocumentosNoConfidencialesPorExpediente(int idExpediente);
+	
+	public void cambiarReferencia(Documento documento,Expediente expediente,Expediente expedienteNuevo,boolean unico);
+
+	public boolean verificarArchivosParaExpedienteNuevo(Documento documento,Expediente expedienteNuevo) throws RuntimeException;
+
+	public Documento doSaveExpedienteUF(DocumentoDetail objDD,Usuario objUsuarioLogeado,Expediente objExp,Integer[] idsDocumentoPorExSeleccionados,Integer idDocPrincipalExpediente);
+	
+	public void copiarArchivosToNuevoDocumento(List<Archivo> archivos,Expediente expediente,Expediente expedienteNuevo,Documento documentoDestino) throws RuntimeException;
+	
+	public void copiarReferencia(Documento documento, Expediente expediente,Expediente expedienteNuevo, boolean unico) throws RuntimeException;
+
+   public DocumentoDetail saveNuevoDocumentoUserFinal(DocumentoDetail documentoDetail, Map<String,Object> session, Integer iddestinatario, Integer idccdestinatario, String strAcc, boolean bBandeja, ArchivoPendiente archivoPendiente, String nombrePC) throws Exception;
+
+   public Map<String, Object> getMetadataFirma(Documento documento, String rutaArchivo);
+
+   public Integer findCantDocumentosRecibidos(Usuario objUsuario);
+
+   public void guardarDocumento(Documento documento);
+   
+   public boolean numerarDocumentoFisico(Usuario usuario,Documento documento, int whatToDo);
+
+   public List<Recurso> getCountDocuments(Usuario usuario);
+   
+   public boolean perteneceAccesoProcAcc3(Usuario u,Documento d);
+   
+   public boolean perteneceAccesoProcAcc2(Usuario u,Proceso p);
+   
+   public List findDocumentosUsuarioFinal(Usuario objUsuario, boolean enviados);
+   
+   public CargoReporte obtenerCargo(Integer iddocumento);
+
+   public List getBandejaDocAtendidosUsuarioFinal(Usuario objUsuario);
+
+   public List findDocumentosAtendidosUsuarioFinal(Usuario objUsuario);
+   
+   public List findDocumentosAtendidosUsuarioFinal(Usuario objUsuario, BusquedaAvanzada objFiltro);
+
+   public List findByDataUFWithoutSharedInbox(Integer iIdUsuario);
+
+   public List<Documento> findDocumentosPorFirmar(Usuario objUsuario, Expediente expediente);
+
+   public boolean firmarDocumentoFisico(Usuario usuario, Documento documento, int whatToDo);
+
+   List<Documento> modifyDocuments(Usuario usuario, Map<Integer, Integer> documentsToModify);
+   
+   public Documento registrarDocumento(Documento objDocumento);
+   
+   public void registrarDerivacionAuditoriaDocumento(Documento doc, Usuario remitente, Usuario destinatario, String tipoauditoria, String modulo, String opcion);
+
+   public void crearCopiaApoyo(Documento doc, DocumentoDetail objDD, int idRemitente, int idDestinatario, String[] acciones, Integer prioridad, String mensaje, String nombrePC,Boolean horarioPermitido);
+   
+   void eliminarDocumento(Integer idDocumento);
+
+   //void guardarTrazaDelegacion(Documento doc, Integer idRemitente, Integer idDestinatario, String texto, Integer idDocOriginal, String nombrePC,Boolean horarioPermitido);
+   
+   void guardarTrazaFinalizarApoyo(Integer idDoc, Integer idDestinatario, String codSigoEstado);
+
+   Documento anexarDocumento(Usuario usuario,Map<String, List<ArchivoTemporal>> mapUpload, Integer idDocumento);
+
+   public Integer findCantMisExpedientes(Usuario objUsuario);
+   
+   void archivarDocumento(Integer idDocumento, Usuario remitente, String observacion, String tipoArchivar, String nombrePC);
+
+   void reabrirDocumento(Documento documento, Usuario usuario, String nombrePC);
+   
+   List findDocumentosXExpediente(Usuario objUsuario, Integer idDocumento, boolean enviados);
+   
+   //void crearCopiaDelegacion(Documento doc, Usuario remitente, Integer idDestinatario, String mensaje, String nombrePC,Boolean horarioPermitido);
+   
+   List<Integer> getUsuariosPermitidos(Integer idDocumento);
+   
+   public List findDocumentosUsuarioFinalFiltro(Usuario objUsuario, boolean enviados, BusquedaAvanzada objFiltro);
+
+   public List<Nodo> getTreeDocumentosRecibidos(Usuario objUsuario, boolean enviados);
+   
+   public List getContDocUsuarioFinal(Usuario objUsuario, boolean enviados,BusquedaAvanzada objFiltro);
+   
+   public List<Nodo> getTreeDocumentosRecibidosFiltro(Usuario objUsuario, boolean enviados, BusquedaAvanzada objFiltro);
+   
+   public List<NodoArbol> getDojoDocumentoTree(BusquedaAvanzada objFiltro, Integer idExpediente, Integer idDocumento);
+   
+}

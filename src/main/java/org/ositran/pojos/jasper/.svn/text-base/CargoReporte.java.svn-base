@@ -1,0 +1,88 @@
+package org.osinerg.pojos.jasper;
+
+import java.util.Date;
+
+public class CargoReporte {
+
+	private String nromesapartes;
+	private String tipodocumento;
+	private String proceso;
+	private String nroexpediente;
+	private String remitente;
+	private String asunto;
+	private String observacion;
+	private String nrodocumento;
+	private String unidad;
+	private Date fechacreacion;
+	private String direccion;
+	
+	public String getNromesapartes() {
+		return nromesapartes;
+	}
+	public void setNromesapartes(String nromesapartes) {
+		this.nromesapartes = nromesapartes;
+	}
+	public String getTipodocumento() {
+		return tipodocumento;
+	}
+	public void setTipodocumento(String tipodocumento) {
+		this.tipodocumento = tipodocumento;
+	}
+	public String getProceso() {
+		return proceso;
+	}
+	public void setProceso(String proceso) {
+		this.proceso = proceso;
+	}
+	public String getNroexpediente() {
+		return nroexpediente;
+	}
+	public void setNroexpediente(String nroexpediente) {
+		this.nroexpediente = nroexpediente;
+	}
+	public String getRemitente() {
+		return remitente;
+	}
+	public void setRemitente(String remitente) {
+		this.remitente = remitente;
+	}
+	public String getAsunto() {
+		return asunto;
+	}
+	public void setAsunto(String asunto) {
+		this.asunto = asunto;
+	}
+	public String getObservacion() {
+		return observacion;
+	}
+	public void setObservacion(String observacion) {
+		this.observacion = observacion;
+	}
+	public String getNrodocumento() {
+		return nrodocumento;
+	}
+	public void setNrodocumento(String nrodocumento) {
+		this.nrodocumento = nrodocumento;
+	}
+	public String getUnidad() {
+		return unidad;
+	}
+	public void setUnidad(String unidad) {
+		this.unidad = unidad;
+	}
+	public Date getFechacreacion() {
+		return fechacreacion;
+	}
+	public void setFechacreacion(Date fechacreacion) {
+		this.fechacreacion = fechacreacion;
+	}
+	public String getDireccion() {
+		return direccion;
+	}
+	public void setDireccion(String direccion) {
+		this.direccion = direccion;
+	}
+
+
+	
+}

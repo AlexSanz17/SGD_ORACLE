@@ -1,0 +1,37 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Cliente;
+
+public interface ClienteDAO {
+
+   public List<Cliente> findLstByCriteria(String[] filtroBusqueda);
+
+   public Cliente findByCriteria(String strNroIdentificacion, Integer iIdTipoIdentificacion);
+
+   public Cliente findByIdCliente(Integer iId);
+
+   public Cliente findByNroIdentificacion(String strNI);
+
+   public Cliente guardarObj(Cliente objCliente);
+
+   public List<Cliente> findAll();
+
+   public List<Cliente> findByTipoIdentificacionList(Integer iIdTipoIdentificacion, String sTipoIdentificacion);
+
+   public String generateNroIdentificacionOtro();
+
+   public Cliente findObjectBy(String numeroIdentificacion, Character estado);
+
+   List<Cliente> findLikeNroIdentificacion(String identificacion);
+   
+   public Cliente findByTipoIdentificacionList2(Integer iIdTipoIdentificacion, String sTipoIdentificacion,String nroIdentificacion);
+
+   public Cliente findByExpediente(Integer idExpediente);
+
+   public List<Cliente> findLikeNroIdentificacionOrNombre(String prm);
+   
+   List<Cliente> findByNombreRazonLike(String like);
+   
+}

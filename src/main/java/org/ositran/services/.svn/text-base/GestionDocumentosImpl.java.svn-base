@@ -1,0 +1,64 @@
+package org.osinerg.services;
+
+import java.util.List;
+import java.util.Map;
+
+import org.osinerg.services.property.GestionDocumentosProperty;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.DocumentoDetail;
+import org.osinerg.utils.DocumentoMasivo;
+
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class GestionDocumentosImpl extends GestionDocumentosProperty implements GestionDocumentos {
+
+	public boolean derivarMasivamente(DocumentoMasivo docmas, String nombrePC,Boolean horarioPermitido){
+		boolean forward=false;
+		//getLog().debug("Accion Aprobar tiene  ID=[{}]",+objDD.getAccion().getIdAccion());
+		getLog().debug("Destinatario=[{}]"+docmas.getDestinatario().getIdusuario());
+		
+		//Recorremos los documentos seleccionado
+        for (int i = 0; i < docmas.getArrIdDoc().length; i++) {
+
+        	Documento objDocSeleccionado = getDocumentoService().findByIdDocumento(docmas.getArrIdDoc()[i]);
+           
+           //Aprobacion
+           if(objDocSeleccionado.getAccion().getNombre().equals(Constantes.ACCION_PARA_APROBAR)){
+        	   
+        	   boolean flag=evaluarDestinatarios(objDocSeleccionado.getPropietario().getIdusuario(),docmas.getDestinatario().getIdusuario());
+        	   //Si es al mismo propietario del documento
+        	   if(flag){
+        		   aprobarDocumento(docmas, objDocSeleccionado, nombrePC,horarioPermitido);
+        	   }
+        	   // si es otro propietario
+        	   else{
+        		    //SI selecciono check Para Aprobar
+		       	   	if(docmas.isParaAprobar()){
+		       	   		apruebaYparaAprobarDocumentos(docmas, objDocSeleccionado, nombrePC,horarioPermitido);
+		    	   	}
+		       	   	//NO selecciono check Para Aprobar
+		       	   	else{
+		       	   		aprobarDocumento(docmas, objDocSeleccionado, nombrePC,horarioPermitido);
+		    	   	}        		   
+        	   }
+           }
+           //Reenvios
+           else{
+        	    //SI selecciono check Aprobar
+        	   	if(docmas.isParaAprobar()){
+        	   		reenviarParaAprobarDocumento(docmas, objDocSeleccionado, nombrePC,horarioPermitido);
+        	   	}
+        	    //NO selecciono check Aprobar
+        	   	else{
+        	   		reenviarDocumento(docmas,objDocSeleccionado, nombrePC,horarioPermitido);
+        	   	}   
+           }
+        }
+        
+      return forward;
+	}
+
+
+}

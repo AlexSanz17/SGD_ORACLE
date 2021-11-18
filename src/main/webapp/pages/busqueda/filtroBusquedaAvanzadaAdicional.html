@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Sistema de Gesti&oacute;n Documentaria - Filtro de B&uacute;squeda Avanzada Adicional</title>
+        <script language="JavaScript">
+            dojo.addOnLoad(function(){
+                Siged.Forms.combobox("procesoAdicional",{
+                    id              : 'objFiltro.procesoA',
+                    jsId            : 'objFiltro.procesoA',
+                    name            : 'objFiltro.proceso',
+                    storeUrl        : 'autocompletarProceso.action',
+                    searchAttr      : 'label',
+                    searchDelay     : 650,
+                    queryExpr       : '*${0}*',
+                    autoComplete    : false,
+                    hasDownArrow    : false,
+                    highlightMatch  : "all",
+                    invalidMessage  : "Seleccione un proceso",
+                    required        : false,
+                    style           : "width:200px",
+                    value           : ""
+                });
+                Siged.Forms.combobox("tipoDocumentoAdicional",{
+                    id              : "objFiltro.tipoDocumentoA",
+                    jsId            : "objFiltro.tipoDocumentoA",
+                    name            : "objFiltro.tipoDocumento",
+                    storeUrl        : "autocompletarAllTipoDocumento.action",
+                    searchAttr      : "label",
+                    searchDelay     : 650,
+                    queryExpr       : "*${0}*",
+                    autoComplete    : false,
+                    hasDownArrow    : false,
+                    highlightMatch  : "all",
+                    invalidMessage  : "Seleccione un tipo de Documento",
+                    required        : false,
+                    style           : "width:200px"
+                });
+                Siged.Forms.combobox("areaDestinoAdicional",{
+                    id              : "objFiltro.areaDestinoA",
+                    jsId            : "objFiltro.areaDestinoA",
+                    name            : "objFiltro.areaDestinoA",
+                    storeUrl        : "autocompletarAreaDestino.action",
+                    searchAttr      : "label",
+                    searchDelay     : 650,
+                    queryExpr       : "*${0}*",
+                    autoComplete    : false,
+                    hasDownArrow    : false,
+                    highlightMatch  : "all",
+                    invalidMessage  : "Seleccione una area de destino",
+                    required        : false,
+                    style           : "width:200px"
+                });
+            });
+        </script>
+	</head>
+	<body>
+		<div dojoType="dijit.form.Form" id="frmBusquedaAvanzadaAdicional" jsId="frmBusquedaAvanzadaAdicional">
+			<table width="100%">
+            <tr>
+               <td width="20%">Nro. de Expediente1</td>
+               <td width="25%">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.numeroExpediente"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+               <td width="25%">Nro. de Documento</td>
+               <td width="30%">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.numeroDocumento"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>
+            <tr>
+               <!--<td>Nro. de Mesa Partes</td>
+               <td>
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.numeroMesaPartes"
+                       style="width:200px"
+                       trim="true" />
+               </td>-->
+               <td>Contenido</td>
+               <td>
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.contenido"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+               <td>Tipo de Documento</td>
+               <td>
+                   <div name="tipoDocumentoAdicional"
+                             id="tipoDocumentoAdicional"></div>
+                  <!--<div dojoType="dijit.form.TextBox"
+                       name="objFiltro.tipoDocumento"
+                       style="width:200px"
+                       trim="true" />-->
+               </td>
+            </tr>
+            <tr>
+               <td>Fecha Creaci&oacute;n Documento</td>
+               <td colspan="3">
+                  Desde :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objFiltro.fechaDocumentoDesde"
+                         jsId="objFiltro.fechaDocumentoDesde"
+                         name="objFiltro.fechaDocumentoDesde"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Documento (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objFiltro.fechaDocumentoHasta').constraints.min = this.getValue();" />
+                  Hasta :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objFiltro.fechaDocumentoHasta"
+                         jsId="objFiltro.fechaDocumentoHasta"
+                         name="objFiltro.fechaDocumentoHasta"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Documento (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objFiltro.fechaDocumentoDesde').constraints.max = this.getValue();" />
+               </td>
+            </tr>
+            <tr>
+               <td>Fecha Creaci&oacute;n Expediente</td>
+               <td colspan="3">
+                  Desde :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objFiltro.fechaExpedienteDesde"
+                         jsId="objFiltro.fechaExpedienteDesde"
+                         name="objFiltro.fechaExpedienteDesde"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Expediente (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objFiltro.fechaExpedienteHasta').constraints.min = this.getValue();" />
+                  Hasta :
+                  <input dojoType="dijit.form.DateTextBox"
+                         type="text"
+                         id="objFiltro.fechaExpedienteHasta"
+                         jsId="objFiltro.fechaExpedienteHasta"
+                         name="objFiltro.fechaExpedienteHasta"
+                         invalidMessage="Ingrese fecha de creaci&o&oacute;n de Expediente (dd/MM/yyyy)"
+                         required="false"
+                         constraints="{datePattern:'dd/MM/yyyy'}"
+                         onChange="dijit.byId('objFiltro.fechaExpedienteDesde').constraints.max = this.getValue();" />
+               </td>
+            </tr>
+            <!--<tr>
+               <td>Concesionario</td>
+               <td>
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.concesionario"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+               <td>Documento Identidad Concesionario</td>
+               <td>
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.documentoIdentidadConcesionario"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>-->
+            <tr>
+               <td>Cliente</td>
+               <td>
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.cliente"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+               <td>Direcci&oacute;n Principal del Cliente</td>
+               <td>
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.direccionPrincipalcliente"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>
+            <tr>
+               <td>Area Destino</td>
+               <td colspan="3">
+                  <!--<div dojoType="dijit.form.TextBox"
+                       name="objFiltro.areaDestino"
+                       style="width:200px"
+                       trim="true" />-->
+                  <div name="areaDestinoAdicional"
+                             id="areaDestinoAdicional"></div>
+               </td>
+            </tr>
+            <tr>
+               <td>Propietario</td>
+               <td>
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.propietario"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+               <td colspan="2">
+                  <input dojoType="dijit.form.RadioButton"
+                         type="radio"
+                         name="objFiltro.tipoBusqueda"
+                         checked
+                         value="AND" />Buscar con todas las coincidencias
+               </td>
+            </tr>
+            <tr>
+               <td>Proceso</td>
+               <td>
+                   <div name="procesoAdicional"
+                             id="procesoAdicional"></div>
+                  <!--<div dojoType="dijit.form.TextBox"
+                       name="objFiltro.proceso"
+                       id="procesoAdicional"
+                       style="width:200px"
+                       trim="true" />-->
+               </td>
+               <td colspan="2">
+                  <input dojoType="dijit.form.RadioButton"
+                         type="radio"
+                         name="objFiltro.tipoBusqueda"
+                         value="OR" />x Buscar con al menos un criterio
+
+               </td>
+            </tr>
+            <!--<tr>
+               <td>Contenido</td>
+               <td colspan="3">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.contenido"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>-->
+            <tr>
+               <td>Asunto del Expediente</td>
+               <td colspan="3">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.asuntoexpediente"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>
+            <tr>
+               <td>Asunto del Documento</td>
+               <td colspan="3">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.asuntodocumento"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>
+            <tr>
+               <td>Nº HT</td>
+               <td colspan="3">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.nroHT"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>
+            
+            <tr>
+               <td>Nº RS</td>
+               <td colspan="3">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.nroRS"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr>
+            
+         <!--   <tr>
+               <td>Nº suministro</td>
+               <td colspan="3">
+                  <div dojoType="dijit.form.TextBox"
+                       name="objFiltro.nroSuministro"
+                       style="width:200px"
+                       trim="true" />
+               </td>
+            </tr> -->
+				<tr>
+					<td>Estado del Expediente</td>
+					<td colspan="3">
+						<select dojoType="dijit.form.FilteringSelect" name="objFiltro.estadoexpediente" required="false">
+							<option value="T">Todos</option>
+							<option value="A">Activo</option>
+							<option value="N">Anulado</option>
+							<option value="I">Archivado</option>
+						</select>
+					</td>
+				</tr>
+            <tr>
+               <td colspan="4" style="padding-top:10px;">
+                  <button dojoType=dijit.form.Button
+                          type="button"
+                          iconClass="siged16 sigedSearch16"
+                          onClick="doBusquedaAvanzada('frmBusquedaAvanzadaAdicional')"
+                          showLabel="true">Buscar</button>
+                  <button dojoType=dijit.form.Button
+                          type="button"
+                          onClick="resetFormBusquedaAvanzada('frmBusquedaAvanzadaAdicional')"
+                          iconClass="siged16 sigedEraser16"
+                          showLabel="true">Limpiar</button>
+               </td>
+            </tr>
+            <tr>
+               <td colspan="4"><div id="showErrorBusquedaAvanzadaAdicional" style="color:red;font-weight:bold;">&nbsp;</div></td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

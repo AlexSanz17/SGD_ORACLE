@@ -1,0 +1,14 @@
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Empresadestino;
+import com.btg.osinergmin.siged.domain.Tipoenvio;
+
+
+
+public interface EmpresadestinoService {
+
+   public Empresadestino Viewcod(String codigo);
+   
+   public Empresadestino findkey(int Id);
+   
+}

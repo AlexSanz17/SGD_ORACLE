@@ -1,0 +1,10 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.GridXGridColumna;
+
+public interface GridXGridColumnaDAO {
+
+   public List<GridXGridColumna> encontrarPorGrid(int idGrid);
+}

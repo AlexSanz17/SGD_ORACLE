@@ -1,0 +1,14 @@
+package org.osinerg.services;
+
+import java.util.Map;
+
+import com.btg.osinergmin.siged.domain.Tipoproceso;
+
+public interface TipoprocesoService {
+
+   public Map<Integer,String> getTipoProcesoMap();
+
+   public Tipoproceso buscarObjPor(String sNombre);
+
+   public Tipoproceso findById(Integer iIdTipoProceso);
+}

@@ -1,0 +1,9 @@
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Resueltoxdocumento;
+
+public interface ResueltoxdocumentoService {
+
+	void saveObject(Resueltoxdocumento resueltoxdocumento);
+
+}

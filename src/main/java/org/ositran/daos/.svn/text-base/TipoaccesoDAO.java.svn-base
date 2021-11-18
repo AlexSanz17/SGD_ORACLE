@@ -1,0 +1,14 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Tipoacceso;
+
+public interface TipoaccesoDAO {
+
+   public List<Tipoacceso> findAll();
+
+   public Tipoacceso buscarObjPor(String sCodigo);
+
+   public Tipoacceso buscarObjPorID(Integer iIdTipoAcceso);
+}

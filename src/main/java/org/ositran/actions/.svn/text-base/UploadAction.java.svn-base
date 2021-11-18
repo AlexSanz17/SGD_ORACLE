@@ -1,0 +1,317 @@
+package org.osinerg.actions;
+
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.ActionContext;
+import gob.osinergmin.siged.config.StrutsProperties;
+import gob.osinergmin.siged.config.StrutsProperties.SigedPropertyEnum;
+import gob.osinergmin.siged.util.MessagePropertiesEnum;
+import gob.osinergmin.siged.util.SigedMessageSource;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import javax.activation.MimetypesFileTypeMap;
+import org.apache.log4j.Logger;
+import org.osinerg.services.UploadService;
+import org.osinerg.utils.ArchivoTemporal;
+import org.osinerg.utils.Constantes;
+
+public class UploadAction {
+
+    private static Logger _log = Logger.getLogger(UploadAction.class);
+    private File file;
+    private Integer iIdUpload;
+    private Map<String, Object> mapSession;
+    private String contentType;
+    private String filename;
+    private String sNombre;
+    private UploadService uploadService;
+    private String origen;
+    private String mensaje;
+    // StreamResult
+    private InputStream inputStream;
+    private String name;
+    private long size;
+    private String contenttype;
+    private SigedMessageSource messageSource;
+
+    // ////////////////////////////////
+    // Methods //
+    // ////////////////////////////////
+    @SuppressWarnings("unchecked")
+    public String deleteFile() throws Exception {
+        if (iIdUpload == null) {
+            _log.error("No se recibio ningun upload con el cual trabajar en sesion");
+
+            return Action.ERROR;
+        }
+
+        if (sNombre == null) {
+            _log.error("No se recibio nombre del archivo a eliminar");
+
+            return Action.ERROR;
+        }
+
+        _log.debug("Eliminando archivo [" + sNombre + "] del upload [" + iIdUpload + "]");
+
+        try {
+            mapSession = ActionContext.getContext().getSession();
+            Map<String, Object> mapUpload = (Map<String, Object>) mapSession.get(Constantes.SESSION_UPLOAD_LIST);
+
+            if (mapUpload == null) {
+                _log.error("Mapa del UPLOAD es NULL");
+
+                return Action.ERROR;
+            }
+
+            mapUpload = uploadService.deleteFile(mapUpload, iIdUpload, sNombre);
+            mapSession.put(Constantes.SESSION_UPLOAD_LIST, mapUpload);
+
+            return Action.SUCCESS;
+        } catch (Exception e) {
+            _log.error(e.getMessage(), e);
+
+            return Action.ERROR;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public String downloadFileTempo() throws Exception {
+        if (getIIdUpload() == null) {
+            _log.error("No se recibio ningun Id Upload con el cual trabajar en sesion");
+            return Action.ERROR;
+        }
+        if (getSNombre() == null) {
+            _log.error("No se recibio nombre del archivo a descargar");
+            return Action.ERROR;
+        }
+        try {
+            ArchivoTemporal objArchivoTemporal = null;
+            setMapSession(ActionContext.getContext().getSession());
+            Map<String, List<ArchivoTemporal>> mapUpload = (Map<String, List<ArchivoTemporal>>) getMapSession().get(Constantes.SESSION_UPLOAD_LIST);
+            if (mapUpload == null) {
+                _log.error("Mapa en sesion que almacena temporalmente los uploads es NULL");
+                return Action.ERROR;
+            }
+            if ((objArchivoTemporal = uploadService.downloadFileTempo(mapUpload, getIIdUpload(), getSNombre())) == null) {
+                return Action.ERROR;
+            }
+            _log.debug("Armando InputStream con datos...");
+            _log.debug("Nombre [" + objArchivoTemporal.getFArchivo().getName() + "]");
+            _log.debug("Nombre Real [" + objArchivoTemporal.getSNombre() + "]");
+            _log.debug("Size [" + objArchivoTemporal.getFArchivo().length() + "]");
+            setInputStream(null);
+            setInputStream(new FileInputStream(objArchivoTemporal.getFArchivo()));
+            setName(objArchivoTemporal.getSNombre());
+            setSize(objArchivoTemporal.getFArchivo().length());
+            setContenttype(new MimetypesFileTypeMap().getContentType(objArchivoTemporal.getFArchivo()));
+            if (getInputStream() != null) {
+                return Action.SUCCESS;
+            }
+            return Action.ERROR;
+        } catch (Exception e) {
+            _log.error(e.getMessage(), e);
+            return Action.ERROR;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public String uploadFile() throws Exception {
+        try {
+            mapSession = ActionContext.getContext().getSession();
+            if (iIdUpload == null) {
+                this.mensaje = messageSource.getMessage(MessagePropertiesEnum.STRUTS_ERROR_FILE_TOO_LARGE);
+                _log.error("No se recibio ningun Id Upload con el cual trabajar en sesion");
+                mapSession.put(Constantes.MENSAJE_UPLOAD, this.mensaje);
+                return Action.SUCCESS;
+            }
+            this.mensaje = null;	
+            _log.debug("Indice en sesion del Upload [" + iIdUpload + "]");
+            Map<String, List<ArchivoTemporal>> mapUpload = null;
+            Usuario objUsuario = null;
+            mapUpload = (Map<String, List<ArchivoTemporal>>) mapSession.get(Constantes.SESSION_UPLOAD_LIST);
+            objUsuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
+            // _log.debug("map empty : "+mapUpload.values().isEmpty());
+            boolean val = false;
+            if (mapUpload != null && !mapUpload.values().isEmpty()) {
+                _log.debug("filenameee : " + filename);
+                List<ArchivoTemporal> lstArchivoTemporal = mapUpload.get("upload" + iIdUpload);
+                if (lstArchivoTemporal != null) {
+                    for (ArchivoTemporal arc : lstArchivoTemporal) {
+                        _log.debug(" arc1:" + arc.getSNombre());
+                        _log.debug(" arc2:" + filename);
+                        if (arc.getSNombre().equalsIgnoreCase(filename)) {
+                            val = true;
+                        }
+                    }
+                }
+
+               //Caso especial para archivos rechazados en DIG
+               if (iIdUpload != 2) {
+                  if (mapUpload == null || mapUpload.values().isEmpty() || mapUpload.get(Constantes.UPLOAD_ARCHIVO2) == null || mapUpload.get(Constantes.UPLOAD_ARCHIVO2).isEmpty()) {
+                     _log.info("No hay archivos rechazados en el upload temporal, no se validara la duplicidad");
+                  } else {
+                     List<ArchivoTemporal> lstArchivoRechazado = mapUpload.get(Constantes.UPLOAD_ARCHIVO2);
+                     if (lstArchivoRechazado != null) {
+                        for (ArchivoTemporal archivoRechazado : lstArchivoRechazado) {
+                           if (archivoRechazado.getSNombre().equalsIgnoreCase(filename)) {
+                              val = true;
+                              break;
+                           }
+                        }
+                     }
+
+                  }
+               }
+            }
+            _log.debug("valll : " + val);
+            long max_file_size = StrutsProperties.getLongProperty(SigedPropertyEnum.MULTIPART_MAX_SIZE);
+
+            if (val) {
+                mapUpload = uploadService.refrescarListaUpload(mapUpload, iIdUpload);
+                this.mensaje = " No es posible agregar el mismo archivo ";
+                _log.debug(" this.mensaje :" + this.mensaje);
+                mapSession.put(Constantes.MENSAJE_UPLOAD, this.mensaje);
+            } else if (file.length() >= max_file_size) {
+
+                mapUpload = uploadService.refrescarListaUpload(mapUpload, iIdUpload);
+                this.mensaje = messageSource.getMessage(MessagePropertiesEnum.STRUTS_ERROR_FILE_TOO_LARGE);
+                _log.debug(" this.mensaje :" + this.mensaje);
+                mapSession.put(Constantes.MENSAJE_UPLOAD, this.mensaje);
+
+            } else {
+                _log.debug("filename: " + filename);
+                _log.debug("file: " + file);
+                mapSession.remove(Constantes.MENSAJE_UPLOAD);
+              //  filename="rr.txt";
+                if (filename != null && file != null) {
+                    mapUpload = uploadService.moveFileToTempoDir(mapUpload, iIdUpload, file, filename, contentType, objUsuario.getUsuario());
+                } else {
+                    mensaje = "No se especifico ningun archivo a subir, no se sube nada.";
+                    mapSession.put(Constantes.MENSAJE_UPLOAD, mensaje);
+                }
+            }
+            mapSession.put(Constantes.SESSION_UPLOAD_LIST, mapUpload);
+            return Action.SUCCESS;
+        } catch (Exception e) {
+            _log.error(e.getMessage(), e);
+            return Action.ERROR;
+        }
+    }
+
+    public String showUploadFiles() throws Exception {
+        if (getIIdUpload() == null) {
+            _log.error("No se recibio ningun Id Upload con el cual trabajar en sesion");
+            return Action.ERROR;
+        }
+        return Action.SUCCESS;
+    }
+    
+    public String showUploadFiles2() throws Exception {
+        mapSession = ActionContext.getContext().getSession();
+        mensaje = (String) mapSession.get(Constantes.MENSAJE_UPLOAD);
+        _log.debug("mensaje : " + this.mensaje);
+        if (getIIdUpload() == null) {
+            _log.error("No se recibio ningun Id Upload con el cual trabajar en sesion");
+            return Action.ERROR;
+        }
+        return Action.SUCCESS;
+    }
+
+    // ////////////////////////////////
+    // Getters and Setters //
+    // ////////////////////////////////
+    public void setUpload(File file) {
+        this.file = file;
+    }
+
+    public Integer getIIdUpload() {
+        return iIdUpload;
+    }
+
+    public void setIIdUpload(Integer iIdUpload) {
+        this.iIdUpload = iIdUpload;
+    }
+
+    public Map<String, Object> getMapSession() {
+        return mapSession;
+    }
+
+    public void setMapSession(Map<String, Object> mapSession) {
+        this.mapSession = mapSession;
+    }
+
+    public void setUploadContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public void setUploadFileName(String filename) {
+        this.filename = filename;
+    }
+
+    public String getSNombre() {
+        return sNombre;
+    }
+
+    public void setSNombre(String sNombre) {
+        this.sNombre = sNombre;
+    }
+    
+    public InputStream getInputStream() {
+        return inputStream;
+    }
+
+    public void setInputStream(InputStream inputStream) {
+        this.inputStream = inputStream;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public String getContenttype() {
+        return contenttype;
+    }
+
+    public void setContenttype(String contenttype) {
+        this.contenttype = contenttype;
+    }
+
+    public String getOrigen() {
+        return origen;
+    }
+
+    public void setOrigen(String origen) {
+        this.origen = origen;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+    public void setUploadService(UploadService uploadService) {
+        this.uploadService = uploadService;
+    }
+
+    public void setMessageSource(SigedMessageSource ms) {
+        this.messageSource = ms;
+    }
+}

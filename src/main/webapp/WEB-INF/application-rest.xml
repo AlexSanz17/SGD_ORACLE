@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+   <bean id="clienteController" scope="prototype" class="org.ositran.controllers.ClienteController">
+      <property name="clienteService" ref="clienteService" />
+   </bean>
+
+   <bean id="expedienteController" scope="prototype" class="org.ositran.controllers.ExpedienteController">
+      <property name="clienteService" ref="clienteService" />
+      <property name="expedienteService" ref="expedienteService" />
+      <property name="procesoService" ref="procesoService" />
+      <property name="repositorioService" ref="repositorioService" />
+      <property name="usuarioService" ref="usuarioService" />
+   </bean>
+
+   <bean id="documentoController" scope="prototype" class="org.ositran.controllers.DocumentoController">
+      <property name="clienteService" ref="clienteService" />
+      <property name="documentoService" ref="documentoService" />
+      <property name="expedienteService" ref="expedienteService" />
+      <property name="procesoService" ref="procesoService" />
+      <property name="repositorioService" ref="repositorioService" />
+      <property name="rolService" ref="rolService" />
+      <property name="tipodocumentoService" ref="tipodocumentoService" />
+      <property name="usuarioService" ref="usuarioService" />
+   </bean>
+</beans>

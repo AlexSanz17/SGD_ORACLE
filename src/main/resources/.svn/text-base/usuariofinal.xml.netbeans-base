@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+   <package name="usuariofinal" extends="struts-default">
+      <action name="doDeleteLista" method="deleteLista" class="listaAction">
+         <result>pages/bandeja/resultLista.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doLoadListaArray" method="loadListaArray" class="listaAction">
+         <result>pages/bandeja/lstLista.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+
+      <action name="gobandejanuevoExpediente" method="gobandejanuevoExpediente" class="documentoAction">
+         <result>pages/bandeja/nuevoExpediente.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+
+      <action name="doSaveExpUser" method="saveExpUser" class="documentoAction">
+         <result name="input">pages/bandeja/nuevoExpediente.jsp</result>
+         <result>pages/bandeja/cargo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goUploadWithForm" method="uploadWithForm" class="documentoAction">
+         <result>pages/bandeja/uploadWithForm.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doUploadWithForm" method="doUploadWithForm" class="documentoAction">
+         <result name="input">pages/bandeja/uploadWithForm.jsp</result>
+         <result>pages/bandeja/uploadWithForm.jsp</result>
+         <result name="error">error.html</result>
+      </action> 
+
+      <action name="imprimirProveido" method="imprimirProveido" class="documentoAction">
+         <result name="proveido">pages/imprimir/impresionProveido.jsp</result>
+         <result>error.html</result>
+      </action>
+
+      <!--<action name="doSaveLista" method="saveLista" class="listaAction">
+         <result name="input">pages/bandeja/viewLista.jsp</result>
+         <result>pages/bandeja/resultLista.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doViewLista" method="viewLista" class="listaAction">
+         <result name="input">pages/bandeja/lstLista.jsp</result>
+         <result>pages/bandeja/viewLista.jsp</result>
+         <result name="error">error.html</result>
+      </action>-->
+      <action name="goFrameLoadListaArray">
+         <result>loadListaArray.jsp</result>
+      </action>
+      <action name="goFrameNewExpUser">
+         <result>nuevoExpUser.jsp</result>
+      </action>
+      <action name="goViewSeguimiento" method="viewSeguimiento" class="trazabilidadAction">
+         <result name="input">pages/bandeja/pruebaArch.jsp</result>
+         <result name="print">pages/imprimir/impresionTrazabilidad.jsp</result>
+         <result>pages/bandeja/seguimiento.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="verTrazabilidadExpediente" method="mostrarTrazabilidadExpediente" class="trazabilidadAction">
+         <result name="trazabilidadExpediente">pages/bandeja/trazabilidadExpediente.jsp</result>
+         <result name="print">pages/imprimir/impresionTrazaExpediente.jsp</result>
+         <result>error.html</result>
+      </action>
+      <action name="goViewSeguimientoEx" method="viewSeguimientoProceso" class="trazabilidadAction">
+         <result name="input">pages/bandeja/pruebaArch.jsp</result>
+         <result>pages/bandeja/seguimientoEx.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goAnular" method="goAnular" class="expedienteAction">
+         <result>pages/bandeja/observacionAnular.jsp</result>
+      </action>
+      <action name="doAnular" method="doAnular" class="expedienteAction">
+         <result name="input">pages/bandeja/observacionAnular.jsp</result>
+         <result>pages/bandeja/observacionAnular.jsp</result>
+         <result name="error">error.html</result>
+      </action>      
+   </package>
+</struts>

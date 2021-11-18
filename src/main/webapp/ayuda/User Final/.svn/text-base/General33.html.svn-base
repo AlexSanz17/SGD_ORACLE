@@ -1,0 +1,80 @@
+﻿<html>
+	
+<head>
+	<title>Nuevo Documento</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <meta name="generator" content="HelpNDoc">
+	<link type="text/css" rel="stylesheet" media="all" href="css/reset.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/base.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/hnd.css" />
+	<!--[if lte IE 8]>
+		<link type="text/css" rel="stylesheet" media="all" href="css/ielte8.css" />
+	<![endif]-->
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/hnd.js"></script>
+	<script type="text/javascript"><!--
+		var sTopicId = top.location.href.substring(top.location.href.lastIndexOf("/") + 1, top.location.href.length);
+		if (top.frames.length == 0)
+			top.location.href = "User Final.htm?" + sTopicId
+		else if (top && top.FrameTOC && top.FrameTOC.SelectTocItem)
+			top.FrameTOC.SelectTocItem(sTopicId);
+	</script>
+</head>
+
+<body>
+
+	<div id="topic_header">
+			<div id="topic_header_content">
+				<h1>Nuevo Documento</h1>
+				
+				<div id="topic_breadcrumb">
+					<a href="General.html">General</a> &rsaquo;&rsaquo; </div>
+				</div>
+			<div id="topic_header_nav">
+				<a href="General.html"><img src="img/arrow_up.png" alt="Parent"/></a>
+				
+				<a href="General32.html"><img src="img/arrow_left.png" alt="Previous"/></a>
+				
+				<a href="ManualdeUsuarioFinal1.html"><img src="img/arrow_right.png" alt="Next"/></a>
+				
+				</div>
+			<div class="clear"></div>
+		</div>
+	<div id="topic_content">
+		
+<p class="rvps16"><span class="rvts17">Nuevo Documento:</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">El usuario ingresa en esta opción para ingresar un nuevo Expediente, sin embargo también puede Registrar un Documento, anexándolo a un Expediente ya existente.</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Seleccionar "</span><span class="rvts18">Nuevo Documento"</span><span class="rvts17">.</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/NUEVODOC.jpg"></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Al seleccionar se muestra la siguiente pantalla: En donde se hace un Registro de un Expediente Nuevo.</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/NUEVODOC2.jpg"></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">En caso de que quiera anexarse un Documento a un Expediente ya existente, se ingresa a la lupa como en la siguiente pantalla:</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/NUEVODOC3.jpg"></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Luego se muestra la siguiente pantalla: En donde ingresas datos en cualquiera de los filtros como: </span><span class="rvts18">Nro. Expediente, Proceso, Fecha de Creación, Asunto, DNI/ RUC, Nombre/Razón Social. </span><span class="rvts17">Seleccionamos </span><span class="rvts18">"Filtrar".</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/NUEVODOC4.jpg"></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><span class="rvts17">Al seleccionar se muestra la siguiente pantalla: En donde como vemos en el gráfico aparecen ingresados los datos de: </span><span class="rvts18">Nro. Expediente, Proceso, Asunto del Expediente.</span></p>
+<p class="rvps16"><span class="rvts17"><br></span></p>
+<p class="rvps16"><img border="0" alt hspace="1" vspace="1" src="lib/NUEVODOC5.jpg"></p>
+<p class="rvps2"><span class="rvts6">Created with the Personal Edition of HelpNDoc: </span><a class="rvts7" href="http://www.helpndoc.com">Full featured Documentation generator</a></p>
+</div>
+	
+	<div id="topic_footer">
+
+			<div id="topic_footer_content">
+				SISTEMA DE GESTION DOCUMENTARIA - APN</div>
+		</div>
+	</body>
+	
+</html>
+

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.17" id="1">
+    <list-property name="configVars">
+        <structure>
+            <property name="name">__isnull_36_0</property>
+            <property name="value">fechaDesde_36</property>
+        </structure>
+        <structure>
+            <property name="name">fechaDesde_36_type_</property>
+            <property name="value">string</property>
+        </structure>
+        <structure>
+            <property name="name">__isnull_37_1</property>
+            <property name="value">fechaHasta_37</property>
+        </structure>
+        <structure>
+            <property name="name">fechaHasta_37_type_</property>
+            <property name="value">string</property>
+        </structure>
+        <structure>
+            <property name="name">__isnull_38_2</property>
+            <property name="value">anio_38</property>
+        </structure>
+        <structure>
+            <property name="name">anio_38_type_</property>
+            <property name="value">string</property>
+        </structure>
+        <structure>
+            <property name="name">__isnull_39_3</property>
+            <property name="value">mes_39</property>
+        </structure>
+        <structure>
+            <property name="name">mes_39_type_</property>
+            <property name="value">string</property>
+        </structure>
+    </list-property>
+</report>

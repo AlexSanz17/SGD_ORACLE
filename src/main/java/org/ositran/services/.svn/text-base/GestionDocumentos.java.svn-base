@@ -1,0 +1,7 @@
+package org.osinerg.services;
+import org.osinerg.utils.DocumentoMasivo;
+
+public interface GestionDocumentos {
+
+	public boolean derivarMasivamente(DocumentoMasivo docmas, String nombrePC,Boolean horarioPermitido);
+}

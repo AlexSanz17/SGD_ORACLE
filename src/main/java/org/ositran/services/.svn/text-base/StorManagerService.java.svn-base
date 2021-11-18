@@ -1,0 +1,49 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.osinerg.services;
+
+import java.util.List;
+import java.util.Map;
+
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.DocumentoStor;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Motivo;
+import com.btg.osinergmin.siged.domain.Resolucionjaru;
+import com.btg.osinergmin.siged.domain.Submotivo;
+import com.btg.osinergmin.siged.domain.Suministro;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+/**
+ * 
+ * @author Usuario
+ */
+public interface StorManagerService{
+
+	public Usuario findUserSCalificador();
+
+	public List<Suministro> getListSuministroXExpediente(Integer idExpediente);
+
+	public List<Submotivo> getListSubmotivosXExpediente(Integer idExpediente);
+
+	public List<Motivo> getListMotivosxExpediente(Integer idExpediente);
+
+	public void updateDatosExpediente(Integer idExpediente,Integer idSubMotivo,String monto);
+
+	public void updateDatosExpediente(Integer idExpediente,Integer[] listIdSubMotivos,Integer[] listNewIdSubMotivos,String monto,String observacion);
+
+	public void uploadArchivoToAlfresco(Documento objDocumento,Map mapUpload);
+
+	public Documento changeDocumentoPrincipal(Expediente expediente,Usuario destinatario,String asunto,String accion);
+
+	public Documento createDocumento(Expediente expediente,Usuario destinatario,String asunto,String accion,char principal);
+
+	public void updateEstadoDocumentoPrincipal(Documento documento,char estado);
+
+	public DocumentoStor getDocumentoStorByExpediente(Integer idExpediente);
+
+	public void updateResolucionJaru(Resolucionjaru resolucionjaru);
+}

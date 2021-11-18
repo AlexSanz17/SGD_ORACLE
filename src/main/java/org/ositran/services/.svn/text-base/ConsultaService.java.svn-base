@@ -1,0 +1,17 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import org.osinerg.dojo.BusquedaAvanzada;
+import org.osinerg.dojo.Consulta;
+import org.osinerg.dojo.grid.Item;
+
+import com.btg.osinergmin.siged.domain.ConsultaAPN3;
+
+
+public interface ConsultaService {
+	
+	public List<Item> getItemsDocumentosRecepcionados(Consulta objFiltro,String arrFecha[], Integer IdAreaDestino);
+	public List<Item> getItemsDocumentosEmitidos(Integer remitente);
+	public List<Item> getItemsMisExpedientes( Integer IdAreaDestino, BusquedaAvanzada objFiltro);
+}

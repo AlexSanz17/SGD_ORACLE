@@ -1,0 +1,21 @@
+package org.osinerg.utils;
+
+public class SigedUtils {
+	public static String getDescripcionEstado(Character estado){
+		if(estado != null){
+			switch (estado){
+				case Constantes.ESTADO_ACTIVO:
+					return "Activo";
+				case Constantes.ESTADO_ANULADO:
+					return "Anulado";
+				case Constantes.ESTADO_CERRADO:
+					return "Archivado";
+				case Constantes.ESTADO_INACTIVO:
+					return "Inactivo";
+				default:
+					return "-";
+			}
+		}
+		return "-";
+	}
+}

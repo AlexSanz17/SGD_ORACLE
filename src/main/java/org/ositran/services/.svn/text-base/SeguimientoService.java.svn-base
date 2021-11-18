@@ -1,0 +1,27 @@
+package org.osinerg.services;
+
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.FilaSeguimiento;
+import com.btg.osinergmin.siged.domain.SeguimientoHoraDia;
+import com.btg.osinergmin.siged.domain.SeguimientoHoraSemana;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+
+public interface SeguimientoService {
+
+   public List<SeguimientoHoraDia> getListaDocumentosPendientesByDia(Timestamp fecha, Integer idusuario, String filtro1, Integer iIdProceso);
+
+   public List<FilaSeguimiento> getListaDocumentosPendientesBySemana(Date fechaInicio, Date fechaFin, Integer idusuario, String filtro1, Integer iIdProceso, Boolean propios);
+
+   public Date[] getSemana(Date actual);
+
+   /**
+    * INICIO: JOSE ZENTENO
+    */
+   public List<SeguimientoHoraSemana> getListaDocumentosPendientesBySemanaFiltros(Timestamp fecha, Integer idusuario, Integer idProceso, boolean todosUsuarios);
+   /**
+    * FIN: JOSE ZENTENO
+    */
+}

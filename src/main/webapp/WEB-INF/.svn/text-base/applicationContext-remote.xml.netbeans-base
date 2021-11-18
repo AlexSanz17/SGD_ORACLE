@@ -1,0 +1,44 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:jaxws="http://cxf.apache.org/jaxws"
+ xmlns:soap="http://cxf.apache.org/bindings/soap"
+ xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+    http://cxf.apache.org/bindings/soap http://cxf.apache.org/schemas/configuration/soap.xsd
+    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+ 
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+   <bean id="expedienteRemoteWS" scope="prototype" class="org.osinergmin.remote.service.impl.ExpedienteRemoteWSImpl">
+      <property name="clienteService" ref="clienteService" />
+      <property name="documentoService" ref="documentoService" />
+      <property name="expedienteService" ref="expedienteService" />
+      <property name="procesoService" ref="procesoService" />
+      <property name="repositorioService" ref="repositorioService" />
+      <property name="rolService" ref="rolService" />
+      <property name="tipodocumentoService" ref="tipodocumentoService" />
+      <property name="usuarioService" ref="usuarioService" />
+      <property name="archivoService" ref="archivoService" />
+      <property name="tipoIdentificacionService" ref="tipoidentificacionService" />
+   </bean>
+
+   <bean id="clienteRemoteWS" scope="prototype" class="org.osinergmin.remote.service.impl.ClienteRemoteWSImpl">
+      <property name="clienteService" ref="clienteService" />
+      <property name="tipoIdentificacionService" ref="tipoidentificacionService" />
+      <property name="distritoService" ref="distritoService" />
+   </bean>
+
+    <jaxws:endpoint
+        id="expedienteRemoteWSCXF"
+        implementor="#expedienteRemoteWS"
+        address="/ExpedienteRemoteWS" />
+
+    <jaxws:endpoint
+        id="clienteRemoteWSCXF"
+        implementor="#clienteRemoteWS"
+        address="/ClienteRemoteWS" />
+
+</beans>
+ 

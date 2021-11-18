@@ -1,0 +1,98 @@
+package org.osinerg.daos;
+
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.PersistenceContext;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import com.btg.osinergmin.siged.domain.Tipodocumento;
+
+@Repository
+public class TipodocumentoDAOImpl implements TipodocumentoDAO {
+
+   private static Logger _log = Logger.getLogger(TipodocumentoDAOImpl.class);
+   private EntityManager em;
+
+   //////////////////////////////////
+   // Methods                      //
+   //////////////////////////////////
+   public List<Tipodocumento> findAll() {
+      return em.createNamedQuery("Tipodocumento.findAll")
+               .getResultList();
+   }
+
+   public List<Tipodocumento> findAllWithoutStor() {
+      return em.createNamedQuery("Tipodocumento.findAllWithoutStor")
+               .getResultList();
+   }
+
+   public List<Tipodocumento> findAllwithPlantilla() {
+      return em.createNamedQuery("Tipodocumento.findAllWithPlantilla")
+               .getResultList();
+   }
+
+   public List<Tipodocumento> findAllWithoutPlantilla() {
+      return em.createNamedQuery("Tipodocumento.findAllWithoutPlantilla")
+               .getResultList();
+   }
+
+   public Tipodocumento buscarObjPor(String sCodigo) {
+      return (Tipodocumento) em.createNamedQuery("Tipodocumento.findByCodigo")
+                               .setParameter("codigo", sCodigo.toUpperCase())
+                               .getSingleResult();
+   }
+
+   public Tipodocumento findByIdTipoDocumento(Integer iIdTipodocumento) {
+      Tipodocumento objTipodocumento = null;
+
+      try {
+         objTipodocumento = em.find(Tipodocumento.class, iIdTipodocumento);
+         em.refresh(objTipodocumento);
+      } catch (EntityNotFoundException e) {
+         _log.error(e.getMessage(), e);
+      }
+
+      return objTipodocumento;
+   }
+
+   public Tipodocumento findByNombre(String sNombre) {
+      return (Tipodocumento) em.createNamedQuery("Tipodocumento.findByNombre")
+                               .setParameter("nombre", sNombre.toLowerCase())
+                               .getSingleResult();
+   }
+
+   @SuppressWarnings("unchecked")
+   public List<Tipodocumento> findByNombreLike(String like){
+	   if(like != null){
+		   like = "%"+like+"%";
+	   }
+	   return em.createNamedQuery("Tipodocumento.findByNombreLike").setParameter("nombre", like).getResultList();
+   }
+   
+   public Tipodocumento guardarObj(Tipodocumento objTipodocumento) {
+      if (objTipodocumento.getIdtipodocumento() == null) {
+         em.persist(objTipodocumento);
+         em.flush();
+         em.refresh(objTipodocumento);
+      } else {
+         em.merge(objTipodocumento);
+         em.flush();
+      }
+
+      return objTipodocumento;
+   }
+
+   //////////////////////////////////
+   // Getters and Setters          //
+   //////////////////////////////////
+   public EntityManager getEm() {
+      return em;
+   }
+
+   @PersistenceContext(unitName="sigedPU")
+   public void setEm(EntityManager em) {
+      this.em = em;
+   }
+}

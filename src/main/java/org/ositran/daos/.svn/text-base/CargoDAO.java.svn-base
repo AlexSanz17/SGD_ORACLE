@@ -1,0 +1,12 @@
+package org.osinerg.daos;
+
+import com.btg.osinergmin.siged.domain.Cargo;
+
+
+public interface CargoDAO {
+
+   public Cargo saveDatos(Cargo Obdt);
+   
+   public Cargo findkey(int Id);
+
+}

@@ -1,0 +1,12 @@
+package org.osinerg.services;
+
+import java.util.Map;
+
+import com.btg.osinergmin.siged.domain.Actividad;
+
+public interface ActividadService {
+
+   public Actividad findByCodigo(String sCodigo);
+
+   public Map<String,Integer> getMapRecursoXActividad(Integer idActividad);
+}

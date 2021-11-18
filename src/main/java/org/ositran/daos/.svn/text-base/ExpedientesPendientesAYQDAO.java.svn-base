@@ -1,0 +1,10 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.ExpedientesPendientesAYQ;
+
+public interface ExpedientesPendientesAYQDAO {
+	public abstract List<ExpedientesPendientesAYQ> listarTodo();
+	public abstract List<ExpedientesPendientesAYQ> generarListaAYQ(String tipoExpediente, String fechaDesde, String fechaHasta, String sala, String responsable, String analista, String vencimientoDesde, String vencimientoHasta);
+}

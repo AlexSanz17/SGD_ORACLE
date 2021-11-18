@@ -1,0 +1,14 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Perfil;
+
+public interface PerfilDAO {
+
+   public List<Perfil> findAll();
+
+   public Perfil findByIdPerfil(Integer iIdPerfil);
+
+   public Perfil savePerfil(Perfil objPerfil);
+}

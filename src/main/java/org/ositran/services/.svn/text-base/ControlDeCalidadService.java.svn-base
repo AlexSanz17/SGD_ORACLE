@@ -1,0 +1,21 @@
+package org.osinerg.services;
+
+import java.rmi.RemoteException;
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.osinerg.utils.DocumentoDetail;
+import org.osinerg.webservice.clientes.intalio.InvalidInputMessageFaultException;
+import org.osinerg.webservice.clientes.intalio.InvalidParticipantTokenFaultException;
+import org.osinerg.webservice.clientes.intalio.UnavailableTaskFaultException;
+
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public interface ControlDeCalidadService{
+	
+	public boolean aprobarDocumento(DocumentoDetail documentoDetail,Usuario calidad,Map<String,Object> sesion) throws RemoteException, InvalidInputMessageFaultException, InvalidParticipantTokenFaultException, UnavailableTaskFaultException, XMLStreamException;
+	
+	public boolean rechazarDocumento();
+
+}

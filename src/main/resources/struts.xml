@@ -1,0 +1,1303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<!-- Codigos de error
+		202		:	Alfresco
+		303		:	Intalio
+ -->
+
+
+<struts>
+	<constant name="struts.objectFactory" value="spring" />
+	<constant name="struts.devMode" value="false" />
+   <bean type="org.apache.struts2.dispatcher.multipart.MultiPartRequest" name="multiparser" class="org.ositran.servlets.util.JakartaMultiPartRequest" scope="default" optional="true" />
+   <constant name="struts.convention.action.suffix" value="Controller" />
+   <constant name="struts.convention.action.mapAllMatches" value="true" />
+   <constant name="struts.convention.default.parent.package" value="rest-default" />
+   <constant name="struts.convention.package.locators" value="controllers" />
+   <constant name="struts.rest.defaultExtension" value="xml" />
+   <constant name="struts.mapper.class" value="gob.ositran.siged.util.CustomStruts2ActionMapper" />
+   <constant name="struts.mapper.prefixMapping" value="/service:rest,:struts" />
+
+
+
+	<package name="siged" extends="struts-default">
+		<!-- custom result type for file download -->
+
+	<result-types>
+		<result-type name="myStream" default="false" class="org.ositran.actions.results.DynamicStreamResult" />
+	</result-types>
+
+		<interceptors>
+		  <interceptor name="cookieprovider" class="org.ositran.cookies.CookieProviderInterceptor" />
+                    <interceptor-stack name="defaultAndCookiesProvider">
+                       <interceptor-ref name="defaultStack" />
+                       <interceptor-ref name="cookieprovider" />
+                    </interceptor-stack>
+                </interceptors>
+                
+            <!--
+            <default-interceptor-ref name="defaultSessionCheckInterceptor"/> -->
+
+      <global-results>
+         <result name="forwardToURL">forwardToURL.jsp</result>
+         <result name="202">error/errorAlfresco.html</result>
+         <result name="303">error/errorIntalio.html</result>
+         <result name="true">pages/util/true.jsp</result>
+         <result name="false">pages/util/false.jsp</result>
+         <result name="error">error.html</result>
+      </global-results>
+      
+                  
+
+		<!--default-interceptor-ref name="token" /-->
+
+		<!-- action for downloading file-->
+      <action name="qasFileDownload" method="downloadFile" class="qasFileDownload">
+         <result type="myStream" />
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="doBody" method="runBody" class="usuarioAction">
+         <result name="success">pages/tramite/docRegistrados.jsp</result>
+         <result name="mp">pages/tramite/grdDocumentosRegistrados.jsp</result>
+         <result name="dig">pages/tramite/grdDocumentosRegistrados.jsp</result>
+         <result name="qas">pages/tramite/grdDocumentosRegistrados.jsp</result>
+         <result name="user">pages/tramite/grdDocumentosRegistrados.jsp</result>
+         <result name="misprocesos">pages/bandeja/grdMisProcesos.jsp</result>
+         <result name="UsuFinMnuMisExp">pages/bandeja/grdMisExpedientes.jsp</result>
+         <result name="MantMnuJer">pages/mantenimiento/jerarquia.jsp</result>
+         <result name="MantMnuMod">pages/mantenimiento/lstModulos.jsp</result>
+         <result name="MantMnuPer">pages/mantenimiento/lstPerfiles.jsp</result>
+         <result name="MantMnuPro">pages/mantenimiento/lstProcesos.jsp</result>
+         <result name="MantMnuExp">pages/mantenimiento/lstExpedientes.jsp</result>
+         <result name="MantMnuRec">pages/mantenimiento/lstRecursos.jsp</result>
+         <result name="MantMnuUsu">pages/mantenimiento/lstUsuarios.jsp</result>
+         <result name="MantMnuAud">pages/mantenimiento/Auditoria.jsp</result>
+         <result name="MantMnuRol">pages/mantenimiento/lstRol.jsp</result>
+         <result name="MantMnuRep">pages/mantenimiento/reporte.jsp</result>
+         <result name="MantMnuSed">pages/mantenimiento/lstSede.jsp</result>
+         <result name="MantMnuTdo">pages/mantenimiento/lstTipodocumento.jsp</result>
+         <result name="MantMnuCli">pages/mantenimiento/lstClientes.jsp</result>
+         <result name="MantMnuUni">pages/mantenimiento/lstUnidad.jsp</result>
+         <result name="MantMnuFerIng">pages/ingreso/fecha_feriado.jsp</result>
+         <result name="MantMnuFerLis">pages/ingreso/fecha_reporte.jsp</result>
+         <result name="mensajeria">pages/tramite/docMensajeria.jsp</result>
+         <result name="MantMnuPlt">pages/mantenimiento/lstPlantillas.jsp</result>
+         <result name="MantMnuGPr">pages/mantenimiento/lstGrupoProcesos.jsp</result>
+         <result name="MantMnuNum">pages/mantenimiento/lstNumeracion.jsp</result>
+         <result name="MantMnuPar">pages/mantenimiento/lstParametro.jsp</result>
+         <result name="MantMnuDep">pages/mantenimiento/lstDepartamento.jsp</result>
+         <result name="MantMnuProv">pages/mantenimiento/lstProvincia.jsp</result>
+         <result name="MantMnuDis">pages/mantenimiento/lstDistrito.jsp</result>
+         <result name="MantMnuLis">pages/mantenimiento/lstLista.jsp</result>
+         <result name="MantMnuRee">pages/mantenimiento/lstReemplazo.jsp</result>
+         <result name="MantMnuUsuComp">pages/mantenimiento/lstCompUsuarios.jsp</result>
+          <result name="MantMnuLogDoc">pages/mantenimiento/lstLogOperacion.jsp</result>
+         <result name="inicionormal">pages/bandeja/solicitarSupervisor.jsp</result>
+         <result name="error">error.html</result>
+
+      </action>
+
+      <action name="blank" method="blank" class="usuarioAction">
+		<result name="blank">blank.html</result>
+   	  </action>
+
+      <action name="doLista" method="runPendientes" class="usuarioAction">
+         <result name="success">pages/tramite/docPendientes.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="enviados" method="runInicioEnviados" class="usuarioAction">
+         <result>pages/enviados/inicioEnviados.jsp</result>
+      </action>
+      <action name="doListaEnviados" method="runEnviados" class="usuarioAction">
+         <result name="success">pages/enviados/DocumentosEnviadosGrid.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+		<!-- action supervisor -->
+      <action name="doSupervisor" method="enviarSolicitud" class="supervisorAction">
+         <result name="solicitar">/pages/bandeja/proSolicitarSupervisor.jsp</result>
+         <result name="success">pages/enviados/DocumentosEnviadosGrid.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="doSupervisor1" method="save" class="supervisorAction">
+         <result name="solicitar">/pages/bandeja/proSolicitarSupervisor.jsp</result>
+         <result name="success">pages/enviados/DocumentosEnviadosGrid.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="inicio" method="runInicio" class="usuarioAction">
+         <result >pages/layout/main.jsp</result>
+	 	 <result name="inicionormal">inicio.jsp</result>
+         <result name="activa">activa.html</result>
+         <result name="error">login.jsp</result>
+         <result name="login">login.jsp</result>
+      </action>
+
+        <action name="inicioVG" method="runInicioVG" class="usuarioAction">
+         <result name="success">pages/layout/main.jsp</result>
+			<!--<result>inicio.jsp</result>-->
+           <result name="inicionormal">inicio.jsp</result>
+         <result name="error">error.html</result>
+         <result name="login">login.jsp</result>
+      </action>
+
+        <action name="doBuscarLogOperacion" method="buscarLogOperacion" class="usuarioAction">
+         <result name="success">pages/mantenimiento/lstLogOperacion.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+
+      <action name="inicioNO" method="runInicioNO" class="usuarioAction">
+         <result name="success">pages/layout/main.jsp</result>
+			<!--<result>inicio.jsp</result>-->
+           <result name="inicionormal">inicio.jsp</result>
+         <result name="error">error.html</result>
+         <result name="login">login.jsp</result>
+      </action>
+
+      <action name="inicioCarpetaBusqueda">
+         <result>inicioCarpetaBusqueda.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="pendientes" method="runInicioPendientes" class="usuarioAction">
+         <result>inicioPendientes.jsp</result>
+      </action>
+
+      <action name="doMenu" method="runMenu" class="usuarioAction">
+         <result>menu.jsp</result>
+      </action>
+
+      <action name="login">
+         <result>login.jsp</result>
+      </action>
+
+      <action name="doLogout" method="logout" class="usuarioAction">
+         <result type="redirectAction">login</result>
+			<!--interceptor-ref name="defaultAndCookiesProvider" /-->
+		</action>
+
+         <action name="doLoginSession" method="loginSession" class="usuarioAction">
+			<result name="input">login.jsp</result>
+            <result name="activa">activa.html</result>
+			<result name="error">login.jsp</result>
+			<result type="redirectAction">
+				<param name="actionName">inicio</param>
+				<param name="sTipoFrame">grid</param>
+			</result>
+		</action>
+                
+		<action name="doLogin" method="login" class="usuarioAction">
+			<result name="input">login.jsp</result>
+			<result name="error">login.jsp</result>
+            <result name="activa">activa.html</result>
+			<result type="redirectAction">
+				<param name="actionName">inicio</param>
+				<param name="sTipoFrame">grid</param>
+			</result>
+		</action>
+
+		<action name="go_*_*">
+			<result>pages/{1}/{2}.jsp</result>
+		</action>
+
+		<action name="run_*_*" method="{2}" class="{1}Action">
+			<result>pages/{1}/{2}.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+
+		<action name="doNewDoc" method="loadNewDoc" class="documentoAction">
+			<result name="input">pages/tramite/nuevoArchMP1.jsp</result>
+			<result>pages/tramite/nuevoArchMP2.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+
+		<action name="generarCargoTicket" method="generarCargoTicket" class="documentoAction">
+			<result name="cargo">pages/tramite/cargoTicket.jsp</result>
+		</action>
+                
+                
+		<action name="generarCargo" method="generarCargo" class="documentoAction">
+			<result name="cargo">pages/tramite/cargo.jsp</result>
+		</action>
+
+		<action name="documentosAdicionales_verDetalleExpediente" method="verDetalleExpediente" class="documentoAction">
+			<result>pages/bandeja/documentosAdicionales_detalleExpediente.jsp</result>
+		</action>
+                
+                <action name="documentosAdicionales_verDetalleLegajo" method="verDetalleLegajo" class="documentoAction">
+			<result>pages/bandeja/documentosAdicionales_detalleLegajo.jsp</result>
+                        <result name="sinLegajo">sinLegajo.jsp</result>
+		</action>
+
+		<action name="doRegistrar" method="registrar" class="documentoAction">
+			<result name="input">pages/tramite/nuevoArchMP2.jsp</result>
+			<result>pages/tramite/cargo.jsp</result>
+		</action>
+
+		<action name="doRegistrarDocumento" method="registrarDocumento" class="documentoAction">
+			<result name="input">pages/tramite/nuevoDocumento.jsp</result>
+			<result>pages/tramite/cargo.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doViewDocPendiente" method="viewDocPendiente" class="pendienteAction">
+                         <result name="errorsession">login.jsp</result>
+			<result  name="success">pages/pendientes/detalleDocumentosPendiente.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doViewDocAtendido" method="viewDocAtendido" class="pendienteAction">
+                         <result name="errorsession">login.jsp</result>
+			<result  name="success">detalle/detalleDocumentoAtendido.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doViewDocSeguimiento" method="viewDocSeguimiento" class="pendienteAction">
+                         <result name="errorsession">login.jsp</result>
+			<result  name="success">detalle/detalleDocumentoSeguimiento.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doViewDocAnulado" method="viewDocAnulado" class="pendienteAction">
+                        <result name="errorsession">login.jsp</result>
+			<result  name="success">detalle/detalleDocumentoAnulado.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doViewDocFirmado" method="viewDocFirmado" class="pendienteAction">
+                         <result name="errorsession">login.jsp</result>
+			<result  name="success">detalle/detalleDocumentoFirmado.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doViewDocRecepcionVirtual" method="viewDocRecepcionVirtual" class="virtualAction">
+                         <result name="errorsession">login.jsp</result>
+			<result  name="success">detalle/detalleRecepcionVirtual.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doViewDocDespachoVirtual" method="viewDocDespachoVirtual" class="virtualAction">
+                         <result name="errorsession">login.jsp</result>
+			<result  name="success">detalle/detalleDespachoVirtual.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <!--
+                <action name="doViewDocUsuarioFinalRecepcion" method="viewDocUsuarioFinalRecepcion" class="virtualAction">
+                         <result name="errorsession">login.jsp</result>
+			<result  name="success">detalle/detalleDocumentoRecepcionVirtual.jsp</result>
+			<result name="error">error.html</result>
+		</action> -->
+
+		<action name="doViewDocUsuarioFinal" method="viewDocUsuarioFinal" class="documentoAction">
+			<result name="input">pages/tramite/docRegistrados.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+			<result name="error">error.html</result>
+                        <result name="errorsession">login.jsp</result>
+			<result name="login">login.jsp</result>
+                        <result name="detalleDocumentoRecObservado">detalle/detalleDocumentoRecObservado.jsp</result>
+			<result>detalle/detalleDocumento.jsp</result>
+			<result name="intalio">detalle/detalleDocumentoIntalio.jsp</result>
+		</action>
+
+		<action name="doViewDocUsuarioFinalBandejaCompartida" method="viewDocUsuarioFinalBandejaCompartida" class="documentoAction">
+			<result name="input">pages/tramite/docRegistrados.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+			<result name="error">error.html</result>
+			<result name="login">login.jsp</result>
+			<result>detalle/detalleDocumentoBandejaCompartida.jsp</result>
+			<result name="intalio">detalle/detalleDocumentoIntalio.jsp</result>
+		</action>
+
+
+		<action name="doViewDocUsuarioFinalBusqueda" method="viewDocUsuarioFinalBusqueda" class="documentoAction">
+			<result name="input">pages/tramite/docRegistrados.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+                        <result name="accesolimitado">detalle/detalleDocumentoBusquedaLimitado.jsp</result>
+			<result name="error">error.html</result>
+			<result name="login">login.jsp</result>
+                        <result name="errorsession">login.jsp</result>
+			<result>detalle/detalleDocumentoBusqueda.jsp</result>
+			<result name="intalio">detalle/detalleDocumentoIntalio.jsp</result>
+		</action>
+
+
+		<action name="doViewDoc" method="viewDoc" class="documentoAction">
+			<result name="input">pages/tramite/docRegistrados.jsp</result>
+			<result name="mp">detalle/detalleDocumentoMP.jsp</result>
+			<result name="dig">detalle/viewDocDIG.jsp</result>
+			<result name="qas">detalle/viewDocQAS.jsp</result>
+			<!-- <result name="qas">detalle/detalleDocQAS.jsp</result>  -->
+			<result name="sas">pages/sas/DetalleDocSas.jsp</result>
+			<result name="stor">detalle/detalleDocumentoStor.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+			<result name="error">error.html</result>
+			<result name="login">login.jsp</result>
+			<result name="intalio">detalle/detalleDocumentoIntalio.jsp</result>
+			<result name="detalleDocEmail">detalle/detalleDocumentoEmail.jsp</result>
+			<result>detalle/detalleDocumento.jsp</result>
+		</action>
+
+
+
+                <action name="doViewTramite" method="viewDocTramite" class="documentoAction">
+			<result name="error">error.html</result>
+			 <result >detalleTramiteDocumentario.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+
+		<action name="doViewTramiteDocumentario" method="viewDocTramiteDocumentario" class="documentoAction">
+			<result name="error">error.html</result>
+			 <result>respuestaTramiteDocumentario.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+
+
+		<action name="doViewDocAdicionales" method="viewDocAdicionales" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchDocumentos.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewExpUsuarioFinal" method="viewExpUsuarioFinal" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchLegajo.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewDocLegajo" method="viewDocLegajo" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchLegajo.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewDocLegajoBusqueda" method="viewDocLegajoBusqueda" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchLegajo.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewDocAdicionalesBusqueda" method="viewDocAdicionalesBusqueda" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchDocumentos.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewDocReferenciales" method="viewDocReferenciales" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchReferenciales.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewDocReferencialesBusqueda" method="viewDocReferencialesBusqueda" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchReferenciales.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewDocArchivos" method="viewDocArchivos" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchArchivos.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+                <action name="doViewDocRespuestas" method="viewDocRespuestas" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/pruebaArchRespuestas.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+                
+
+		<action name="doViewInfoPrincipal" method="viewInfoPrincipal" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/informacionPrincipal.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+
+		<action name="doViewInfoComplementaria" method="viewInfoComplementaria" class="documentoAction">
+			<result name="error">error.html</result>
+			<result>pages/bandeja/informacionComplementaria.jsp</result>
+			<result name="sinpermiso">blank.jsp</result>
+		</action>
+
+      <action name="doViewDocAdicionalesIFrame" method="viewDocAdicionales" class="documentoAction">
+         <result name="error">error.html</result>
+         <result>pages/bandeja/pruebaArchDocumentosIFrame.jsp</result>
+      </action>
+      <action name="doViewTrazabilidad" method="viewTrazabilidad"	class="trazabilidadAction">
+         <result name="error">error.html</result>
+         <result name="sinpermiso">blank.jsp</result>
+         <result>pages/bandeja/pruebaArchDocumentosTrazabilidad.jsp</result>
+      </action>
+      
+      
+      <action name="doViewTrazabilidadReferencia" method="viewTrazabilidadReferencia" class="trazabilidadAction">
+         <result name="error">error.html</result>
+         <result name="sinpermiso">blank.jsp</result>
+         <result>pages/bandeja/pruebaArchDocumentosTrazabilidadReferencia.jsp</result>
+      </action>
+      
+      <action name="detalleCopias" method="detalleCopias"	class="trazabilidadAction">
+         <result name="error">error.html</result>
+         <result>pages/bandeja/trazabilidadCopia.jsp</result>
+      </action>
+      <action name="detalleApoyos" method="detalleApoyos"	class="trazabilidadAction">
+         <result name="error">error.html</result>
+         <result>pages/bandeja/trazabilidadApoyo.jsp</result>
+      </action>
+      <action name="goOpenDocumentSearch" method="goOpenDocumentSearch" class="documentoAction">
+         <result>pages/bandeja/documentoVirtual.jsp</result>
+      </action>
+      <action name="doSearchDocumento" method="buscarDocumentoPor" class="documentoAction">
+         <result name="input">pages/bandeja/documentoVirtual.jsp</result>
+         <result>pages/bandeja/documentoVirtual.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doAnexarDocumento" method="anexarDocumento" class="documentoAction">
+         <result name="input">pages/bandeja/documentoVirtual.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="doAlertaDocumento" method="alertaDocumento" class="documentoAction">
+         <result>pages/bandeja/alertaPopup.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="goOpenNuevoCliente" method="goOpenNuevoCliente" class="documentoAction">
+         <result>pages/tramite/nuevoCliente.jsp</result>
+      </action>
+      <action name="doSaveCliente" method="doSaveCliente" class="documentoAction">
+         <result>pages/tramite/nuevoCliente.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doLoadSearchExpediente">
+         <result>pages/tramite/buscarExpediente.jsp</result>
+      </action>
+      <!-- ACCIONES ALERTA -->
+      <action name="nuevoExpedienteUF"  method="loadNuevoExpedienteUF"	class="documentoAction">
+            <result>pages/NuevoDocumento/NuevoExpedienteUsuarioFinal.jsp</result>
+	  </action>
+	  <action name="saveNuevoExpedienteUF" method="saveNuevoExpedienteUF"	class="documentoAction">
+	        <result name="input">pages/NuevoDocumento/NuevoExpedienteUsuarioFinal.jsp</result>
+			<result>pages/NuevoDocumento/NuevoExpedienteUsuarioFinal.jsp</result>
+			<result name="error">error.html</result>
+	  </action>
+      <action name="doSearchExpediente" method="findByCriteria" class="expedienteAction">
+         <result name="input">pages/tramite/buscarExpediente.jsp</result>
+         <result>pages/tramite/buscarExpediente.jsp</result>
+      </action>
+      <action name="doSearchExpedienteBusqAvaz" method="findbyNroDoc" class="expedienteAction">
+         <result name="input">pages/bandeja/docRecibidosBusq.jsp</result>
+      </action>
+      <action name="doSearchinner" method="findbyInner" class="expedienteAction">
+         <result name="input">pages/tramite/docBusquedaInner.jsp</result>
+         <result>pages/tramite/docBusquedaInner.jsp</result>
+      </action>
+      <action name="doSearchSuperad" method="findsuperbyadvanced" class="expedienteAction">
+         <result>/pages/tramite/docRecibidosBusq.jsp</result>
+      </action>
+      <action name="doSearchSuperad2" method="findsuperbyadvanced2" class="expedienteAction">
+         <result>/pages/tramite/docRecibidosBusq_2.jsp</result>
+      </action>
+      <action name="doFiltrarExpediente" method="filtrarExpediente" class="expedienteAction">
+         <result name="input">pages/mantenimiento/lstExpedientes.jsp</result>
+         <result>pages/mantenimiento/lstExpedientes.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doLoadExpediente" method="loadExpediente" class="documentoAction">
+         <result name="input">pages/tramite/buscarExpediente.jsp</result>
+         <result>pages/tramite/nuevoArchMP2.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doDerivarDIG" method="derivar" class="documentoAction">
+         <result name="input">pages/digitalizador/pruebaArchDig.jsp</result>
+         <result>aprobar2.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doRegistrar*" method="registrar{1}" class="documentoAction">
+         <result name="input">pages/digitalizador/viewDoc{1}.jsp</result>
+         <result>aprobar2.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doDerivarQAS" method="aprobarQAS" class="documentoAction">
+         <result name="input">pages/calidad/viewDocQAS.jsp</result>
+         <result>aprobar1.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="goRechazarQAS" method="gorechazar" class="documentoAction">
+         <result>pages/calidad/QASObs.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doRechazarQAS" method="rechazarqas" class="documentoAction">
+         <result name="input">pages/calidad/QASObs.jsp</result>
+         <result>pages/calidad/QASObs.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goDerivarUSER" method="goderivaruser" class="documentoAction">
+         <result>examples/derivar.jsp</result>
+		 <result name="noEsPropietario">error/propietario.html</result>
+         <result name="error">error.html</result>
+         <result name="errorHorario">error/errorHorario.jsp</result>
+         <result name="errorVisor">pages/layout/errorVisor.jsp</result>
+      </action>
+      <action name="goDerivarApoyo" method="goDerivarApoyo" class="documentoAction">
+         <result>examples/derivarApoyo.jsp</result>
+         <result name="error">error.html</result>
+         <result name="errorHorario">error/errorHorario.jsp</result>
+      </action>
+      <action name="goDelegarApoyo" method="goDelegarApoyo" class="documentoAction">
+         <result>examples/delegarApoyo.jsp</result>
+         <result name="error">error.html</result>
+         <result name="errorHorario">error/errorHorario.jsp</result>
+      </action>
+      <action name="goAdjuntarArchivo" method="goAdjuntarArchivo" class="documentoAction">
+         <result>pages/bandeja/adjuntarArchivo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goEliminarArchivo" method="goEliminarArchivo" class="documentoAction">
+         <result>pages/bandeja/eliminarArchivo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+      <action name="goFirmarArchivo" method="goFirmarArchivo" class="documentoAction">
+         <result>pages/bandeja/firmarArchivo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+      <action name="goSetPrincipalArchivo" method="goArchivoPrincipal" class="documentoAction">
+         <result>pages/bandeja/principalArchivo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goModificarExpediente" method="goModificarExpediente" class="documentoAction">
+         <result>detalle/editarDatos.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+      <action name="goModificarLegajo" method="goModificarLegajo" class="documentoAction">
+         <result>detalle/editarExpediente.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+      <action name="goModificarDocumento" method="goModificarDocumento" class="documentoAction">
+         <result>detalle/editarDocumento.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goDerivarMasivo" method="mostrarDerivacionMasiva" class="documentoAction">
+         <result name="masivo">examples/masivo.jsp</result>
+			<result name="noEsPropietario">error/propietario.html</result>
+         <result name="error">error.html</result>
+      </action>
+      
+      <action name="goDerivarMasivoDoc" method="mostrarDerivacionMasivaDoc" class="documentoAction">
+         <result name="masivo">examples/masivoDoc.jsp</result>
+	<result name="noEsPropietario">error/propietario.html</result>
+         <result name="error">error.html</result>
+      </action>
+
+<!--
+      <action name="doNotificarCorreoReporte8" method="doNotificarCorreoReporte8" class="documentoAction">
+         <result name="success">pages/notificacion/correoReporte8.jsp</result>
+	     <result name="error">error.html</result>
+      </action>
+
+
+      <action name="goNotificarCorreoReporte8" method="goNotificarCorreoReporte8" class="documentoAction">
+         <result name="success">pages/notificacion/correoReporte8.jsp</result>
+	     <result name="error">error.html</result>
+      </action>
+-->
+
+      <action name="goNotificarUSER" method="goNotificarUser" class="notificacionAction">
+         <result>pages/notificacion/notificar.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goSubirRepositorio" method="goSubirRepositorio" class="documentoAction">
+         <result name="input">pages/bandeja/pruebaArch.jsp</result>
+         <result type="redirectAction">
+            <param name="actionName">doViewDoc</param>
+            <param name="iIdDoc">${iIdDocumento}</param>
+         </result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doAdjuntarArchivo" method="doAdjuntarArchivo" class="documentoAction">
+         <result>pages/bandeja/adjuntarArchivo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doEliminarArchivo" method="doEliminarArchivo" class="documentoAction">
+      </action>
+      <action name="doSetPrincipalArchivo" method="doSetPrincipalArchivo" class="documentoAction">
+      </action>
+      <action name="doDerivarUSER" method="derivaruser" class="documentoAction">
+         <result name="input">examples/derivar.jsp</result>
+         <result name="masivo">examples/masivo.jsp</result>
+         <result>examples/derivar.jsp</result>
+         <result name="error">error.html</result>
+         <result name="errorUsuario">examples/errorUsuario.jsp</result>
+         <result name="errorVisor">pages/layout/confirmacionIG.jsp</result>
+      </action>
+       <action name="doDerivarUSERIG" method="derivaruserIG" class="documentoAction">
+       	 <result name="input">examples/derivar.jsp</result>
+         <result>examples/derivar.jsp</result>
+         <result name="error">error.html</result>
+         <result name="errorUsuario">examples/errorUsuario.jsp</result>
+         <result name="errorVisor">pages/layout/confirmacionIG.jsp</result>
+       </action>
+      <action name="finalizarApoyo" method="finalizarApoyo" class="documentoAction">
+         <result>examples/derivar.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="delegarApoyo" method="delegarApoyo" class="documentoAction">
+         <result>examples/delegarApoyo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+       <action name="goCopiarApoyoCarga" method="goCopiarApoyoCarga" class="documentoAction">
+         <result>examples/atiende.jsp</result>
+         <result name="error">error.html</result>
+         <result name="errorHorario">error/errorHorario.jsp</result>
+      </action>
+      
+      <action name="goCopiarApoyo" method="goCopiarApoyo" class="documentoAction">
+         <result>examples/copiarApoyo.jsp</result>
+         <result name="error">error.html</result>
+         <result name="errorHorario">error/errorHorario.jsp</result>
+      </action>
+      <action name="copiarApoyo" method="copiarApoyo" class="documentoAction">
+         <result>examples/copiarApoyo.jsp</result>
+         <result name="input">examples/copiarApoyo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doNotificarUSER" method="doNotificarUser" class="notificacionAction">
+         <result name="input">pages/notificacion/notificar.jsp</result>
+         <result>pages/notificacion/notificar.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goRechazarUSER" method="gorechazarUser" class="documentoAction">
+         <result name="input">examples/rechazar.jsp</result>
+         <result>examples/rechazar.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+	  <action name="mostrarBandejaDXE" method="goBandejaDXE" class="documentoAction">
+			<result name="bandeja">pages/bandeja/bandejaDocumentosXExpediente.jsp</result>
+			<result name="error">error.html</result>
+	  </action>
+      <action name="doAprobarUSER" method="aprobaruser" class="documentoAction">
+         <result name="input">pages/bandeja/pruebaArch.jsp</result>
+         <result>aprobar.jsp</result>
+      </action>
+
+      <action name="doDerivarMasivo" method="doDerivarMasivo" class="documentoAction">
+         <result name="input">pages/bandeja/pruebaArch.jsp</result>
+         <result>cargoAprobarMasivo.jsp</result>
+      </action>
+      <action name="doRechazarUSER" method="rechazaruser" class="documentoAction">
+         <result name="input">pages/bandeja/observacion1.jsp</result>
+         <result>rechazar1.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doUpload" method="upload" class="documentoAction">
+         <result name="input">pages/digitalizador/pruebaArchDig.jsp</result>
+         <result>pages/digitalizador/pruebaArchDig.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doUploadUser" method="upload" class="documentoAction">
+         <result name="input">pages/bandeja/pruebaArch.jsp</result>
+         <result>pages/bandeja/pruebaArch.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doUploadUserManual" method="upload" class="documentoAction">
+         <result name="input">examples/derivar.jsp</result>
+         <result>examples/derivar.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="doDerivarTarea" method="derivarTarea" class="documentoAction">
+         <result name="input">examples/derivar.jsp</result>
+         <result>examples/derivar.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="goAprobarStor" method="goAprobarStor" class="documentoAction">
+         <result>pages/bandeja/ObsStor.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doAprobarStor" method="aprobarStor" class="documentoAction">
+         <result name="input">pages/bandeja/ObsStor.jsp</result>
+         <result>aprobar.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doSearchbuscarpeta" method="findbuscarpeta" class="carpetabusquedaAction">
+         <result name="input">/menu.jsp</result>
+         <result>/menu.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doBuscarpeta" method="findbuscarpetaid" class="carpetabusquedaAction">
+         <result name="input">/pages/bandeja/docCarpetas.jsp</result>
+         <result>/docCarpetas.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dobusimplestor" method="findbuscarpeta" class="expedientestorAction">
+         <result name="input">/pages/tramite/docBussimplestor.jsp</result>
+         <result>/docBussimplestor.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dobusavanstor" method="findbusavanzada" class="expedientestorAction">
+         <result name="input">/pages/tramite/docBusqadvanstor.jsp</result>
+         <result>/page/tramite/docBusqadvanstor.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+
+		<!-- David: para las plantillas  -->
+      <action name="doPlantilla_*" method="{1}" class="archivoPendienteAction">
+			<!--
+				<interceptor-ref name="params"> <param
+				name="excludeParams">valor\d*</param> </interceptor-ref>
+			-->
+
+			<result name="input">pages/tramite/plantilla.jsp</result>
+			<result name="view">nuevoDoc2.jsp</result>
+			<result name="new">pages/tramite/plantilla.jsp</result>
+			<result name="edit">pages/tramite/plantilla.jsp</result>
+			<result name="viewDoc">nuevoDoc3.jsp</result>
+			<result name="viewFile">pages/tramite/viewFile.jsp</result>
+			<result name="viewDocN">pages/NuevoDocumento/nuevoDoc3.jsp</result>
+			<result name="viewDocButt">pages/tramite/vistaPreviaBotones.jsp</result>
+			<result name="viewDocDoc">pages/tramite/vistaPreviaDocumento.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+
+
+<!--  El nuevo Documento,Joseph -->
+      <action name="NuevoDocumentoFedatear" method="nuevoDocumentoFedatear" class="documentoAction">
+         <result name="success">pages/NuevoDocumento/cargoFedatario.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+       <!--
+       <action name="verDocumento" method="verDocumento" class="documentoAction">
+         <result name="success">detalle/verDocumento.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+       -->  
+		<!--  El nuevo Documento,Joseph -->
+      <action name="NuevoDocumentoEnviarArchivo" method="enviarArchivo" class="documentoAction">
+         <result name="input">pages/NuevoDocumento/NuevoDocumento.jsp</result>
+         <result>pages/NuevoDocumento/cargo.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="Seguimiento_*" method="{1}" class="seguimientoAction">
+         <result name="inicio">pages/seguimiento/PrincipalSeguimiento.jsp</result>
+         <result name="diario">pages/seguimiento/SeguimientoDiario.jsp</result>
+         <result name="semanal">pages/seguimiento/SeguimientoSemanal.jsp</result>
+         <result name="plazo">pages/seguimiento/editarPlazo.jsp</result>
+         <result name="documento">inicio2.jsp</result>
+      </action>
+
+      <action name="ReporteSiged_*" method="{1}" class="reporteSigedAction">
+         <result name="inicio">pages/reportes/ReporteProceso.html</result>
+         <result name="mensajeria">pages/reportes/ReporteMensajeria.html</result>
+         <result name="filtros">pages/reportes/filtros.jsp</result>
+         <result name="filtrosMensajeria">pages/reportes/filtrosMensajeria.jsp</result>
+         <result name="menu">pages/reportes/MenuReportes.jsp</result>
+      </action>
+
+      <action name="ReporteSigedSTOR_*" method="{1}" class="reporteSigedSTORAction">
+         <result name="inicioPendientes">pages/reportes/FiltrosPendientes.jsp</result>
+         <result name="inicioIngresados">pages/reportes/FiltrosIngresados.jsp</result>
+         <result name="inicioConcluidos">pages/reportes/FiltrosConcluidos.jsp</result>
+      </action>
+
+      <action name="ReporteAPN_*" method="{1}" class="reporteAPNAction">
+         <result name="reporteAPN1">pages/reportesAPN/FiltrosReporte1.jsp</result>
+         <result name="reporteAPN2">pages/reportesAPN/FiltrosReporte2.jsp</result>
+         <result name="reporteAPN3">pages/reportesAPN/FiltrosReporte3.jsp</result>
+         <result name="reporteAPN4">pages/reportesAPN/FiltrosReporte4.jsp</result>
+         <result name="reporteAPN5">pages/reportesAPN/FiltrosReporte5.jsp</result>
+         <result name="reporteAPN6">pages/reportesAPN/FiltrosReporte6.jsp</result>
+         <result name="reporteAPN8">pages/reportesAPN/FiltrosReporte8.jsp</result>
+         <result name="reporteAPN9">pages/reportesAPN/FiltrosReporte9.jsp</result>
+         <result name="reporteAPN10">pages/reportesAPN/FiltrosReporte10.jsp</result>
+
+         <result name="successReporteAPN1">pages/reportesAPN/ResultadoReporte1.jsp</result>
+         <result name="successReporteAPN2">pages/reportesAPN/ResultadoReporte2.jsp</result>
+         <result name="successReporteAPN3">pages/reportesAPN/ResultadoReporte3.jsp</result>
+         <result name="successReporteAPN4">pages/reportesAPN/ResultadoReporte4.jsp</result>
+         <result name="successReporteAPN5">pages/reportesAPN/ResultadoReporte5.jsp</result>
+         <result name="successReporteAPN6">pages/reportesAPN/ResultadoReporte6.jsp</result>
+         <result name="successReporteAPN7">pages/reportesAPN/ResultadoReporte7.jsp</result>
+         <result name="successReporteAPN8">pages/reportesAPN/ResultadoReporte8.jsp</result>
+         <result name="successReporteAPN9">pages/reportesAPN/ResultadoReporte9.jsp</result>
+         <result name="successReporteAPN10">pages/reportesAPN/ResultadoReporte10.jsp</result>
+
+         <result name="TrazabilidadDocumentaria">pages/reportesAPN/TrazabilidadDocumentaria.jsp</result>
+         <result name="HojaRuta">pages/reportesAPN/HojaRuta.jsp</result>
+         <result name="HojaFirma">pages/reportesAPN/HojaFirma.jsp</result>
+         <result name="HojaRutaExpediente">pages/reportesAPN/HojaRutaExpediente.jsp</result>
+         <result name="error">error.html</result>
+		 <result name="errorFechas">errorFechas.html</result>
+		 <result name="reporteDocumentosRecibidos">pages/reportesAPN/ReporteDocumentosRecibidos.jsp</result>
+		 <result name="reporteDocumentosCompartidos">pages/reportesAPN/ReporteDocumentosCompartidos.jsp</result>
+		 <result name="reporteDocumentosInformativos">pages/reportesAPN/ReporteDocumentosInformativos.jsp</result>
+		  <result name="reporteDocumentosAlertas">pages/reportesAPN/ReporteDocumentosAlertas.jsp</result>
+      </action>
+
+      <action name="ConsultaAPN_*" method="{1}" class="consultaAction">
+         <result name="consultaAPN3">pages/consultas/PrincipalConsulta3.jsp</result>
+         <result name="consultaAPN4">pages/consultas/PrincipalConsulta4.jsp</result>
+         <result name="misExpedientes">pages/consultas/PrincipalMisExpedientes.jsp</result>
+      </action>
+
+      <action name="ReporteSigedUsuarios_*" method="{1}" class="reporteSigedUsuariosAction">
+         <result name="inicioAYQ">pages/reportes/FiltrosAYQ.jsp</result>
+      </action>
+
+      <action name="Archivar_*" method="{1}" class="archivarAction">
+         <result  name="inicio">pages/archivar/PrincipalArchivar.jsp</result>
+         <result name="inicio1">pages/archivar/PrincipalAtender.jsp</result>
+         <result name="inicioMasivo">pages/archivar/PrincipalArchivarMasivo.jsp</result>
+         <result name="resultadoMasivo">pages/layout/main.jsp</result>
+         <result name="resultado">pages/layout/main.jsp</result>
+         <result name="reabrir">pages/layout/main.jsp</result>
+      </action>
+
+      <action name="AnularPrevioDocumento_*" method="{1}" class="documentoAction">
+           <result name="inicioAnular">pages/anular/PrincipalAnular.jsp</result>
+      </action>
+
+		<!-- Carpeta Busqueda Action -->
+      <action name="doSaveCarpetaBusqueda" method="saveCarpetaBusqueda" class="carpetabusquedaAction">
+			<!--<result name="input">pages/bandeja/nuevaCarpeta.jsp</result>-->
+         <result>pages/bandeja/nuevaCarpeta.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="dobuscarmensajeriausuario" method="findusuariomensajeria" class="mensajeriaAction">
+         <result name="LtUsumsn">/pages/tramite/docMensajeriaUsuario.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dobuscarmensajeria" method="findusuariomensajeria" class="mensajeriaAction">
+         <result name="LtUsumsn">/pages/tramite/docMensajeria.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doingdatos" method="savedatos" class="datosAction">
+         <result name="Obmejda">/pages/mensajeria/pruebaMsjEnvio.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doingenvio" method="saveenvio" class="envioAction">
+         <result name="Obenvio">/pages/mensajeria/pruebaMsjCargo.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dofinddatos" method="findkey" class="datosAction">
+         <result name="Objendatox">/pages/mensajeria/Msjdatos.jsp</result>
+         <result name="Objendatox2">/pages/mensajeria/Msjdatosdisabledconse.jsp
+         </result>
+         <result name="Objemsj">/pages/mensajeria/pruebaMsj.jsp</result>
+         <result name="disab">/pages/mensajeria/pruebaMsjdisabled.jsp</result>
+         <result name="Objemsj2">/pages/mensajeria/pruebaMsjconsec.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dofinddatosUser" method="findkeyUser" class="datosAction">
+         <result name="Objendatox">pages/mensajeria/Msjdatosdisabled.jsp</result>
+         <result name="Objendatox2">pages/mensajeria/Msjdatosdisabledconse.jsp</result>
+         <result name="Objemsj">pages/mensajeria/pruebaMsjdisabled.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doingcargo" method="savecargo" class="cargoAction">
+         <result name="Obmejcar">blank.html</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dofindkey" method="findkey" class="envioAction">
+         <result name="Objenviox">/pages/mensajeria/Msjenvio.jsp</result>
+         <result name="Objmensaj">/pages/mensajeria/pruebaMsjEnvio.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dofindkeyuser" method="findkeyuser" class="envioAction">
+         <result name="Objenviox">/pages/mensajeria/Msjenviodisabled.jsp</result>
+         <result name="Objmensaj">/pages/mensajeria/pruebaMsjEnviodisabled.jsp
+         </result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dofindkeycargo" method="findkey" class="cargoAction">
+         <result name="Objcargox">/pages/mensajeria/MsjCargo.jsp</result>
+         <result name="Objmensj">/pages/mensajeria/pruebaMsjCargo.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dofindkeycargouser" method="findkeyuser" class="cargoAction">
+         <result name="Objcargox">/pages/mensajeria/MsjCargodisabled.jsp</result>
+         <result name="Objmensj">/pages/mensajeria/pruebaMsjCargodisabled.jsp
+         </result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dobusidmensajeria" method="findIdMsj" class="mensajeriaAction">
+         <result name="Msjria">/pages/mensajeria/pruebaMsj.jsp</result>
+         <result name="Msjdoc">/pages/mensajeria/pruebaMsjEnvio.jsp</result>
+         <result name="Msjdts">/pages/mensajeria/pruebaMsjCargo.jsp</result>
+         <result name="Msjdatos">/pages/mensajeria/Msjdatos.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doSaveDiafestivo" method="saveDiafestivo" class="diafestivoAction">
+         <result name="success">/pages/ingreso/fecha_feriado.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dodeleteDiafestivo" method="eliminarDiafestivo" class="diafestivoAction">
+         <result name="success">/pages/ingreso/fecha_reporte.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dobusDiafestivo" method="findlisdiafestivo" class="diafestivoAction">
+         <result name="input">/pages/ingreso/fecha_reporte.jsp</result>
+         <result>/pages/ingreso/fecha_reporte.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doingMensajeria" method="savemensajeria" class="mensajeriaAction">
+         <result name="Nada">blank.html</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doingasunto" method="enviardocusu" class="mensajeriaAction">
+         <result name="ingreso">/pages/bandeja/asuntomensajeria.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="dobuscarpmodificar" method="modificarCarpeta"	class="carpetabusquedaAction">
+			<!--
+				<result
+				name="busquedacarpeta">/pages/bandeja/modificar_carpetabusqueda2.jsp</result>
+			-->
+         <result name="busquedacarpeta">pages/carpetasbusqueda/frmCarpetasBusqueda.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="doeliminarcarbusqueda" method="eliminarCarpetaBusqueda" class="carpetabusquedaAction">
+         <result name="input">menu.jsp</result>
+         <result>menu.jsp</result>
+         <result type="redirectAction">
+            <param name="actionName">doMenu</param>
+         </result>
+			<!--<result name="error">error.html</result>-->
+      </action>
+      <action name="doSaveBusqueda" method="saveCarpetaBusqueda" class="carpetabusquedaAction">
+         <result name="input">blank.html</result>
+         <result>blank.html</result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="dopermisosbusqueda" method="permisosbusquedas" class="carpetabusquedaAction">
+         <result name="input">blank.jsp</result>
+         <result type="chain">
+            <param name="actionName">doViewDoc</param>
+         </result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="NuevoDocumento_*" method="{1}" class="nuevoDocumentoAction">
+         <result name="inicio">/pages/NuevoDocumento/InicioNuevoDocumento.jsp</result>
+         <result name="nuevoDocumento">pages/NuevoDocumento/NuevoDocumento.jsp</result>
+         <result name="nuevoRegistroTramite">pages/NuevoDocumento/NuevoDocumentoTramite.jsp</result>
+        <!--    <result name="agregarDocumento">pages/NuevoDocumento/AgregarDocumento.jsp</result> -->
+
+         <result name="nuevaOperacionFedatario">pages/NuevoDocumento/NuevaOperacionFedatario.jsp</result>
+         <result name="inicioEdicion">/pages/NuevoDocumento/InicioEdicionDocumento.jsp</result>
+         <result name="edicionDocumento">/pages/NuevoDocumento/EdicionDocumento.jsp</result>
+         <result name="nuevoDocumentoSAS">/pages/tramite/documentoSAS.jsp</result>
+         <result name="subir">/pages/NuevoDocumento/subir.jsp</result>
+         <result name="error">blank.html</result>
+      </action>
+      <action name="SubirConMetadata_*" method="{1}" class="nuevoDocumentoAction">
+         <result name="input">/pages/NuevoDocumento/SubirConMetadata.jsp</result>
+         <result name="subirconmetadata">/pages/NuevoDocumento/SubirConMetadata.jsp</result>
+         <result name="versionar">/pages/NuevoDocumento/versionar.jsp</result>
+      </action>
+      <action name="Numeracion_*" method="{1}" class="nuevoDocumentoAction">
+         <result name="input">/pages/NuevoDocumento/Numeracion.jsp</result>
+         <result name="numeracion">/pages/NuevoDocumento/Numeracion.jsp</result>
+         <result name="firmar">/pages/NuevoDocumento/firmar.jsp</result>
+         <result name="editFirmante">/pages/NuevoDocumento/editFirmante.jsp</result>
+         <result name="exito">/pages/NuevoDocumento/mensajesFirmas.jsp</result>
+      </action>
+      <action name="Carpeta_*" method="{1}" class="carpetaAction">
+         <result name="inicio">/pages/bandeja/pruebaArchDocumentos.jsp</result>
+         <result name="nueva">/pages/carpeta/nuevaCarpeta.jsp</result>
+         <result name="editar">/pages/carpeta/editarCarpeta.jsp</result>
+         <result name="documentosAdicionales" type="redirectAction">
+            <param name="actionName">doViewDocAdicionales</param>
+            <param name="iIdDoc">${idDocumentoPrincipal}</param>
+            <param name="idDocumentoSeleccionado">${idDocumento}</param>
+         </result>
+         <result name="error">blank.html</result>
+      </action>
+
+		<action name="DocumentoEnviado_*" method="{1}" class="documentoEnviadoAction">
+			<result name="detalle">pages/enviados/detalleDocumentosEnviado.jsp</result>
+			<result name="bandeja">pages/enviados/DocumentosEnviadosGrid.jsp</result>
+			<result name="error">blank.html</result>
+		</action>
+		<action name="doUpdateEstadoNotificacion" method="updateEstadoNotificacion" class="documentoAction">
+			<result name="error">error.html</result>
+		</action>
+		<action name="doEliminarProceso" method="doEliminarProceso" class="mantenimientoAction">
+			<result name="error">error.html</result>
+		</action>
+		<action name="doEliminarRecurso" method="doEliminarRecurso" class="mantenimientoAction">
+			<result name="error">error.html</result>
+		</action>
+		<action name="doEliminarModulo" method="doEliminarModulo" class="mantenimientoAction">
+			<result name="error">error.html</result>
+		</action>
+                <action name="doEliminarGrupoProceso" method="doEliminarGrupoProceso" class="mantenimientoAction">
+			<result name="error">error.html</result>
+		</action>
+		<action name="doGetNotificacionDetail" method="getNotificacionDetail" class="notificacionAction">
+			<result>pages/notificacion/detalle.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+                
+                <action name="doFirmarDocumentos" method="firmarDocumentos" class="pendienteAction">
+                     <result name="error">error.html</result>
+                </action>
+
+                
+		<action name="doEliminarNotificaciones" method="eliminar" class="notificacionAction">
+			<result>pages/notificacion/detalle.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+               
+               
+                
+                
+            <action name="doViewReemplazoUSERFINAL" method="viewReemplazo" class="reemplazoAction">
+			<result>pages/reemplazo/viewReemplazo.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+      <action name="doViewMantReemplazoUSERFINAL" method="viewMantReemplazo" class="reemplazoAction">
+			<result>pages/reemplazo/viewMantReemplazo.jsp</result>
+			<result name="error">error.html</result>
+		</action>
+		<action name="doSaveReemplazoUSERFINAL" method="saveReemplazo" class="reemplazoAction">
+			<result name="input">pages/reemplazo/viewReemplazo.jsp</result>
+			<result>success.html</result>
+			<result name="error">error.html</result>
+		</action>
+      <action name="doSaveMantReemplazoUSERFINAL" method="saveMantReemplazo" class="reemplazoAction">
+			<result name="input">pages/reemplazo/viewMantReemplazo.jsp</result>
+			<result>success.html</result>
+			<result name="error">error.html</result>
+		</action>
+		<action name="doEliminarReemplazoUSERFINAL" method="eliminarReemplazo" class="reemplazoAction">
+			<result>success.html</result>
+			<result name="error">error.html</result>
+		</action>
+
+		<action name="updateTemaUsuario" method="updateTemaUsuario" class="usuarioAction">
+			<result name="error">error.html</result>
+		</action>
+
+		<action name="getNuevoDocumento" method="getNuevoDocumento" class="documentoAction">
+			<result>pages/tramite/nuevoDocumento.jsp</result>
+		</action>
+
+		<action name="verificarDocumentoUnico" method="verificarDocumentoUnico" class="documentoAction"></action>
+		<action name="anularDocumento" method="anularDocumento" class="documentoAction"></action>
+		<action name="atenderDocumento" method="atenderDocumento" class="documentoAction"></action>
+		<action name="reabrirDocumentoAtendido" method="reabrirDocumentoAtendido" class="documentoAction"></action>
+		<action name="guardarSeguimientoUsuario" method="guardarSeguimientoUsuario" class="documentoAction"></action>
+		<action name="cambiarReferenciaDocumento" method="cambiarReferenciaDocumento" class="documentoAction"></action>
+		<action name="verificarExistenciaDeArchivoParaCambiarReferencia" method="verificarExistenciaDeArchivoParaCambiarReferencia" class="documentoAction"></action>
+
+		<action name="copiarReferenciaDocumento" method="copiarReferenciaDocumento" class="documentoAction"></action>
+		<action name="verificarDocumentoNuevo" method="verificarDocumentoNuevo" class="documentoAction"></action>
+        <action name="uploadExternalFile" method="uploadFile" class="strutsFileUpload"></action>
+        <action name="modificarExpediente" method="doModificarExpediente" class="documentoAction"></action>
+        <action name="modificarDocumento" method="doModificarDocumento" class="documentoAction"></action>
+        <action name="imprimirGridCB" method="imprimirGridCarpetasBusqueda" class="dojoAction">
+			<result name="imprimirCB">pages/imprimir/impresionCarpetaBusqueda.jsp</result>
+		</action>
+		<action name="interfazGerente" method="getInterfazGerente" class="documentoAction">
+			<result name="verInterfaz">pages/layout/visorGerencia.jsp</result>
+			<result name="errorVisor">pages/layout/errorVisor.jsp</result>
+		</action>
+		<action name="interfazGerenteXEx" method="getInterfazInformativos" class="documentoAction">
+			<result name="verInterfaz">pages/layout/visorGerenciaXEx.jsp</result>
+			<result name="errorVisor">pages/layout/errorVisor.jsp</result>
+		</action>
+		<action name="verCambiarClave" method="verCambiarClave" class="documentoAction">
+			<result name="cambiarClave">pages/layout/cambiarClave.jsp</result>
+		</action>
+		<action name="actualizarClave" method="actualizarClave" class="documentoAction"></action>
+		<action name="goAprobarMasivo" method="goAprobarMasivo" class="documentoAction">
+			<result name="aprobarMasivo">examples/aprobarMasivo.jsp</result>
+		</action>
+		<action name="doAprobarMasivo" method="doAprobarMasivo" class="documentoAction"></action>
+		<action name="menuDocumentosRecibidos" method="getMenuDocumentosRecibidos" class="dojoAction">
+			<result name="verMenuDocRec">pages/layout/documentosRecibidos.jsp</result>
+		</action>
+		<action name="menuInformativosRecibidos" method="getMenuInformativosRecibidos" class="dojoAction">
+			<result name="verMenuInfRec">pages/layout/informativosRecibidos.jsp</result>
+		</action>
+                
+                
+                <!--
+                <action name="getDataGrid" method="getDataGrid" class="org.ositran.actions.DojoAction">
+			 <interceptor-ref name="defaultSessionCheckInterceptor"></interceptor-ref>
+                         <result name="success">/login.jsp</result>
+		</action> -->
+                
+                
+		<action name="inicioMenu" method="getInicioMenu" class="dojoAction">
+			<result name="verInicioMenu">pages/layout/menu.jsp</result>
+		</action>
+
+
+		<action name="inicioDocumentos" method="getInicioDocumentos" class="dojoAction">
+			<result name="verInicioDocumentos">pages/layout/mainDocumentos.jsp</result>
+		</action>
+
+		<action name="inicioMenuDocumentos" method="getInicioMenuDocumentos" class="dojoAction">
+			<result name="verInicioMenuDocumentos">pages/layout/menuDocumentos.jsp</result>
+		</action>
+
+
+		<action name="doExportarExcelCarpetaBusqueda" method="exportarExcelCarpetaBusqueda" class="dojoAction">
+
+		</action>
+		<action name="doDescargarArchivo" method="descargarArchivo" class="dojoAction">
+
+		</action>
+		<action name="imprimirGridC3" method="imprimirGridConsulta3" class="consultaAction">
+			<result name="imprimirC3">pages/imprimir/impresionConsulta3.jsp</result>
+		</action>
+		<action name="imprimirGridC4" method="imprimirGridConsulta4" class="consultaAction">
+			<result name="imprimirC4">pages/imprimir/impresionConsulta4.jsp</result>
+		</action>
+		<action name="cambiarAgrupacionUsuario" method="cambiarAgrupacionUsuario" class="dojoAction"></action>
+		<action name="mostrarFiltrosBandeja" method="mostrarFiltrosBandeja" class="dojoAction">
+			<result name="filtros">pages/bandeja/filtrosBandeja.jsp</result>
+		</action>
+	</package>
+
+	<package name="sigedgrid" extends="struts-default,json-default">
+            <!--
+               <interceptors>
+                <interceptor name="userSession" class="org.ositran.filters.SessionCheckInterceptor"/> 
+                         <interceptor-stack name="defaultSessionCheckInterceptor">
+                              <interceptor-ref name="userSession" />
+                            <interceptor-ref name="defaultStack" />                  
+                         </interceptor-stack>  
+  
+                </interceptors>
+              -->
+                
+                <!--
+                    <global-results>
+                       <result name="login" type="redirect">
+                           error.html
+                        </result>
+                     </global-results> 
+               -->
+		<action name="SMDAction" class="dojoAction">
+                   <!--    <interceptor-ref name="userSession"/> 
+                       <interceptor-ref name="defaultStack" />
+                       
+                        <result name="input" type="redirect">login.jsp</result>
+                       <result type="dispatcher" name="login">login.jsp</result>
+                       -->
+                       <interceptor-ref name="json">
+				<param name="enableSMD">true</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+			</interceptor-ref>
+                        
+			<result type="json">
+				<param name="enableGZIP">false</param>
+				<param name="noCache">true</param>
+				<param name="enableSMD">true</param>
+			</result>
+			<result name="error">error.html</result>
+                    
+		</action>
+
+		<action name="SMDReporteSiged1_*" method="{1}" class="reporteSigedAction">
+				<result name="success">pages/reportes/ReporteProceso1.jsp</result>
+				<result name="error">error.html</result>
+				<result name="errorFechas">errorFechas.html</result>
+		</action>
+
+		<action name="SMDConsultaAPN" class="consultaAction">
+			<interceptor-ref name="json">
+				<param name="enableSMD">true</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+			</interceptor-ref>
+			<result type="json">
+				<param name="noCache">true</param>
+				<param name="enableSMD">true</param>
+			</result>
+			<result name="error">error.html</result>
+		</action>
+
+		<action name="SMDdocumentoAPN" class="documentoAction">
+			<interceptor-ref name="json">
+				<param name="enableSMD">true</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+			</interceptor-ref>
+			<result type="json">
+				<param name="noCache">true</param>
+				<param name="enableSMD">true</param>
+			</result>
+			<result name="error">error.html</result>
+		</action>
+
+		<action name="SMDReporteSigedSTOR_*" method="{1}" class="reporteSigedSTORAction">
+				<result name="successPendientes">pages/reportes/ListaPendientes.jsp</result>
+				<result name="successIngresados">pages/reportes/ListaIngresados.jsp</result>
+				<result name="successConcluidos">pages/reportes/ListaConcluidos.jsp</result>
+				<result name="error">error.html</result>
+				<result name="errorFechas">errorFechas.html</result>
+		</action>
+
+		<action name="SMDReporteSigedUsuarios_*" method="{1}" class="reporteSigedUsuariosAction">
+				<result name="successAYQ">pages/reportes/ReporteAYQ.jsp</result>
+				<result name="error">error.html</result>
+				<result name="errorFechas">errorFechas.html</result>
+		</action>
+
+		<action name="SMDReporteSiged" class="reporteSigedAction">
+			<interceptor-ref name="json">
+				<param name="enableSMD">true</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+			</interceptor-ref>
+			<result type="json">
+				<param name="noCache">true</param>
+				<param name="enableSMD">true</param>
+			</result>
+			<result name="error">error.html</result>
+		</action>
+	</package>
+
+   <package name="sigedreports" extends="struts-default,jasperreports-default">
+      <action name="generateCargo" method="generateCargo" class="JasperAction">
+         <result name="success" type="jasper">
+            <param name="location">/jasper/cargo.jasper</param>
+            <param name="dataSource">cargo</param>
+            <param name="format">PDF</param>
+         </result>
+         <result name="error">error.html</result>
+      </action>
+      <action name="generateReporteMensajeria" method="generateReporteMensajeria" class="JasperAction">
+         <result name="success" type="jasper">
+            <param name="location">/jasper/mensajeria.jasper</param>
+            <param name="dataSource">listaMensajeria</param>
+            <param name="format">PDF</param>
+            <param name="reportParameters">params</param>
+         </result>
+         <result name="error">error.html</result>
+      </action>
+   </package>
+   <include file="mantenimiento.xml" />
+   <include file="usuariofinal.xml" />
+   <include file="stor.xml" />
+   <include file="upload.xml" />
+   <include file="autocompletarActions.xml" />
+   <include file="reportes.xml" />
+   <include file="mensajeria.xml" />
+    <include file="intalio.xml" />
+    <include file="archivocentral.xml" />
+</struts>

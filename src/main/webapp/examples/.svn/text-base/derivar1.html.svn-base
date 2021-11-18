@@ -1,0 +1,313 @@
+
+<html>
+<head>
+<title>Tramite Documentario</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="../css/estilo.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" media="all" href="../css/calendar-green.css">
+
+<!-- Configure the path to the editor.  We make it relative now, so that the
+    example ZIP file will work anywhere, but please NOTE THAT it's better to
+    have it an absolute path, such as '/htmlarea/'. -->
+<script type="text/javascript">
+  _editor_url = "../";
+  _editor_lang = "en";
+</script>
+<script type="text/javascript" src="../htmlarea.js"></script>
+
+<script language="javascript" src="../js/form.js"> </script>
+<script language="Javascript" src="../js/general.js"></script>
+
+<script type="text/javascript" src="../js/calendar.js"></script>
+<script type="text/javascript" src="../js/calendar-es.js"></script>
+<script type="text/javascript" src="../js/calendar-setup.js"></script>
+
+<style type="text/css">
+html, body {
+  font-family: Verdana,sans-serif;
+  /*background-color: #fea;
+  color: #000;*/
+}
+a:link, a:visited { color: #00f; }
+a:hover { color: #048; }
+a:active { color: #f00; }
+
+textarea { background-color: #fff; border: 1px solid 00f; }
+
+body {
+	background-color: #DDEDFF;
+}
+
+.barra {
+           scrollbar-3dlight-color:#CCCCCC;
+           scrollbar-arrow-color:#568BBF;
+           scrollbar-base-color:#C3D5E9;
+           scrollbar-darkshadow-color:#666666;
+           scrollbar-face-color:;
+           scrollbar-highlight-color:#669BCD;
+           scrollbar-shadow-color:#999999;
+		   }
+div.falso {
+	position: absolute;
+	top: -29px;
+	left: 80px;
+	z-index: 0;
+	width: 14px;
+	height: 3px;
+ }
+ 
+input.file {
+ position: relative; 
+ text-align: left;
+ filter:alpha(opacity: 0); 
+ opacity: 0; 
+ z-index: 1; 
+ top: -29px;
+	left: 50px;
+ }
+
+
+</style>
+
+
+<script type="text/javascript">
+function derivar(){
+  location.href="window.close()"
+}
+
+
+
+var editor = null;
+function initEditor() {
+  editor = new HTMLArea("ta");
+
+  // comment the following two lines to see how customization works
+  editor.generate();
+  return false;
+
+  var cfg = editor.config; // this is the default configuration
+  cfg.registerButton({
+    id        : "my-hilite",
+    tooltip   : "Highlight text",
+    image     : "ed_custom.gif",
+    textMode  : false,
+    action    : function(editor) {
+                  editor.surroundHTML("<span class=\"hilite\">", "</span>");
+                },
+    context   : 'table'
+  });
+
+  cfg.toolbar.push(["linebreak", "my-hilite"]); // add the new button to the toolbar
+
+  // BEGIN: code that adds a custom button
+  // uncomment it to test
+  var cfg = editor.config; // this is the default configuration
+  /*
+  cfg.registerButton({
+    id        : "my-hilite",
+    tooltip   : "Highlight text",
+    image     : "ed_custom.gif",
+    textMode  : false,
+    action    : function(editor) {
+                  editor.surroundHTML("<span class=\"hilite\">", "</span>");
+                }
+  });
+  */
+
+function clickHandler(editor, buttonId) {
+  switch (buttonId) {
+    case "my-toc":
+      editor.insertHTML("<h1>Table Of Contents</h1>");
+      break;
+    case "my-date":
+      editor.insertHTML((new Date()).toString());
+      break;
+    case "my-bold":
+      editor.execCommand("bold");
+      editor.execCommand("italic");
+      break;
+    case "my-hilite":
+      editor.surroundHTML("<span class=\"hilite\">", "</span>");
+      break;
+  }
+};
+cfg.registerButton("my-toc",  "Insert TOC", "ed_custom.gif", false, clickHandler);
+cfg.registerButton("my-date", "Insert date/time", "ed_custom.gif", false, clickHandler);
+cfg.registerButton("my-bold", "Toggle bold/italic", "ed_custom.gif", false, clickHandler);
+cfg.registerButton("my-hilite", "Hilite selection", "ed_custom.gif", false, clickHandler);
+
+cfg.registerButton("my-sample", "Class: sample", "ed_custom.gif", false,
+  function(editor) {
+    if (HTMLArea.is_ie) {
+      editor.insertHTML("<span class=\"sample\">&nbsp;&nbsp;</span>");
+      var r = editor._doc.selection.createRange();
+      r.move("character", -2);
+      r.moveEnd("character", 2);
+      r.select();
+    } else { // Gecko/W3C compliant
+      var n = editor._doc.createElement("span");
+      n.className = "sample";
+      editor.insertNodeAtSelection(n);
+      var sel = editor._iframe.contentWindow.getSelection();
+      sel.removeAllRanges();
+      var r = editor._doc.createRange();
+      r.setStart(n, 0);
+      r.setEnd(n, 0);
+      sel.addRange(r);
+    }
+  }
+);
+
+
+  /*
+  cfg.registerButton("my-hilite", "Highlight text", "ed_custom.gif", false,
+    function(editor) {
+      editor.surroundHTML('<span class="hilite">', '</span>');
+    }
+  );
+  */
+  cfg.pageStyle = "body { background-color: #efd; } .hilite { background-color: yellow; } "+
+                  ".sample { color: green; font-family: monospace; }";
+  cfg.toolbar.push(["linebreak", "my-toc", "my-date", "my-bold", "my-hilite", "my-sample"]); // add the new button to the toolbar
+  // END: code that adds a custom button
+
+  editor.generate();
+}
+function insertHTML() {
+  var html = prompt("Enter some HTML code here");
+  if (html) {
+    editor.insertHTML(html);
+  }
+}
+function highlight() {
+  editor.surroundHTML('<span style="background-color: yellow">', '</span>');
+}
+
+HTMLArea.onload = initEditor;
+
+</script>
+
+</head>
+
+<body onload="HTMLArea.init();">
+<form >
+  <table width="100%">
+    <tr> 
+      <td height="14" colspan="6"> </td>
+    </tr>
+    <tr align="center"> 
+      <td width="1%" align="center">&nbsp;</td>
+      <td colspan="5" align="left"> <img onClick="window.close()" src="../images/enviar.bmp" border="0" alt="Enviar"/> 
+        &nbsp;&nbsp; <div style="position:relative;"> 
+          <input name="file" type="file" class="file" onChange="document.all().value = this.value" size="1">
+          <div class="falso"> <img src="../images/adjunto.bmp" align="left" border="0" alt="Adjunto"> 
+          </div>
+        </div>
+        &nbsp;&nbsp; </td>
+    </tr>
+    <tr> 
+      <td></td>
+      <td width="27%" height="16" align="left" class="plomo" >Para:</td>
+      <td colspan="2"><input name="nombre" type="text" class="cajaMontoTotal" value="" size="40"> </td>
+	   <td width="19%"><input class="cajaMontoTotal" name="date" type="text" id="campo_fecha1" size="14" maxlength="20">
+                <input name="button3" type="button" class="cajaFecha" id="lanzador1" value="..." alt="Calendario"></td>
+	   <td width="29%"><img src="../images/signo_mas.gif" width="15" height="15" border="0" alt="Agregar"/></td>
+      
+    </tr>
+	<tr> 
+      <td></td>
+      <td height="16" align="left" class="plomo" >Para:</td>
+      <td colspan="2"><input name="nombre" type="text" class="cajaMontoTotal" value="" size="40"> </td>
+	   <td colspan="2"><input class="cajaMontoTotal" name="date" type="text" id="campo_fecha1" size="14" maxlength="20">
+                <input name="button3" type="button" class="cajaFecha" id="lanzador1" value="..." alt="Calendario"></td>
+      
+    </tr>
+	<tr> 
+      <td></td>
+      <td height="16" align="left" class="plomo" >Para:</td>
+      <td colspan="2"><input name="nombre" type="text" class="cajaMontoTotal" value="" size="40"> </td>
+	   <td colspan="2"><input class="cajaMontoTotal" name="date" type="text" id="campo_fecha1" size="14" maxlength="20">
+                <input name="button3" type="button" class="cajaFecha" id="lanzador1" value="..." alt="Calendario"></td>
+      
+    </tr>
+    <tr> 
+      <td></td>
+      <td height="16" align="left" class="plomo">Cc: </td>
+      <td colspan="4"><input name="nombre" type="text" class="cajaMontoTotal" value="" size="100"> 
+      </td>
+    </tr>
+	 <tr> 
+      <td></td>
+      <td height="16" align="left" class="plomo">Asunto: </td>
+      <td colspan="4"><input name="nombre" type="text" class="cajaMontoTotal" value="Re: Carta dirigida a Gerente de Sistemas/Coordinación" size="100"> 
+      </td>
+    </tr>
+	<tr>
+	 <td></td>
+      <td height="16" align="left" class="plomo">Adjuntos</td>
+      <td colspan="4"><a href="../plantilla/primerDocumento.xls">Tiempos Sistema.xls</a>&nbsp;&nbsp;&nbsp;
+	  <a href="../examples/derivar1.html">Eliminar</a></td>
+    </tr>
+	 <td></td>
+      <td height="16" align="left" class="plomo"></td>
+      <td colspan="4"><a href="../plantilla/Avances Intalio.ppt">Avances Intalio.ppt</a>&nbsp;&nbsp;&nbsp;
+	  <a href="../examples/derivar1.html">Eliminar</a></td>
+    </tr>
+	<tr>
+	 <td></td>
+      <td height="16" align="left" class="plomo">Mantener en mi bandeja</td>
+      <td colspan="4"><input name="bandeja" type="checkbox" value=""></td>
+    </tr>
+    <tr> 
+      <td></td>
+      <td colspan="5" class="normal"> <textarea id="ta" name="ta" style="width:100%" rows="35" cols="80" >
+      
+	  &lt;p&gt;--------------- Mensaje Original --------------- &lt;/p&gt;
+      &lt;p&gt;De : dgomez@stconsulting.com.pe  &lt;/p&gt;
+	  &lt;p&gt;Para : eortiz@stconsulting.com.pe  &lt;/p&gt;
+	  &lt;p&gt;Cc : jherrera@stconsulting.com.pe  &lt;/p&gt;
+	  &lt;p&gt;Enviado : Jueves 04 de Setiembre del 2008 3:24pm  &lt;/p&gt;
+	  &lt;p&gt;Asunto : Carta dirigida a Gerente de Sistemas/Coordinación   &lt;/p&gt;
+	   &lt;p&gt;---------------------------------------------- &lt;/p&gt;
+	  
+	  
+	  
+	  
+	  
+	  &lt;p&gt;Srs. &lt;/p&gt;
+      &lt;p&gt;El motivo de este correo es para hacer recordar que el día 
+               de mañana tenemos la reunión pactada sobre Intalio, los puntos 
+               a revisar son:  &lt;/p&gt;
+	  - Avances que se tiene con Intalio 
+	  - Xform como alternativa de construcción de los interfaces
+	  - Seguridad de intalio y de Osinergmin 
+	  - Intalacion del Alfresco en Osinergmin  
+	  - Seguridad de Alfresco 
+	  - Cronograma de trabajo y fijar objetivos puntuales
+	  - Revisión de prototipos 
+	  Lugar: Sala de Reuniones - 7mo Piso 
+	 Hora: 3 pm  
+	 Saludos Cordiales
+	Dante Gómez
+	STConsulting SAC.
+     </textarea> 
+      </td>
+    </tr>
+    <tr> 
+      <td height="14"  colspan="6"></td>
+    </tr>
+  </table>
+</form>
+<script type="text/javascript">
+    Calendar.setup({
+        inputField     :    "campo_fecha1",      // id del campo de texto
+        ifFormat       :    "%d/%m/%Y",       // formato de la fecha, cuando se escriba en el campo de texto
+        button         :    "lanzador1"   // el id del botón que lanzará el calendario
+    });
+	
+</script>
+
+
+
+</body>
+</html:html>

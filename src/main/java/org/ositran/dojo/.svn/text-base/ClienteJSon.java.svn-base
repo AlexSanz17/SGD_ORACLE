@@ -1,0 +1,105 @@
+package org.osinerg.dojo;
+
+public class ClienteJSon{
+	
+	private String identificacion;
+	
+	private String razonSocial;
+	
+	private String nombre;
+	
+	private String apellido;
+	
+	private String direccion;
+	
+	private int distrito;
+	
+	private int provincia;
+	
+	private int departamento;
+	
+	private String telefono;
+	
+	private String correo;
+
+	public String getIdentificacion(){
+		return identificacion;
+	}
+
+	public void setIdentificacion(String identificacion){
+		this.identificacion=identificacion;
+	}
+
+	public String getRazonSocial(){
+		return razonSocial;
+	}
+
+	public void setRazonSocial(String razonSocial){
+		this.razonSocial=razonSocial;
+	}
+
+	public String getNombre(){
+		return nombre;
+	}
+
+	public void setNombre(String nombre){
+		this.nombre=nombre;
+	}
+
+	public String getApellido(){
+		return apellido;
+	}
+
+	public void setApellido(String apellido){
+		this.apellido=apellido;
+	}
+
+	public String getDireccion(){
+		return direccion;
+	}
+
+	public void setDireccion(String direccion){
+		this.direccion=direccion;
+	}
+
+	public int getDistrito(){
+		return distrito;
+	}
+
+	public void setDistrito(int distrito){
+		this.distrito=distrito;
+	}
+
+	public int getProvincia(){
+		return provincia;
+	}
+
+	public void setProvincia(int provincia){
+		this.provincia=provincia;
+	}
+
+	public int getDepartamento(){
+		return departamento;
+	}
+
+	public void setDepartamento(int departamento){
+		this.departamento=departamento;
+	}
+
+	public String getTelefono(){
+		return telefono;
+	}
+
+	public void setTelefono(String telefono){
+		this.telefono=telefono;
+	}
+
+	public String getCorreo(){
+		return correo;
+	}
+
+	public void setCorreo(String correo){
+		this.correo=correo;
+	}
+	
+}

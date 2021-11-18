@@ -1,0 +1,19 @@
+#archivos{width:60%; float:left}
+
+#archivos p{margin-top:0}
+
+#sumilla{width:39%; float:right; text-align:right}
+
+#tabla{display:table; border:1px solid #669BCD; padding:2px 2px 3px 3px; float:right}
+
+.fila{display:table-row}
+
+.fila strong{display:table-cell; background-color:#669BCD; color:#fff; padding:1px; border-bottom:1px solid #FFF}
+
+.fila:last-child strong{border-bottom:0}
+
+.fila span{display:table-cell; padding-left:5px; border-bottom:1px solid #669BCD}
+
+.fila:last-child span{border-bottom:0}
+
+#contenido{border:1px solid #669BCD; padding:5px; float:left; width:99.2%; margin-top:0.2%}

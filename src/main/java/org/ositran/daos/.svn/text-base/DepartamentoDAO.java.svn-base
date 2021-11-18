@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Departamento;
+
+public interface DepartamentoDAO {
+
+   public List<Departamento> findAll();
+
+   public Departamento lisNomdiafestivo(String Nombreregion);
+
+   public Departamento findObjById(Integer iIdDepartamento);
+
+   public Departamento guardarObj(Departamento objDepartamento, char cMode);
+}

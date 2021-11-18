@@ -1,0 +1,24 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Region;
+
+/**
+ *
+ * @author Himizu
+ */
+public interface RegionDAO {
+
+    public List<Region> findAll() ;
+
+    public Region lisNomdiafestivo(String Nombreregion);
+
+    public Region saveRegion(Region objRegion);
+
+}

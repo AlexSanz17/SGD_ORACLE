@@ -1,0 +1,542 @@
+package org.osinerg.services;
+
+import gob.osinergmin.siged.config.SigedProperties;
+import gob.osinergmin.siged.service.AlfrescoWebscriptService;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.NoResultException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.log4j.Logger;
+import org.osinerg.pojos.ArchivoVersionado;
+import org.osinerg.siged.service.AlfrescoWSService;
+import org.osinerg.daos.ArchivoDAO;
+import org.osinerg.daos.AuditoriaDAO;
+import org.osinerg.daos.SearchMode;
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.utils.ArchivoTemporal;
+import org.osinerg.utils.Constantes;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.Auditoria;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class ArchivoServiceImpl implements ArchivoService{
+	
+	private static Logger log=Logger.getLogger(ArchivoServiceImpl.class);
+	private ArchivoDAO dao;
+	private RepositorioService srvRepositorio;
+	private AuditoriaDAO daoauditoria;
+    private AlfrescoWSService alfrescoWebServiceClient;
+    private AlfrescoWebscriptService alfrescoWebscriptClient;
+
+	// private String tmpExtension;
+	// ////////////////////////////////
+	// Constructors //
+	// ////////////////////////////////
+	public ArchivoServiceImpl(ArchivoDAO dao,AuditoriaDAO daoauditoria){
+		setDao(dao);
+		setDaoauditoria(daoauditoria);
+	}
+
+	// ////////////////////////////////
+	// Methods //
+	// ////////////////////////////////
+	public Archivo findByCriteria(Integer iIdDoc,String strNombre){
+		try{
+			return getDao().buscarObjPor(iIdDoc,strNombre);
+		}catch(RuntimeException re){
+			log.error("",re);
+			return null;
+		}
+	}
+
+	public Archivo findById(Integer idArchivo){
+		return getDao().buscarObjPorId(idArchivo);
+	}
+
+	public List<Archivo> buscarPorAutor(Integer idAutor, Integer idDocumento){
+		return dao.buscarPorAutor(idAutor, idDocumento);
+	}
+	
+	public List<Item> buscarItemArchivoXAutor(Integer idAutor, Integer idDocumento){
+		List<Archivo> archivos = buscarPorAutor(idAutor, idDocumento);
+		List<Item> items = new ArrayList<Item>();
+		
+		if(archivos != null && !archivos.isEmpty()){
+			for(Archivo archivo : archivos){
+				Item item = new Item();
+				item.setId(archivo.getIdArchivo());
+				item.setNombre(archivo.getNombreArchivo());
+				items.add(item);
+			}
+		}
+		
+		return items;
+	}
+	
+	@Transactional
+	public void eliminarArchivo(Integer idArchivo){
+		try{
+			Archivo archivo = dao.buscarObjPorId(idArchivo);
+			archivo.setEstado(Constantes.ESTADO_INACTIVO);
+			dao.guardarObj(archivo);
+		}catch(NoResultException e){
+			e.printStackTrace();
+		}
+	}
+	
+	@Transactional
+	public Archivo saveArchivo(Archivo objA){
+		return getDao().guardarObj(objA);
+	}
+
+	public File getFile(Integer idArchivo,char tipo) throws FileNotFoundException{
+		Archivo archivo=getDao().buscarObjPorId(idArchivo);
+		if(archivo!=null){
+			File f=null;
+			if(tipo==Archivo.ESTADO_REGISTRADO){
+				f=new File(SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.DIRECTORIO_ENTRANTE),archivo.getNombre());
+			}else{
+				if(tipo==Archivo.ESTADO_DISPONIBLE){
+					f=new File(archivo.getRutaArchivoPdf());
+				}
+			}
+			if(f==null||!f.exists()){
+				throw new RuntimeException("Tipo incorrecto o archivo inexistente :"+f);
+			}
+			return f;
+		}
+		log.debug("Archivo con id:"+idArchivo+" no encontrado.");
+		return null;
+	}
+
+	public File renombrarArchivoDigitalizacion(Documento objD,ArchivoTemporal archivo,int contador){
+		// Para el nombre tenemos pensado la estrutura de
+		// [id_fechahora_contador]nombreArchivo
+		Date d=new Date();
+		// String nuevoNombre = '[' + objD.getIdDocumento().toString() + '_' +
+		// DateFormatUtils.format(d, "yyyyMMddHHmm") + '_' + contador + ']' +
+		// archivo.getSNombre();
+		String tmpExtension=archivo.getSNombre().substring(archivo.getSNombre().lastIndexOf('.')+1);
+		log.debug("EXTENSION FILE_:"+tmpExtension);
+		String nuevoNombre;
+		String rutaDig;
+		/*if(tmpExtension.equalsIgnoreCase("tif")||tmpExtension.equalsIgnoreCase("tiff")){
+			nuevoNombre='['+objD.getIdDocumento().toString()+'_'+DateFormatUtils.format(d,"yyyyMMddHHmm")+'_'+contador+']'+archivo.getSNombre().substring(0,archivo.getSNombre().lastIndexOf('.')+1)+"pdf";
+			rutaDig=ValoresProperties.getProperty(ValoresProperties.DIRECTORIO_ENTRANTE);
+		}else{*/
+			nuevoNombre='['+objD.getIdDocumento().toString()+'_'+DateFormatUtils.format(d,"yyyyMMddHHmm")+'_'+contador+']'+archivo.getSNombre().substring(0,archivo.getSNombre().lastIndexOf('.')+1)+tmpExtension;
+			rutaDig=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.DIRECTORIO_SALIENTE);
+		//}
+		log.debug("Nuevo nombre Archivo:"+nuevoNombre);
+		File f=new File(rutaDig,nuevoNombre);
+		log.debug("Ruta Origen"+archivo.getFArchivo().getAbsolutePath());
+		log.debug("Ruta Destino:"+f.getAbsolutePath());
+		try{
+			FileUtils.moveFile(archivo.getFArchivo(),f);
+		}catch(IOException ex){
+			log.error(ex.getMessage(),ex);
+			return null;
+		}
+		return f;
+	}
+
+	public Integer checkEstadoDigitalizacion(Integer iIdDoc){
+		try{
+			List<Archivo> lstArch1=getDao().findByIdDocumento(iIdDoc);
+			List<Archivo> lstArch2=getDao().checkEstadoDigitalizacion(iIdDoc);
+			if(lstArch1==null){
+				return 1;
+			}
+			if(lstArch2==null){
+				return 0;
+			}
+			if(lstArch1.size()==lstArch2.size()){
+				return 1;
+			}
+			return 0;
+		}catch(RuntimeException re){
+			log.error("",re);
+			return null;
+		}
+	}
+
+	@Override
+	public Map<String,List<Archivo>> findByIdDocumento(Integer idDocumento){
+		List<Archivo> archivos=dao.findByIdDocumento(idDocumento);
+		List<Archivo> alfrescados;
+		if(archivos!=null){
+			alfrescados=new ArrayList<Archivo>();
+			log.debug("Se encontraron "+archivos.size()+" archivos para el documento con id: "+idDocumento);
+			for(Archivo archivo : archivos){
+            //log.debug("Archivo [" + archivo.getNombre() + "] ruta alfresco [" + archivo.getRutaAlfresco() + "]");
+
+            /*if (!StringUtil.isEmpty(archivo.getRutaAlfresco()) /*&& archivo.getEstadoDigitalizacion() == Archivo.ESTADO_IMPORTADO) {
+               archivo.setSURL(RepositorioUtils.obtenerLinkContenido(archivo.getRutaAlfresco()));
+            }*/
+
+				alfrescados.add(archivo);
+			}
+			Map<String,List<Archivo>> salida=new HashMap<String,List<Archivo>>();
+			salida.put("upload1",alfrescados);
+			return salida;
+		}
+		return null;
+	}
+
+
+	public Map<String,List<Archivo>> getArchivoList(Integer iIdExpediente,Integer iIdDocumento,String strRol){
+		//int iBracket;
+		List<Archivo> lstArch=getDao().findByIdDocumentoOrderDesc(iIdExpediente,iIdDocumento,strRol);
+		for(Archivo objA : lstArch){
+			/*iBracket=objA.getNombre().indexOf("]");
+			if(iBracket!=-1){
+				objA.setSNombreReal(objA.getNombre().substring(iBracket+1));
+			}else{
+				objA.setSNombreReal(objA.getNombre());
+			}*/
+			if(strRol!=null && !strRol.equals(Constantes.ROL_DIGITALIZADOR) && !strRol.equals(Constantes.ROL_QAS) && objA.getRutaAlfresco()!=null){
+				//objA.setSURL(RepositorioUtils.obtenerLinkContenido(objA.getRutaAlfresco()));
+				log.debug("Ruta en Alfresco ["+objA.getRutaAlfresco()+"]");
+				// objA.setRutaalfresco(RepositorioUtils.obtenerLinkContenido(objA.getRutaAlfresco()));
+			}
+			/*
+			 * else{objA.setSURL(RepositorioUtils.obtenerLinkContenido(objA.
+			 * getRutaAlfresco())); }
+			 */
+		}
+		Map<String,List<Archivo>> salida=new HashMap<String,List<Archivo>>();
+		salida.put("upload1",lstArch);
+		return salida; 
+	}
+
+	public Map<String,List<Archivo>> getArchivoListPorDocumento(Integer iIdDocumento){
+		List<Archivo> lstArch=getDao().findByIdDocumento(iIdDocumento);
+		Map<String,List<Archivo>> salida=new HashMap<String,List<Archivo>>();
+		salida.put("upload1",lstArch);
+		return salida; 
+	}
+	
+	public void checkInToAlfresco(Usuario usuario,ArchivoTemporal objArchivoTemporal,Documento objDocumento,Integer iContador,boolean quitarCorchete) throws RemoteException,IOException{
+		String nombreArchivo=objArchivoTemporal.getFArchivo().getName();
+		if(quitarCorchete){
+			nombreArchivo=nombreArchivo.substring(nombreArchivo.indexOf(']')+1,nombreArchivo.length());
+		}
+		String ruta = srvRepositorio.obtenerRutaCompletaExpediente(objDocumento.getExpediente());
+		alfrescoWebscriptClient.modificarContenidoArchivo(usuario, objArchivoTemporal.getFArchivo(), ruta, nombreArchivo);
+	}
+
+	public List<ArchivoVersionado> getVersions(Documento documento){
+		List<ArchivoVersionado> lista=new ArrayList<ArchivoVersionado>();
+		List<Archivo> archivos;
+		if(documento.getArchivos()==null){
+	
+			 archivos=new ArrayList<Archivo> ();
+			 archivos=dao.findByIdDocumento(documento.getIdDocumento());
+		}else{
+			archivos=documento.getArchivos();			
+		}
+		
+		for(Archivo archivo : archivos){
+			if(archivo.getRutaAlfresco()!=null && archivo.getEstadoDigitalizacion() != Constantes.ESTADO_INACTIVO && archivo.getEstado().equals(Constantes.ESTADO_ACTIVO)){
+				ArchivoVersionado archivoVersionado=new ArchivoVersionado();
+				// archivo.setNombreArchivo()
+				archivoVersionado.setArchivo(archivo);
+				archivoVersionado.setVersiones(alfrescoWebServiceClient.getVersions(archivo.getRutaAlfresco()));
+				lista.add(archivoVersionado);
+			}
+		}
+		return lista;
+	}
+
+	@Transactional
+	public void updateEstadoByArchivo(Integer iIdArchivo,Character cEstado){
+		int iUpdates=0;
+		iUpdates=dao.updateEstado(iIdArchivo,cEstado);
+		log.debug("Numero de archivos actualizados ["+iUpdates+"]");
+	}
+
+	@Transactional
+	public void updateEstadoByDocumento(Integer iIdDocumento,Character cEstado){
+		List<Archivo> lstArchivo=null;
+		int iUpdates=0;
+		log.debug("Documento con ID ["+iIdDocumento+"]");
+		log.debug("Estado a setear ["+cEstado+"]");
+		Map<String,List<Archivo>> archivos=findByIdDocumento(iIdDocumento);
+		if(archivos!=null){
+			lstArchivo=archivos.get("upload1");
+			if(log.isDebugEnabled()){
+				if(lstArchivo!=null){
+					log.debug("Numero de archivos a actualizar el estado ["+lstArchivo.size()+"]");
+				}
+			}
+			for(Archivo objArchivo : lstArchivo){
+				if(dao.updateEstado(objArchivo.getIdArchivo(),cEstado)>0){
+					iUpdates++;
+				}
+			}
+		}
+		log.debug("Numero de archivos actualizados ["+iUpdates+"]");
+		
+	}
+
+   @Override
+	@Transactional
+	public void saveArhivoFromSessionToDB(List<ArchivoTemporal> lstArchivoTemporal,Documento objDocumento,Usuario usuario){
+		int iContador=0;
+		for(ArchivoTemporal objArchivoTemporal : lstArchivoTemporal){
+			File fArchivo=this.renombrarArchivoDigitalizacion(objDocumento,objArchivoTemporal,iContador);
+			if(fArchivo!=null&&fArchivo.exists()){
+				Archivo objArchivo=new Archivo();
+				objArchivo.setDocumento(objDocumento);
+				objArchivo.setNombre(fArchivo.getName());
+				// /
+				// objArchivo.setRutaarchivopdf(objArchivoTemporal.getFArchivo().)
+				// String
+				// tmpExtension=fArchivo.getName().substring(fArchivo.getName().lastIndexOf('.')
+				// + 1);
+				// if(tmpExtension.equalsIgnoreCase("tif") ||
+				// tmpExtension.equalsIgnoreCase("tiff")){
+				//objArchivo.setEstadoDigitalizacion(Constantes.ARCHIVO_ESTADO_DIGITALIZACION_NO);
+            objArchivo.setEstadoDigitalizacion(Constantes.ARCHIVO_ESTADO_DIGITALIZACION_YES);
+            objArchivo.setRutaArchivoPdf(fArchivo.getAbsolutePath());
+				// }else{
+				// objArchivo.setEstadodigitalizacion(Constantes.ARCHIVO_ESTADO_DIGITALIZACION_YES);
+				// }
+				objArchivo.setFechaCreacion(new Date());
+				this.saveArchivo(objArchivo);
+				// tmpExtension=null;
+				Auditoria ObjAuditoria=new Auditoria();
+				ObjAuditoria.setTipoAuditoria(Constantes.TA_Adjuntar);
+				ObjAuditoria.setModulo(Constantes.TM_Digitalizador);
+				ObjAuditoria.setOpcion(Constantes.TC_Archivo);
+				ObjAuditoria.setNuevoValor(fArchivo.getName());
+				ObjAuditoria.setFechaAudioria(new Date());
+				ObjAuditoria.setUsuario(usuario.getUsuario());
+				ObjAuditoria.setExpediente(objDocumento.getExpediente());
+				ObjAuditoria.setDocumento(objDocumento);
+				daoauditoria.SaveAuditoria(ObjAuditoria);
+			}else{
+				throw new RuntimeException("Archivo no ha sido movido correctamente");
+			}
+			iContador++;
+		}
+	}
+
+	public void uploadFile(Usuario usuario,ArchivoTemporal objArchivoTemporal,Documento objDocumento,Integer iContador){
+		try{
+			this.checkInToAlfresco(usuario,objArchivoTemporal,objDocumento,iContador,false);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			this.uploadToAlfresco(objArchivoTemporal,objDocumento,iContador);
+		}
+	}
+
+	@Transactional
+	public void uploadToAlfresco(ArchivoTemporal objArchivoTemporal,Documento objDocumento,Integer iContador){
+		if(objDocumento==null){
+			log.error("El Documento es ["+objDocumento+"]");
+			throw new RuntimeException();
+		}
+		// Renombrando el nombre del archivo al formato
+		// [id_fechahora_contador]nombreArchivo
+		Date d=new Date();
+		String sNuevoNombre="["+(objDocumento.getIdDocumento()!=null ? objDocumento.getIdDocumento() : new SimpleDateFormat("SSS").format(new Date()))+"_"+DateFormatUtils.format(d,"yyyyMMddHHmm")+"_"+iContador+"]"+objArchivoTemporal.getSNombre();
+		log.debug("Archivo: Nombre ["+objArchivoTemporal.getSNombre()+"] nuevo Nombre ["+sNuevoNombre+"]");
+		String rutaDig=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.DIRECTORIO_TEMPORAL_ALFRESCO);
+		File f=new File(rutaDig,sNuevoNombre);
+		log.debug("Ruta completa a mover ["+f.getAbsolutePath()+"]");
+		try{
+			FileUtils.moveFile(objArchivoTemporal.getFArchivo(),f);
+		}catch(IOException ex){
+			log.error(ex.getMessage(),ex);
+		}
+		// Registrando el archivo en SIGED y subiendo al Alfresco
+		Archivo objArchivo=new Archivo();
+		String ruta=f.getAbsolutePath();
+		log.debug("Ruta absoluta ["+f.getAbsolutePath()+"]");
+		objArchivo.setDocumento(objDocumento);
+		objArchivo.setNombre(f.getName());
+		objArchivo.setEstadoDigitalizacion(Constantes.ARCHIVO_ESTADO_DIGITALIZACION_YES);
+		objArchivo.setFechaCreacion(new Date());
+		objArchivo.setRutaArchivoPdf(ruta);
+		objArchivo.setEstado(Constantes.ESTADO_ACTIVO);
+		this.saveArchivo(objArchivo);
+		getSrvRepositorio().subirArchivosTransformadosARepositorio(objDocumento.getIdDocumento(),false);
+	}
+
+	@Transactional
+	public Archivo guardarArchivoTemporal(ArchivoTemporal objArchivoTemporal,Documento objDocumento,Integer iContador, Usuario usuarioSesion){
+		if(objDocumento==null){
+			log.error("El Documento es ["+objDocumento+"]");
+			throw new RuntimeException();
+		}
+		// Renombrando el nombre del archivo al formato
+		// [id_fechahora_contador]nombreArchivo
+		Date d=new Date();
+		String sNuevoNombre="["+objDocumento.getIdDocumento()+"_"+DateFormatUtils.format(d,"yyyyMMddHHmm")+"_"+iContador+"]"+objArchivoTemporal.getSNombre();
+		log.debug("Archivo: Nombre ["+objArchivoTemporal.getSNombre()+"] nuevo Nombre ["+sNuevoNombre+"]");
+		String rutaDig=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.DIRECTORIO_TEMPORAL_ALFRESCO);
+		File f=new File(rutaDig,sNuevoNombre);
+		log.debug("Ruta completa a mover ["+f.getAbsolutePath()+"]");
+		log.debug("Archivo real jummmm ["+objArchivoTemporal.getFArchivo().getAbsolutePath()+"]");
+		try{
+			FileUtils.moveFile(objArchivoTemporal.getFArchivo(),f);
+			// f =objArchivoTemporal.getFArchivo() ;
+		}catch(Exception ex){
+			log.error(ex.getMessage(),ex);
+		}
+		// Registrando el archivo en SIGED y subiendo al Alfresco
+		Archivo objArchivo=new Archivo();
+		String ruta=f.getAbsolutePath();
+		log.debug("Ruta absoluta ["+f.getAbsolutePath()+"]");
+		objArchivo.setDocumento(objDocumento);
+		objArchivo.setNombre(f.getName());
+		objArchivo.setEstadoDigitalizacion(Constantes.ARCHIVO_ESTADO_DIGITALIZACION_YES);
+		objArchivo.setFechaCreacion(new Date());
+		objArchivo.setRutaArchivoPdf(ruta);
+		//objArchivo.setRutaAlfresco(RepositorioServiceWebservice.RUTA_PADRE_EXPEDIENTE+"/"+objDocumento.getExpediente().getNroexpediente()+"/"+objArchivoTemporal.getSNombre());
+		objArchivo.setRutaAlfresco(srvRepositorio.obtenerRutaExpediente(objDocumento.getExpediente())+objArchivoTemporal.getSNombre());
+		objArchivo.setAutor(usuarioSesion);
+		objArchivo.setEstado(Constantes.ESTADO_ACTIVO);
+		return this.saveArchivo(objArchivo);
+		// getSrvRepositorio().subirArchivosTransformadosARepositorio(objDocumento.getIdDocumento());
+	}
+
+	@Transactional(propagation=Propagation.REQUIRED,readOnly=true)
+	public List<Archivo> buscarLstPor(Integer iIdDocumento,String sNombre,SearchMode sm){
+		return dao.findByCriteria(iIdDocumento,sNombre,sm);
+	}
+
+	public Map<String,List<ArchivoTemporal>> obtenerArchivosRechazados(Integer iIdDocumento){
+		// Integer iContador = null;
+		List<Archivo> lstArchivo=null;
+		List<ArchivoTemporal> lstArchivoTemporal=null;
+		Map<String,List<ArchivoTemporal>> mapUpload=null;
+		Map<String,List<Archivo>> archivos=findByIdDocumento(iIdDocumento);
+		if(archivos!=null){
+			if((lstArchivo=archivos.get("upload1"))!=null){
+				log.debug("Archivos encontrados ["+lstArchivo.size()+"]");
+				mapUpload=new HashMap<String,List<ArchivoTemporal>>();
+				lstArchivoTemporal=new ArrayList<ArchivoTemporal>();
+				// iContador = 1;
+				for(Archivo objArchivo : lstArchivo){
+					int iBracket=-1;
+					String sRealName=objArchivo.getNombre();
+					iBracket=sRealName.indexOf(Constantes.ARCHIVO_BRACKET_FIN);
+					if(iBracket!=-1){
+						sRealName=sRealName.substring(iBracket+1);
+					}
+					log.debug("Archivo con nombre ["+objArchivo.getNombre()+"]");
+					log.debug("Nombre Real ["+sRealName+"]");
+					log.debug("Ruta ["+objArchivo.getRutaArchivoPdf()+"]");
+               log.debug("Ruta Alfresco ["+objArchivo.getRutaAlfresco()+"]");
+					ArchivoTemporal objArchivoTemporal=new ArchivoTemporal(sRealName,new File(objArchivo.getRutaArchivoPdf()));
+					lstArchivoTemporal.add(objArchivoTemporal);
+				}
+				mapUpload.put("upload2",lstArchivoTemporal);
+			}else{
+				log.debug("No se encontraron archivos");
+			}
+		}
+		return mapUpload;
+	}
+
+        //no se utiliza
+	/*public void chekInToAlfresco(ArchivoTemporal objArchivoTemporal,Documento objDocumento,Integer contador) throws RemoteException,IOException{
+		String ruta=RepositorioServiceWebservice.RUTA_PADRE_EXPEDIENTE+"/"+objDocumento.getExpediente().getNroexpediente()+"/"+objArchivoTemporal.getFArchivo().getName();
+		// objArchivoTemporal.getArchivo().getB
+		//RepositorioUtils.checkInFiletoAlfresco(null,objArchivoTemporal.getFArchivo(),ruta);
+		// throw new RuntimeException();
+	}*/
+
+   @Override
+   public List<Archivo> findLstByExpediente(Integer idExpediente) {
+      try {
+         //TODO Mejorar los parametros de busqueda, deberia ser un Map
+         return dao.findlstByExpediente(idExpediente);
+      } catch (Exception e) {
+         log.error(e.getMessage(), e);
+
+         return null;
+      }
+   }
+
+   @Override
+   public List<Archivo> findLstByIdDocumento(Integer idDocumento) {
+      return dao.findByIdDocumento(idDocumento);
+   }
+
+	// ////////////////////////////////
+	// Getters and Setters //
+	// ////////////////////////////////
+	public ArchivoDAO getDao(){
+		return dao;
+	}
+
+	public void setDao(ArchivoDAO dao){
+		this.dao=dao;
+	}
+
+	public RepositorioService getSrvRepositorio(){
+		return srvRepositorio;
+	}
+
+	public void setSrvRepositorio(RepositorioService srvRepositorio){
+		this.srvRepositorio=srvRepositorio;
+	}
+
+	public AuditoriaDAO getDaoauditoria(){
+		return daoauditoria;
+	}
+
+	public void setDaoauditoria(AuditoriaDAO daoauditoria){
+		this.daoauditoria=daoauditoria;
+	}
+
+    public void setAlfrescoWebServiceClient(AlfrescoWSService alfrescoWebServiceClient) {
+        this.alfrescoWebServiceClient = alfrescoWebServiceClient;
+    }
+
+    public void setAlfrescoWebscriptClient(AlfrescoWebscriptService alfrescoWebscriptClient) {
+        this.alfrescoWebscriptClient = alfrescoWebscriptClient;
+    }
+
+	@Override
+	public Archivo getArchivoPrincipalPorDocumento(
+			Integer iIdDocumento) {	
+		try{
+			return getDao().findByArchivoPrincipalIdDocumento(iIdDocumento);
+		}catch(RuntimeException re){
+			log.error("",re);
+			return null;
+		}
+	}
+
+	@Override
+	public List<Archivo> getArchivoListPorDocumentoIG(Integer iIdDocumento) {
+		//List<Archivo> lstArch=getDao().findByIdDocumento(iIdDocumento);
+		//return lstArch; 
+		try{
+			return getDao().findByIdDocumento(iIdDocumento);
+		}catch(RuntimeException re){
+			log.error("",re);
+			return null;
+		}
+		
+	}
+}

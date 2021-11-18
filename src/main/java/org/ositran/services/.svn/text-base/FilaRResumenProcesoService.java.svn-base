@@ -1,0 +1,27 @@
+package org.osinerg.services;
+/*DUMMY*/
+import java.util.List;
+
+import org.osinerg.dojo.grid.Estructura;
+
+import com.btg.osinergmin.siged.domain.FilaRDetalleProceso;
+import com.btg.osinergmin.siged.domain.FilaRResumenProceso;
+
+public interface FilaRResumenProcesoService {
+
+	/* (non-Javadoc)
+	 * @see org.osinerg.services.FilaRResumenProcesoService#getReporteInicio()
+	 */
+	public abstract List<FilaRResumenProceso> getReporteInicio();
+
+	/* (non-Javadoc)
+	 * @see org.osinerg.services.FilaRResumenProcesoService#generarReporteResumen(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public abstract List<FilaRResumenProceso> generarReporteResumen(
+			String procesoClasif, String procesoElegido, String estado,
+			String fechaDesde, String fechaHasta);
+	
+	public  List<Estructura> getStructura (List<FilaRResumenProceso> estructuras); 
+	
+
+}

@@ -1,0 +1,19 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import org.osinerg.dojo.BusquedaAvanzada;
+
+import com.btg.osinergmin.siged.domain.Documentoenviado;
+import com.btg.osinergmin.siged.domain.FilaBandejaEnviados;
+
+public interface DocumentoEnviadoService {
+	
+	List<Documentoenviado> findActivosByUsuario(Integer idusuario);
+	List<Documentoenviado> findActivosFiltrados(Integer idusuario, BusquedaAvanzada objFiltro);
+	Documentoenviado findByIddocumentoenviado(Integer Iddocumentoenviado) ;  
+	void eliminarDocumentosEnviados (String [] ids) ;
+    void savedocumentoenviado(Documentoenviado objdocenviado);
+    List<FilaBandejaEnviados> buscarEnviadosPorUsuario(Integer idusuario);
+    List<FilaBandejaEnviados> buscarEnviadosFiltrados(Integer idusuario, BusquedaAvanzada objFiltro);
+}

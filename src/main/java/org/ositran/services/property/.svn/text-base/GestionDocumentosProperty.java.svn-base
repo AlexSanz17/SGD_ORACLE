@@ -1,0 +1,591 @@
+package org.osinerg.services.property;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import org.osinerg.services.AccionService;
+import org.osinerg.services.DocumentoEnviadoService;
+import org.osinerg.services.DocumentoService;
+import org.osinerg.services.EtapaService;
+import org.osinerg.services.ExpedienteService;
+import org.osinerg.services.GestionDocumentosImpl;
+import org.osinerg.services.ListaService;
+import org.osinerg.services.ManejoDeEmailService;
+import org.osinerg.services.NotificacionService;
+import org.osinerg.services.ProcesoService;
+import org.osinerg.services.TrazabilidaddocumentoService;
+import org.osinerg.services.UsuarioService;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.DocumentoDetail;
+import org.osinerg.utils.DocumentoMasivo;
+import org.osinerg.utils.FechaLimite;
+import org.osinerg.utils.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Accion;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Documentoenviado;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Lista;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class GestionDocumentosProperty {
+	
+	private final Logger log = LoggerFactory.getLogger(GestionDocumentosImpl.class);
+	private EtapaService etapaService;
+	private DocumentoService documentoService;
+	private AccionService accionService;
+	private UsuarioService usuarioService;
+	private TrazabilidaddocumentoService trazabilidadDocumentoService;
+	private ProcesoService procesoService;
+	private ExpedienteService expedienteService;
+	private DocumentoEnviadoService documentoEnviadoService;
+	private NotificacionService notificacionService;
+	private ListaService listaService;
+	private ManejoDeEmailService mailService;
+	private FechaLimite fechaLimite;
+	@Transactional
+	public void aprobarDocumento(DocumentoMasivo docmas, Documento doc, String nombrePC,Boolean horarioPermitido){
+		log.debug("GestionDocumentoProperty - aprobarDocumento:void ");
+		Accion objAccion=accionService.findByNombre(Constantes.ACCION_APROBAR);
+		//Guardando el la etapa del proceso Stor en el Expediente
+		guardarEtapaEnExpediente(docmas, doc);
+		//Guardando el Documento
+		registrarReenvioDeDocumentos(docmas, doc, objAccion, nombrePC,horarioPermitido);
+	}
+
+	@Transactional
+	public void apruebaYparaAprobarDocumentos(DocumentoMasivo docmas, Documento doc, String nombrePC, Boolean horarioPermitido){
+		log.debug("GestionDocumentoProperty - apruebaYparaAprobarDocumentos:void ");
+		Accion objAccion1=accionService.findByNombre(Constantes.ACCION_APROBAR);
+		Accion objAccion2=accionService.findByNombre(Constantes.ACCION_PARA_APROBAR);
+
+		
+		//Guardando el la etapa del proceso Stor en el Expediente
+		guardarEtapaEnExpediente(docmas, doc);
+		//Guardando el Documento
+		registrarAprobacionDeDocumentos(docmas, doc, objAccion1,objAccion2, nombrePC,horarioPermitido);
+	}		
+	
+	@Transactional
+	public void aprobaryReenviarDocumentos(DocumentoMasivo docmas, Documento doc, String nombrePC,Boolean horarioPermitido){
+		log.debug("GestionDocumentoProperty - aprobaryReenviarDocumentos:void ");
+		Accion objAccion1=accionService.findByNombre(Constantes.ACCION_APROBAR);
+		Accion objAccion2=accionService.findByNombre(Constantes.ACCION_REENVIAR);
+
+		//Guardando el la etapa del proceso Stor en el Expediente
+		guardarEtapaEnExpediente(docmas, doc);
+		//Guardando el Documento
+		registrarAprobacionDeDocumentos(docmas, doc, objAccion1,objAccion2, nombrePC, horarioPermitido);
+	}	
+	
+	@Transactional
+	public void reenviarParaAprobarDocumento(DocumentoMasivo docmas, Documento doc, String nombrePC,Boolean horarioPermitido){
+		log.debug("GestionDocumentoProperty - reenviarParaAprobarDocumento:void ");
+		Accion objAccion1=accionService.findByNombre(Constantes.ACCION_PARA_APROBAR);
+		//Guardando el la etapa del proceso Stor en el Expediente
+		guardarEtapaEnExpediente(docmas, doc);
+		//Guardando el Documento
+		registrarReenvioDeDocumentos(docmas, doc, objAccion1, nombrePC, horarioPermitido);
+	}
+	
+	@Transactional
+	public void reenviarDocumento(DocumentoMasivo docmas, Documento doc, String nombrePC, Boolean horarioPermitido){
+		log.debug("GestionDocumentoProperty - reenviarDocumento:void ");
+		Accion objAccion=accionService.findByNombre(Constantes.ACCION_REENVIAR);
+		//Guardando el la etapa del proceso Stor en el Expediente
+		//guardarEtapaEnExpediente(docmas, doc);
+		//Guardando el Documento
+		registrarReenvioDeDocumentos(docmas, doc, objAccion, nombrePC,horarioPermitido);
+
+	}
+	
+	
+	@SuppressWarnings("unused")
+	@Transactional
+    private void registrarAprobacionDeDocumentos(DocumentoMasivo docmas, Documento doc,Accion accion,Accion accion2, String nombrePC, Boolean horarioPermitido){
+	  
+		List<Documento> documentosExpediente = new ArrayList<Documento>();
+		List<Documento> lstDocumento = documentoService.getDocumentosPorExpediente(doc.getExpediente().getIdexpediente());
+		Documento ultimo=null;
+		
+		if(lstDocumento!=null){
+	        ultimo = lstDocumento.get(0);
+	        Calendar ultimoDocumento = Calendar.getInstance();
+	        ultimoDocumento.setTime(ultimo.getFechaCreacion());
+			
+	        //Cambiando todo los documentos a estado No Principal excepto el ultimo documento
+	        for (Documento docTemp : lstDocumento) {
+	            docTemp.setPrincipal(Constantes.DOCUMENTO_NO_PRINCIPAL);
+	            Calendar actual = Calendar.getInstance();
+	            actual.setTime(docTemp.getFechaCreacion());
+	            if (actual.compareTo(ultimoDocumento) > 0) {
+	                ultimo = docTemp;
+	            }
+	            documentosExpediente.add(docTemp);
+	        }
+			
+	        ultimo.setPrincipal(Constantes.DOCUMENTO_PRINCIPAL);
+		}
+
+		String contenido=null;
+        String conCopias=docmas.getConCopia()!=null?armarCopias(docmas):"";
+
+        for (Documento objDocumentoAMover : documentosExpediente) {
+        	
+                objDocumentoAMover.setPropietario(docmas.getDestinatario());
+                objDocumentoAMover.setRemitente(docmas.getUsuarioRemitente().getNombres() + " " + docmas.getUsuarioRemitente().getApellidos());
+                objDocumentoAMover.setAccion(accion2);
+                if (objDocumentoAMover.getPrincipal() == Constantes.DOCUMENTO_PRINCIPAL) {
+
+                 StringBuilder strAux = new StringBuilder();  
+                 			strAux.append("<br>");
+                 			strAux.append("<p>--------------- Mensaje Original ---------------</p> "); 
+                 			strAux.append("<p>De : " + docmas.getUsuarioRemitente().getNombres()+"</p>"); 
+                 			strAux.append("<p>Para : " + docmas.getDestinatario().getNombres() +"</p>");
+                 			strAux.append("<p>CC : "+conCopias +"</p>"); 
+                 			strAux.append("<p>Enviado : " + new Date() + "</p>"); 
+                 			strAux.append("<p>Enviado : "+ docmas.getAsunto() + "</p>"); 
+                 			strAux.append("<p>----------------------------------------------</p>");
+                        
+                    contenido=docmas.getContenido() + strAux.toString() + " " + objDocumentoAMover.getContenido();  
+                    
+                    contenido=contenido.length()>3998?contenido.substring(0, 3998):contenido;
+                    
+                    log.debug("Contenido[{}]",contenido);
+                    log.debug("Tama�o Contenido:[{}]",contenido.length()
+                    		);
+                    objDocumentoAMover.setContenido(contenido);
+                    ultimo.setContenido(contenido);
+                    objDocumentoAMover.setEstadoAlarma('V');
+                }
+                objDocumentoAMover.setFechaAccion(new Date());
+            
+            objDocumentoAMover.setLeido(Constantes.ESTADO_NO_LEIDO);
+			objDocumentoAMover.setDelExpediente(Constantes.DOCUMENTO_DEL_EXPEDIENTE);
+			//-------------------------------------------------------------------------------------------------------------------------
+			//Guardando el documento
+            objDocumentoAMover = documentoService.registrarDocumento(objDocumentoAMover);
+			
+            //-------------------------------------------------------------------------------------------------------------------------
+            //Registra la trazabilidad de la accion Aprobar para el documento.
+            
+              
+			trazabilidadDocumentoService.saveTrazabilidadDocumentoMasivos(objDocumentoAMover, 
+            		docmas.getUsuarioRemitente(), 
+            		0,
+            		0, 
+            		null, 
+            		docmas.getAsunto(), 
+            		contenido, 
+            		docmas.getEtapa(),
+            		accion,
+            		docmas.getUsuarioRemitente());
+            //-------------------------------------------------------------------------------------------------------------------------
+            //Registra la trazabilidad de la accion reeenviar para el documento.
+            Trazabilidaddocumento trazdoc = trazabilidadDocumentoService.saveTrazabilidadDocumento(objDocumentoAMover, 
+																				            		docmas.getUsuarioRemitente(), 
+																				            		0, 
+																				            		0, 
+																				            		null, 
+																				            		docmas.getAsunto(), 
+																				            		contenido, null, nombrePC,horarioPermitido,"revisar sin plazo?");
+            //-------------------------------------------------------------------------------------------------------------------------
+            //Registrando en Documentos Enviados (para mostrar en la bandeja de documentos enviados)
+            //if (objDocumentoAMover.getPrincipal() == Constantes.DOCUMENTO_PRINCIPAL) {
+                Documentoenviado documentoenviado = new Documentoenviado();
+               // wvcarrasco descomentar                documentoenviado.setTrazabilidaddocumento(trazdoc);
+                documentoenviado.setUsuario(docmas.getUsuarioRemitente());
+                documentoenviado.setEstado("" + Constantes.ESTADO_ACTIVO);
+                documentoEnviadoService.savedocumentoenviado(documentoenviado);
+            //}
+            //-------------------------------------------------------------------------------------------------------------------------
+            //Registrando Auditorias
+            documentoService.registrarDerivacionAuditoriaDocumento(  objDocumentoAMover, 
+												    docmas.getUsuarioRemitente(), 
+												    docmas.getDestinatario(), 
+								            		Constantes.TA_DerivarUserFinal, 
+								            		Constantes.TM_UserFinal, 
+								            		accion.getNombre());
+            
+        }
+        //-------------------------------------------------------------------------------------------------------------------------
+        // Registrando las notificaciones
+        if(lstDocumento!=null){
+        	registrarNotificaciones(ultimo, docmas,accion, nombrePC);
+        }else{
+        	log.info("No se Notificacion por q no existe un documento Ultimo.");
+        }
+  }	
+	
+	@SuppressWarnings("unused")
+	@Transactional
+    private void registrarReenvioDeDocumentos(DocumentoMasivo docmas, Documento doc,Accion accion, String nombrePC, Boolean horarioPermitido){
+	  /*
+		List<Documento> documentosExpediente = new ArrayList<Documento>();
+		List<Documento> lstDocumento = documentoService.getDocumentosPorExpediente(doc.getExpediente().getIdexpediente());
+        Documento ultimo = lstDocumento.get(0);
+        Calendar ultimoDocumento = Calendar.getInstance();
+        ultimoDocumento.setTime(ultimo.getFechaCreacion());
+        
+        //Cambiando todo los documentos a estado No Principal excepto el ultimo documento
+        for (Documento docTemp : lstDocumento) {
+            docTemp.setPrincipal(Constantes.DOCUMENTO_NO_PRINCIPAL);
+            Calendar actual = Calendar.getInstance();
+            actual.setTime(docTemp.getFechaCreacion());
+            if (actual.compareTo(ultimoDocumento) > 0) {
+                ultimo = docTemp;
+            }
+            documentosExpediente.add(docTemp);
+        }
+        
+        ultimo.setPrincipal(Constantes.DOCUMENTO_PRINCIPAL);
+        String contenido=null;
+        String conCopias=docmas.getConCopia()!=null?armarCopias(docmas):"";
+        
+        for (Documento objDocumentoAMover : documentosExpediente) {
+        	
+                objDocumentoAMover.setPropietario(docmas.getDestinatario());
+                objDocumentoAMover.setRemitente(docmas.getUsuarioRemitente().getNombres() + " " + docmas.getUsuarioRemitente().getApellidos());
+                objDocumentoAMover.setAccion(accion);
+                if (objDocumentoAMover.getPrincipal() == Constantes.DOCUMENTO_PRINCIPAL) {
+
+                        String strAux =  "<br>";
+		                       strAux += "<p>--------------- Mensaje Original ---------------</p> " 
+		                        	  + "<p>De : " + docmas.getUsuarioRemitente().getNombres()+"</p>" 
+		                        	  + "<p>Para : " + docmas.getDestinatario().getNombres() +"</p>" 
+		                        	  + "<p>CC : "+conCopias +"</p>" 
+		                        	  + "<p>Enviado : " + new Date() + "</p>" 
+		                        	  + "<p>Enviado : "+ docmas.getAsunto() + "</p>" 
+		                        	  + "<p>----------------------------------------------</p>";
+                        
+                    contenido=docmas.getContenido() + strAux + " " + objDocumentoAMover.getContenido();  
+                    
+                    contenido=contenido.length()>3998?contenido.substring(0, 3998):contenido;
+                    
+                    log.debug("Contenido[{}]",contenido);
+                    log.debug("Tamaño del Contenido:[{}]",contenido.length()
+                    		);
+                    objDocumentoAMover.setContenido(contenido);
+                    ultimo.setContenido(contenido);
+                    objDocumentoAMover.setEstadoAlarma('V');
+                }
+                objDocumentoAMover.setFechaAccion(new Date());
+            
+            objDocumentoAMover.setLeido(Constantes.ESTADO_NO_LEIDO);
+			objDocumentoAMover.setDelExpediente(Constantes.DOCUMENTO_DEL_EXPEDIENTE);
+			//-------------------------------------------------------------------------------------------------------------------------
+			//Guardando el documento
+            objDocumentoAMover = documentoService.registrarDocumento(objDocumentoAMover);
+            
+            //-------------------------------------------------------------------------------------------------------------------------
+            //Registra la trazabilidad para el documento.
+            Trazabilidaddocumento trazdoc = trazabilidadDocumentoService.saveTrazabilidadDocumento(objDocumentoAMover, 
+																				            		docmas.getUsuarioRemitente(), 
+																				            		0, 
+																				            		0, 
+																				            		null, 
+																				            		docmas.getAsunto(), 
+																				            		contenido, null);
+            //-------------------------------------------------------------------------------------------------------------------------
+            //Registrando en Documentos Enviados (para mostrar en la bandeja de documentos enviados)
+            if (objDocumentoAMover.getPrincipal() == Constantes.DOCUMENTO_PRINCIPAL) {
+                Documentoenviado documentoenviado = new Documentoenviado();
+                documentoenviado.setTrazabilidaddocumento(trazdoc);
+                documentoenviado.setUsuario(docmas.getUsuarioRemitente());
+                documentoenviado.setEstado("" + Constantes.ESTADO_ACTIVO);
+                documentoEnviadoService.savedocumentoenviado(documentoenviado);
+            }
+            //-------------------------------------------------------------------------------------------------------------------------
+            //Registrando Auditorias
+            documentoService.registrarDerivacionAuditoriaDocumento(  objDocumentoAMover, 
+												    docmas.getUsuarioRemitente(), 
+												    docmas.getDestinatario(), 
+								            		Constantes.TA_DerivarUserFinal, 
+								            		Constantes.TM_UserFinal, 
+								            		accion.getNombre());
+            
+        }
+        //-------------------------------------------------------------------------------------------------------------------------
+        // Registrando las notificaciones*/
+		int tiempoProceso = procesoService.findByIdProceso(doc.getExpediente().getProceso().getIdproceso()).getTiempoatencion().intValue();
+		doc = documentoService.findByIdDocumento(doc.getIdDocumento());
+		doc.setPropietario(docmas.getDestinatario());
+		doc.setLeido(Constantes.No);
+		doc.setEstadoAlarma('V');
+		
+		//wcarrasco 07-01-2011	
+		
+		doc.setAccion(accion);//actualiza el documento
+		
+		Date fechaFueraHorario = new Date();	
+		if(horarioPermitido == false){			
+	        log.debug("Transferir Masivamente: registrarDocumento  fuera de horario ");
+		    fechaFueraHorario = fechaLimite.fechaFueraHorarioHabil(fechaFueraHorario,docmas.getDestinatario().getIdusuario().intValue());
+		    doc.setFechaAccion(fechaFueraHorario);
+	     }else{
+	    	 doc.setFechaAccion(fechaFueraHorario);
+	     }		
+		Date dNuevaFechaLimiteAtencion = new Date();			
+		dNuevaFechaLimiteAtencion=fechaLimite.calcularFechaLimite(tiempoProceso,0,docmas.getDestinatario().getIdusuario());
+		doc.setFechaLimiteAtencion(dNuevaFechaLimiteAtencion);
+		doc = documentoService.registrarDocumento(doc);
+		
+		String contenido=docmas.getContenido();  
+        contenido=contenido.length()>3998?contenido.substring(0, 3998):contenido;
+ 
+		Trazabilidaddocumento trazdoc = trazabilidadDocumentoService.saveTrazabilidadDocumento(doc, 
+        		docmas.getUsuarioRemitente(), 
+        		tiempoProceso, //wcarrasco 07-01-  2011 antes --> 0,
+        		0,
+        		null, 
+        		docmas.getAsunto(), 
+        		contenido, null, nombrePC,horarioPermitido,"revisar sin plazo?");
+		log.debug("trazdoc.getIdtrazabilidaddocumento().intValue() : "+trazdoc.getIdtrazabilidaddocumento().intValue());
+		Documentoenviado documentoenviado = new Documentoenviado();
+		documentoenviado.setIdTrazabilidadEnvio(trazdoc.getIdtrazabilidaddocumento().intValue());
+		documentoenviado.setUsuario(trazdoc.getRemitente());
+		documentoenviado.setEstado("" + Constantes.ESTADO_ACTIVO);
+		documentoenviado.setTipoEnvio(""+ Constantes.TIPO_ENVIO_TRANSFERIR);
+		documentoEnviadoService.savedocumentoenviado(documentoenviado);
+		
+		documentoService.registrarDerivacionAuditoriaDocumento(doc, 
+			    docmas.getUsuarioRemitente(), 
+			    docmas.getDestinatario(), 
+        		Constantes.TA_DerivarUserFinal, 
+        		Constantes.TM_UserFinal, 
+        		accion.getNombre());
+		
+		registrarNotificaciones(doc, docmas,accion, nombrePC);
+                
+  }
+  
+	private String obtenerCliente(Documento objD){
+		String vacio="";
+		String forward="";
+		if (objD.getExpediente().getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_RUC)) {
+			forward=objD.getExpediente().getClienterazonsocial() != null ? objD.getExpediente().getClienterazonsocial() : objD.getExpediente().getCliente().getRazonSocial();
+        } else if (objD.getExpediente().getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_DNI) || 
+        		   objD.getExpediente().getCliente().getTipoIdentificacion().getNombre().equals(Constantes.TIPO_IDENTIFICACION_OTRO)) {
+            String sNombre = objD.getExpediente().getClientenombres() != null ? objD.getExpediente().getClientenombres() : objD.getExpediente().getCliente().getNombres()!=null ? objD.getExpediente().getCliente().getNombres() : vacio;
+            String sApellidoPaterno = objD.getExpediente().getClienteapellidopaterno() != null ? objD.getExpediente().getClienteapellidopaterno() : objD.getExpediente().getCliente().getApellidoPaterno()!=null ? objD.getExpediente().getCliente().getApellidoPaterno(): vacio;
+            String sApellidoMaterno = objD.getExpediente().getClienteapellidomaterno() != null ? objD.getExpediente().getClienteapellidomaterno() : objD.getExpediente().getCliente().getApellidoMaterno()!=null ? objD.getExpediente().getCliente().getApellidoMaterno(): vacio ;
+            forward=sNombre + " " + sApellidoPaterno + " " + sApellidoMaterno;
+        }		
+		return forward;
+	}  
+
+	@Transactional
+	private void guardarEtapaEnExpediente(DocumentoMasivo docmas, Documento doc){
+		Etapa objEtapa = null;
+
+		if (docmas.getEtapa() != null) {
+		   objEtapa = new Etapa();
+		   objEtapa = docmas.getEtapa();
+		}
+
+		Expediente objExpediente=doc.getExpediente();
+        objExpediente.setIdetapa(objEtapa);
+        if (objExpediente.getExpedientestor() != null) {
+            objExpediente.getExpedientestor().setEtapa(objEtapa);
+        }
+        expedienteService.saveExpediente(objExpediente);		
+	}
+	
+	public boolean evaluarDestinatarios(Integer propietario,Integer destinatario){
+		boolean forward=false;
+		if(propietario==destinatario){
+			forward=true;
+		}
+		return forward;
+	}
+	
+	@Transactional
+	private void registrarNotificaciones(Documento ultimo, DocumentoMasivo docmas,Accion accion, String nombrePC){
+	       ultimo.setPropietario(docmas.getDestinatario());
+	        int iEvento = Constantes.CONFIGNOTIFMAIL_DOCUMENTO_REENVIAR;
+	        int iCCEvento = Constantes.CONFIGNOTIFMAIL_DOCUMENTO_CCREENVIAR;
+	        
+	        if (accion.getNombre().equals(Constantes.ACCION_PARA_APROBAR)) {
+	            iEvento = Constantes.CONFIGNOTIFMAIL_DOCUMENTO_PORAPROBAR;
+	            iCCEvento = Constantes.CONFIGNOTIFMAIL_DOCUMENTO_CCPORAPROBAR;
+	        } else if (accion.getNombre().equals(Constantes.ACCION_APROBAR)) {
+	            iEvento = Constantes.CONFIGNOTIFMAIL_DOCUMENTO_APROBAR;
+	            iCCEvento = Constantes.CONFIGNOTIFMAIL_DOCUMENTO_CCAPROBAR;
+	        }
+	        
+	        Set usuariosNotificados = notificacionService.informarViaNotifAndMail(docmas.getUsuarioRemitente(), ultimo, iEvento, Constantes.TIPO_NOTIFICACION_DERIVACION, nombrePC);
+	        Usuario usuarioReceptor = new Usuario();
+
+	        if (docmas.getConCopia() != null) {
+	            //Accion accionCopia = accionService.findByNombre(Constantes.ACCION_COPIAR);
+	            for (String sID : docmas.getConCopia()) {
+	                if (!StringUtil.isEmpty(sID)) {
+	                    log.debug("trabajando con ID [" + sID + "]");
+
+	                    if (sID.startsWith("LISTA")) {
+	                        Integer iID = Integer.valueOf(sID.substring(sID.indexOf("_") + 1));
+	                        Lista objLista = listaService.findByIdLista(iID);
+
+	                        log.debug("Working with Lista [" + objLista.getNombre() + "]");
+
+	                        for (Usuario objParticipante : objLista.getParticipanteListaList()) {
+	                            //No se ha enviado notificacion a ese usuario
+	                            if (!usuariosNotificados.contains(objParticipante) && docmas.getDestinatario().getIdusuario() != iID.intValue()) {
+	                            	//wcarrasco 19-10-2010 falta revisar  al registrarNotificaciones La Fecha Notificacion
+	                                notificacionService.enviarNotificacion(docmas.getUsuarioRemitente(), objParticipante, ultimo, Constantes.TIPO_NOTIFICACION_DERIVACIONCONCOPIA, nombrePC,true,null);
+	                                mailService.ChaskiMail(iCCEvento, docmas.getUsuarioRemitente(), objParticipante, ultimo);
+	                            } //Ya se envio notificacion a ese usuario, modificar el tipo de notificacion a derivacionconcopia
+	                            else {
+	                                notificacionService.updateTipoNotificacion(ultimo.getIdDocumento(), objParticipante.getIdusuario(), Constantes.TIPO_NOTIFICACION_DERIVACIONCONCOPIA);
+	                            }
+	                        }
+	                    } else {
+	                        Integer iID = Integer.valueOf(sID);
+	                        usuarioReceptor = usuarioService.findByIdUsuario(iID);
+	                        //No se ha enviado notificacion a ese usuario
+	                        if (log.isDebugEnabled()) {
+	                            log.debug("iIdDestinatario [" + docmas.getDestinatario().getIdusuario() + "] iID [" + iID + "]");
+	                        }
+	                        //trazabilidadcopiaService.guardarTrazabilidadcopia(trazdoc.getIdtrazabilidaddocumento(), objRemitente, usuarioReceptor, ultimo, accionCopia, objEtapa, Constantes.TIPO_ORIGEN_TRAZADOCUMENTO);
+	                        if (!usuariosNotificados.contains(usuarioReceptor) && docmas.getDestinatario().getIdusuario() != iID.intValue()) {
+	                        	//wcarrasco 19-10-2010 falta revisar  al registrarNotificaciones La Fecha Notificacion
+	                            notificacionService.enviarNotificacion(docmas.getUsuarioRemitente(), usuarioReceptor, ultimo, Constantes.TIPO_NOTIFICACION_DERIVACIONCONCOPIA, nombrePC,true,null);
+	                            mailService.ChaskiMail(iCCEvento, docmas.getUsuarioRemitente(), usuarioReceptor, ultimo);
+	                        } //Ya se envio notificacion a ese usuario, modificar el tipo de notificacion a derivacionconcopia
+	                        else {
+	                            notificacionService.updateTipoNotificacion(ultimo.getIdDocumento(), usuarioReceptor.getIdusuario(), Constantes.TIPO_NOTIFICACION_DERIVACIONCONCOPIA);
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	        log.debug("Nuevo propietario [" + ultimo.getPropietario().getNombres() + " " + ultimo.getPropietario().getApellidos() + "]");		
+	}
+	
+	private String armarCopias(DocumentoMasivo docmas){
+		String conCopias="";
+		int i=0;
+	    	for(String idUsuarioCopia : docmas.getConCopia()){
+	    		Usuario u=usuarioService.findByIdUsuario(Integer.parseInt(idUsuarioCopia));
+	    		if(i==docmas.getConCopia().size()-1){
+	    			conCopias+=u.getNombres() +".";
+	    		}
+	    		else{
+	    			conCopias+=u.getNombres() +";";
+	    		}
+	    		i++;
+	    	}
+        return conCopias; 
+	}
+	
+	//-------------------------------------
+	
+	public EtapaService getEtapaService() {
+		return etapaService;
+	}
+
+	public void setEtapaService(EtapaService etapaService) {
+		this.etapaService = etapaService;
+	}
+
+	public DocumentoService getDocumentoService() {
+		return documentoService;
+	}
+
+	public void setDocumentoService(DocumentoService documentoService) {
+		this.documentoService = documentoService;
+	}
+
+	public AccionService getAccionService() {
+		return accionService;
+	}
+
+	public void setAccionService(AccionService accionService) {
+		this.accionService = accionService;
+	}
+
+	public UsuarioService getUsuarioService() {
+		return usuarioService;
+	}
+
+	public void setUsuarioService(UsuarioService usuarioService) {
+		this.usuarioService = usuarioService;
+	}
+
+	public TrazabilidaddocumentoService getTrazabilidadDocumentoService() {
+		return trazabilidadDocumentoService;
+	}
+
+	public void setTrazabilidadDocumentoService(
+			TrazabilidaddocumentoService trazabilidadDocumentoService) {
+		this.trazabilidadDocumentoService = trazabilidadDocumentoService;
+	}
+
+	public ProcesoService getProcesoService() {
+		return procesoService;
+	}
+
+	public void setProcesoService(ProcesoService procesoService) {
+		this.procesoService = procesoService;
+	}
+
+	public Logger getLog() {
+		return log;
+	}
+
+	public ExpedienteService getExpedienteService() {
+		return expedienteService;
+	}
+
+	public void setExpedienteService(ExpedienteService expedienteService) {
+		this.expedienteService = expedienteService;
+	}
+    public DocumentoEnviadoService getDocumentoEnviadoService() {
+		return documentoEnviadoService;
+	}
+
+	public void setDocumentoEnviadoService(
+			DocumentoEnviadoService documentoEnviadoService) {
+		this.documentoEnviadoService = documentoEnviadoService;
+	}
+
+	public NotificacionService getNotificacionService() {
+		return notificacionService;
+	}
+
+	public void setNotificacionService(NotificacionService notificacionService) {
+		this.notificacionService = notificacionService;
+	}
+
+	public ListaService getListaService() {
+		return listaService;
+	}
+
+	public void setListaService(ListaService listaService) {
+		this.listaService = listaService;
+	}
+
+	public ManejoDeEmailService getMailService() {
+		return mailService;
+	}
+
+	public void setMailService(ManejoDeEmailService mailService) {
+		this.mailService = mailService;
+	}
+
+	public FechaLimite getFechaLimite() {
+		return fechaLimite;
+	}
+
+	public void setFechaLimite(FechaLimite fechaLimite) {
+		this.fechaLimite = fechaLimite;
+	}	
+	
+}

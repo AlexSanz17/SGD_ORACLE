@@ -1,0 +1,156 @@
+package org.osinerg.services;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.osinerg.daos.SeguimientoXUsuarioDAO;
+import org.osinerg.daos.TrazabilidadapoyoDAO;
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.dojo.grid.ItemUF;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.FilaBandejaUF;
+import com.btg.osinergmin.siged.domain.SeguimientoXUsuario;
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+
+public class SeguimientoXUsuarioServiceImpl implements SeguimientoXUsuarioService {
+
+	private SeguimientoXUsuarioDAO seguimientoXUsuarioDAO;
+	private TrazabilidadapoyoDAO trazabilidadapoyoDAO;
+	
+	@Override
+	@Transactional
+	public SeguimientoXUsuario guardarSeguimiento(SeguimientoXUsuario seguimiento) {
+		seguimiento = seguimientoXUsuarioDAO.guardarSeguimiento(seguimiento);
+		return seguimiento;
+	}
+
+	@Override
+	@Transactional
+	public void eliminarSeguimiento(SeguimientoXUsuario seguimiento) {
+		seguimientoXUsuarioDAO.eliminarSeguimiento(seguimiento);
+	}
+	
+	@Override
+	public List<SeguimientoXUsuario> buscarSeguimiento(Integer idUsuario, Integer idDocumento){
+		SeguimientoXUsuario seguimiento = new SeguimientoXUsuario();
+		seguimiento.setIdUsuario(idUsuario);
+		seguimiento.setIdDocumento(idDocumento);
+		return seguimientoXUsuarioDAO.buscarSeguimientoXUsuario(seguimiento);
+	}
+	
+	@Override
+	public List<ItemUF> getItemsSeguimientoXUsuario(Integer idUsuario){
+		List<FilaBandejaUF> filas = seguimientoXUsuarioDAO.buscarGridSeguimiento(idUsuario);
+		List<ItemUF> items = new ArrayList<ItemUF>();
+		
+		if(filas != null && !filas.isEmpty()){
+			
+			for(FilaBandejaUF fila : filas){
+				ItemUF uuf = new ItemUF();
+				uuf.setId(fila.getId());
+				uuf.setTipoalerta(fila.getTipoalerta());
+				uuf.setRemitente(fila.getRemitente().getNombreCompleto());
+				uuf.setArea(seguimientoXUsuarioDAO.buscarAreaRemitente(String.valueOf(fila.getRemitente().getIdusuario())));
+				uuf.setAsunto(fila.getAsunto());
+				uuf.setAsuntoExpediente(fila.getAsuntoExpediente());
+				uuf.setDocumento(fila.getDocumento());
+				uuf.setConcesionario(fila.getConcesionario());
+				uuf.setUrlarchivo("");
+				uuf.setFechalimite(fila.getFechalimite());
+				uuf.setEstado(fila.getEstado());
+				uuf.setEtapa(fila.getEtapa());
+				uuf.setExpediente(fila.getExpediente());
+				uuf.setProceso(fila.getProceso().getNombre());
+				uuf.setCliente(fila.getCliente());
+				uuf.setActividad(fila.getActividad());
+				uuf.setNumeroMesaPartes(fila.getNumeromesapartes());
+				uuf.setPorcentajealerta1(fila.getPorcentajeA() != null ? Double.parseDouble(fila.getPorcentajeA()) : 0);
+				uuf.setPorcentajealerta2(fila.getPorcentajeR() != null ? Double.parseDouble(fila.getPorcentajeR()) : 0);
+				uuf.setIdproceso(fila.getProceso() != null ? fila.getProceso().getIdproceso() : 0);
+				uuf.setFecharecepcion(fila.getFechaaccion());
+				uuf.setFechaAccion(fila.getFechaaccion());
+				
+				if(fila.getDocumentoreferencia() != null){
+					Trazabilidadapoyo ta = trazabilidadapoyoDAO.buscarUltimaDelegacionUsuario(fila.getPropietario().getIdusuario(), fila.getId());
+					if(ta != null){
+						uuf.setFecharecepcion(ta.getFechacreacion());
+						uuf.setFechaAccion(ta.getFechacreacion());
+					}
+				}
+				
+				uuf.setPropietario(fila.getPropietario().getNombreCompleto());
+				uuf.setLeido(fila.getLeido() != null ? fila.getLeido() : "N");
+				uuf.setExpBtn(fila.getId().toString());
+				Date d = uuf.getFechalimite();
+				if (d != null) {
+					Calendar fechaLimite = Calendar.getInstance();
+					Calendar fechaAccion = Calendar.getInstance();
+					fechaLimite.setTime(uuf.getFechalimite());
+					fechaAccion.setTime(uuf.getFechaAccion());
+					
+					Calendar hoy = Calendar.getInstance();
+					int atencionAccion = hoy.get(Calendar.DAY_OF_YEAR)
+							- fechaAccion.get(Calendar.DAY_OF_YEAR);
+					int atencionHoy = fechaLimite.get(Calendar.DAY_OF_YEAR)
+							- fechaAccion.get(Calendar.DAY_OF_YEAR);
+					double index = (double) atencionHoy / atencionAccion;
+
+					// color verde
+					if (index < uuf.getPorcentajealerta1()) {
+						uuf.setTipoalerta("images/bolitaVerde.gif");
+					}
+					if (index > uuf.getPorcentajealerta1()
+							&& index < uuf.getPorcentajealerta2()) {
+						uuf.setTipoalerta("images/bolitaAmarilla.gif");
+					}
+					if (index > uuf.getPorcentajealerta2() && index < 1) {
+						uuf.setTipoalerta("images/bolitaRoja.gif");
+					}
+										
+				} else {
+					uuf.setTipoalerta("images/bolitaVerde.gif");
+				}
+
+				if(fila.getPrioridad() != null){
+					uuf.setPrioridad("images/Prioridad_"+fila.getPrioridad()+".png");
+				}
+				
+				if(fila.getArchivos() > 0){
+					uuf.setArchivos("images/sigedIconos/adjuntar.png");
+				}else{
+					uuf.setArchivos("images/ed_blank.gif");
+				}
+				
+				if(StringUtils.isEmpty(fila.getDocumentoreferencia())){
+					uuf.setAccion(fila.getAccion() != null ? fila.getAccion().getDescripcion() : "-");
+				}else{
+					uuf.setAccion("Remitir");
+				}
+				items.add(uuf);
+			}
+		}
+		
+		return items;
+	}
+	
+	public SeguimientoXUsuarioDAO getSeguimientoXUsuarioDAO() {
+		return seguimientoXUsuarioDAO;
+	}
+
+	public void setSeguimientoXUsuarioDAO(SeguimientoXUsuarioDAO seguimientoXUsuarioDAO) {
+		this.seguimientoXUsuarioDAO = seguimientoXUsuarioDAO;
+	}
+
+	public TrazabilidadapoyoDAO getTrazabilidadapoyoDAO() {
+		return trazabilidadapoyoDAO;
+	}
+
+	public void setTrazabilidadapoyoDAO(TrazabilidadapoyoDAO trazabilidadapoyoDAO) {
+		this.trazabilidadapoyoDAO = trazabilidadapoyoDAO;
+	}
+
+}

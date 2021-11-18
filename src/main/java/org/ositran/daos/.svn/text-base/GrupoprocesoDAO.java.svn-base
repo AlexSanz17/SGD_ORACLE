@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Grupoproceso;
+
+public interface GrupoprocesoDAO {
+
+   public Grupoproceso buscarObjPor(String sCodigo);
+
+   public Grupoproceso buscarObjPorId(Integer iIdGrupoproceso);
+
+   public Grupoproceso guardarObj(Grupoproceso objGrupoProceso);
+
+   public List<Grupoproceso> findAll();
+}

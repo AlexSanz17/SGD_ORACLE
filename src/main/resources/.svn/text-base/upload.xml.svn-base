@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+   <package name="upload" extends="struts-default">
+      <result-types>
+         <result-type name="myStream" default="false" class="org.osinerg.actions.results.DynamicStreamResult"/>
+      </result-types>
+
+      <action name="doDeleteFile" method="deleteFile" class="uploadAction">
+         <result>pages/upload/lstUploadWithOutTextArea.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+      <action name="doUploadFile" method="uploadFile" class="uploadAction">
+         <result>pages/upload/lstUploadWithTextArea.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="showUploadFiles" method="showUploadFiles" class="uploadAction"> 
+         <result>pages/upload/lstUploadWithTextArea.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+      
+      <action name="showUploadFilesDojo2" method="showUploadFiles2" class="uploadAction"> 
+         <result>pages/upload/lstUploadWithTextArea2.jsp</result>
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="doDownloadFileTempo" method="downloadFileTempo" class="uploadAction">
+         <result type="myStream" />
+         <result name="error">error.html</result>
+      </action>
+
+      <action name="testupload">
+         <result>pages/upload/test.jsp</result>
+      </action>
+   </package>
+</struts>

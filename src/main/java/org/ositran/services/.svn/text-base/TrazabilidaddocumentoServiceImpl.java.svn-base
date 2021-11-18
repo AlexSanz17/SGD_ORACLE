@@ -1,0 +1,743 @@
+package org.osinerg.services;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+import javax.persistence.NoResultException;
+
+import org.apache.axis.utils.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+import org.osinerg.daos.AccionDAO;
+import org.osinerg.daos.AuditoriaDAO;
+import org.osinerg.daos.DocumentoDAO;
+import org.osinerg.daos.ParametroDAO;
+import org.osinerg.daos.ProveidoDAO;
+import org.osinerg.daos.TrazabilidaddocumentoDAO;
+import org.osinerg.dojo.grid.Item;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.FechaLimite;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Accion;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.Parametro;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Proveido;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.opensymphony.xwork2.ActionContext;
+
+public class TrazabilidaddocumentoServiceImpl implements TrazabilidaddocumentoService{
+
+	private static Logger log=Logger.getLogger(TrazabilidaddocumentoServiceImpl.class);
+	private TrazabilidaddocumentoDAO dao;
+	private AuditoriaDAO daoauditoria;
+	private FechaLimite fechaLimite;
+	private AccionDAO accionDao;
+	private DocumentoDAO documentoDAO;
+	private ParametroDAO parametroDAO;
+	private ProveidoDAO proveidoDAO;
+
+	// ////////////////////////////////
+	// Constructors //
+	// ////////////////////////////////
+	public TrazabilidaddocumentoServiceImpl(TrazabilidaddocumentoDAO dao){
+		setDao(dao);
+	}
+
+	// ////////////////////////////////
+	// Methods //
+	// ////////////////////////////////
+	public List<Trazabilidaddocumento> findByIdDocumento(Integer iIdDocumento){
+		log.debug("-> [Service] TrazabilidaddocumentoService - findByIdDocumento():List<Trazabilidaddocumento> ");
+		
+		return getDao().buscarLstPor(iIdDocumento);
+	}
+	
+	@Override
+	public Trazabilidaddocumento findByIdTrazabilidadDocumento(
+			Integer iIdTrazabilidadDocumento) {
+		log.debug("-> [Service] TrazabilidaddocumentoService - findByIdTrazabilidadDocumento():Trazabilidaddocumento ");
+		return dao.findTrabilidadbyId(iIdTrazabilidadDocumento);
+	}
+	
+	public List<Trazabilidaddocumento> buscarTrazaCompleta(Integer idExpediente){
+		log.debug("-> [Service] TrazabilidaddocumentoService - buscarTrazaCompleta():List<Trazabilidaddocumento> ");
+		
+		return dao.buscarTrazaCompleta(idExpediente);
+	}
+	
+	public List<Trazabilidaddocumento> findByMaxtrazabyIddocumento(Integer iIdDocumento){
+		log.debug("-> [Service] TrazabilidaddocumentoService - findByMaxtrazabyIddocumento():List<Trazabilidaddocumento> ");
+		
+		return getDao().buscarMaxTrazaPor(iIdDocumento);
+	}
+
+	public Trazabilidaddocumento findByDocumentoDestinatario(Integer iIdDocumento,Integer iIdDestinatario) throws NoResultException{
+		log.debug("-> [Service] TrazabilidaddocumentoService - findByDocumentoDestinatario():Trazabilidaddocumento ");
+		
+		try{
+			return getDao().findByDocumentoDestinatario(iIdDocumento,iIdDestinatario);
+		}
+		catch(NoResultException nre){
+			return null;
+		}
+	}
+
+	public Trazabilidaddocumento findByMaxNroRegistro(Integer iIdDocumento,String sAccion, Integer idaccion, Integer destinatariod) throws NoResultException{
+		log.debug("-> [Service] TrazabilidaddocumentoService - findByMaxNroRegistro():Trazabilidaddocumento ");
+		
+		try{
+			
+			return getDao().findByMaxNroRegistro(iIdDocumento, idaccion,destinatariod);
+		}catch(NoResultException nre){
+			String sMensaje="No se encontro ninguna trazabilidad del documento con ID ["+iIdDocumento+"]. accion ["+sAccion+"]";
+
+			// if (sAccion.equals(Constantes.ACCION_REGISTRAR)) {
+			log.warn(sMensaje);
+
+			return null;
+			// } else {
+			// log.error(nre.getMessage(), nre);
+			// throw new RuntimeException(sMensaje);
+			// }
+		}
+	}
+	
+	public Trazabilidaddocumento findRemitenteAccionByIddoc(Integer iIdDocumento){
+		log.debug("-> [Service] TrazabilidaddocumentoService - findRemitenteAccionByIddoc():Trazabilidaddocumento ");
+		
+		try{			
+			return getDao().findRemitenteAccionByIddoc(iIdDocumento);
+		}catch(NoResultException nre){
+			String sMensaje="No se encontro ninguna trazabilidad del documento con ID ["+iIdDocumento+"]";
+			log.warn(sMensaje);
+			return null;
+		}			
+	}
+
+	@Transactional
+	public Trazabilidaddocumento saveTrazabilidadDocumento(Documento objD,Usuario objUsuario, boolean copiarfechaLimite, boolean copiarasuntodocumento){
+		log.debug("-> [Service] TrazabilidaddocumentoService - saveTrazabilidadDocumento():Trazabilidaddocumento ");
+		
+		Trazabilidaddocumento objMT=this.findByMaxNroRegistro(objD.getIdDocumento(),objD.getAccion().getNombre(), null, null);
+		Trazabilidaddocumento objT=new Trazabilidaddocumento();
+
+		Integer totalComp=0;
+		Map<String,Object> mapSession=ActionContext.getContext().getSession();
+		Usuario user=(Usuario)mapSession.get(Constantes.SESSION_USUARIO);
+                if (user!=null){
+                    totalComp=totalCompartidos(user.getIdusuario());
+                }
+		Object obj=ServletActionContext.getRequest().getSession().getAttribute("UsuarioCompartido");
+		if(obj!=null){
+			Usuario propietario=(Usuario)obj;
+			objT.setRemitente(propietario);	
+		}else{
+			objT.setRemitente(objUsuario);
+		}
+		
+		objT.setCompartido(totalComp==0?null:objUsuario);
+		
+		objT.setDestinatario(objD.getPropietario());
+		objT.setDocumento(objD);
+		objT.setIdproceso(objD.getExpediente().getProceso());
+		objT.setAccion(objD.getAccion());
+		objT.setNroregistro((objMT==null) ? 1 : objMT.getNroregistro()+1);
+		if(copiarasuntodocumento){
+			objT.setAsunto(objD.getAsunto()); 
+		}else{
+			objT.setAsunto(objD.getExpediente().getAsunto());
+		}
+	
+		objT.setContenido(objD.getExpediente().getContenido());
+		objT.setObservacion(objD.getObservacion());
+		objT.setFechacreacion(new Date());
+	      
+		SimpleDateFormat sdfMes=new SimpleDateFormat("MM");
+		Integer fechacreacionmonth=Integer.parseInt(sdfMes.format(objT.getFechacreacion()));
+		objT.setFechacreacionmonth(fechacreacionmonth);
+		SimpleDateFormat sdfAnio=new SimpleDateFormat("yyyy");
+		Integer fechacreacionyear=Integer.parseInt(sdfAnio.format(objT.getFechacreacion()));
+		objT.setFechacreacionyear(fechacreacionyear);
+		
+		if(copiarfechaLimite){
+			objT.setFechalimiteatencion( objD.getFechaLimiteAtencion()  ) ;
+		}            
+	      
+		return getDao().saveTrazabilidadDocumento(objT);
+	}
+
+	@SuppressWarnings("unused")
+	@Transactional
+	public Trazabilidaddocumento saveTrazabilidadDocumento(Documento objD, Usuario objUsuario,Integer iPlazoDia,Integer iPlazoHora,String fechaLimiteAtencion, String asunto, String contenido, String[] acciones, String nombrePC, Boolean horarioPermitido,String sinPlazo) {
+		log.debug("-> [Service] TrazabilidaddocumentoService - saveTrazabilidadDocumento():Trazabilidaddocumento ");
+		
+		Trazabilidaddocumento objMT = this.findByMaxNroRegistro(objD.getIdDocumento(), objD.getAccion().getNombre(), null, null);
+		Trazabilidaddocumento objT = new Trazabilidaddocumento();
+
+		Integer totalComp=0;
+		Map<String,Object> mapSession=ActionContext.getContext().getSession();
+		Usuario user=(Usuario)mapSession.get(Constantes.SESSION_USUARIO);
+		totalComp=totalCompartidos(user.getIdusuario());
+		/*Object obj=ServletActionContext.getRequest().getSession().getAttribute("UsuarioCompartido");
+		if(obj!=null){
+			Usuario propietario=(Usuario)obj;
+			objT.setRemitente(propietario);	
+		}else{
+			objT.setRemitente(objUsuario);
+		}*/
+		objT.setRemitente(objUsuario);
+		objT.setCompartido(totalComp==0?null:objUsuario);     
+		
+      objT.setDestinatario(objD.getPropietario());
+      objT.setDocumento(objD);
+      objT.setIdproceso(objD.getExpediente().getProceso());
+      objT.setAccion(objD.getAccion());
+      objT.setNroregistro((objMT == null) ? 1 : objMT.getNroregistro() + 1);
+      objT.setNombrePC(nombrePC);
+      
+      log.debug("asunto ["+asunto+"]"+asunto.length());
+      log.debug("contenido ["+contenido+"]"+contenido.length());
+
+      if(acciones != null){
+    	  List<Proveido> proveidos = new ArrayList<Proveido>();
+    	  String txtAdicional = "El documento ha sido transferido para que se realicen las siguientes acciones: <br /><ul>";
+    	  
+    	  for(String id : acciones){
+    		  try{
+    			  Proveido proveido = proveidoDAO.buscarPorId(Integer.parseInt(id));
+    			  proveidos.add(proveido);
+    			  
+    			  txtAdicional += "<li>"+proveido.getNombre()+"</li>";
+    			  
+    		  }catch(NumberFormatException e){
+    			  log.debug(e.getMessage());
+    		  }
+    	  }
+    	  
+    	  txtAdicional += "</ul>";
+    	  
+    	  if(contenido != null){
+    		  contenido = txtAdicional + contenido;
+    	  }else{
+    		  contenido = txtAdicional;
+    	  }
+    	  
+    	  objT.setProveidos(proveidos);
+      }
+      
+      if(asunto!=null){
+    	  objT.setAsunto(asunto.length() > 500 ? asunto.substring(0,498) : asunto);
+      }else{
+    	  objT.setAsunto(objD.getExpediente().getAsunto());
+      }
+      if(contenido!=null){
+    	  objT.setContenido(contenido.length() > 4000 ? contenido.substring(0, 4998) : contenido);
+      }else{
+    	  objT.setContenido(objD.getExpediente().getContenido());
+      }
+      if(objD.getAccion().getNombre().equals(Constantes.ACCION_DERIVAR2)){
+    	  objT.setVerSeguimiento(Constantes.VER_SEGUIMIENTO_SI.charAt(0)); 
+      }      
+      objT.setObservacion(objD.getObservacion());
+      
+      //objT.setFechacreacion(new Date());  
+      Date fechaFueraHorario = new Date();	
+		if(horarioPermitido == false){			
+	        log.debug("Transferir Masivamente: saveTrazabilidadDocumento  fuera de horario ");
+	        log.debug("Destinatario objD.getPropietario().getIdusuario().intValue()"+objD.getPropietario().getIdusuario().intValue());
+		    fechaFueraHorario = fechaLimite.fechaFueraHorarioHabil(fechaFueraHorario,objD.getPropietario().getIdusuario().intValue());
+		    objT.setFechacreacion(fechaFueraHorario);
+	     }else{
+	    	 objT.setFechacreacion(fechaFueraHorario);
+	     }
+		
+	  SimpleDateFormat sdfMes=new SimpleDateFormat("MM");
+      Integer fechacreacionmonth=Integer.parseInt(sdfMes.format(objT.getFechacreacion()));
+      objT.setFechacreacionmonth(fechacreacionmonth);
+      SimpleDateFormat sdfAnio=new SimpleDateFormat("yyyy");
+      Integer fechacreacionyear=Integer.parseInt(sdfAnio.format(objT.getFechacreacion()));
+      objT.setFechacreacionyear(fechacreacionyear);
+      aplicarPlazosADocumento(objT, iPlazoDia, iPlazoHora, fechaLimiteAtencion,sinPlazo );
+      log.debug("objT.getFechacreacionyear()"+objT.getFechacreacionyear()+ "objT.getFechalimiteatencion()"+objT.getFechalimiteatencion());
+      /*if (objEtapa!=null)
+    	  objT.setIdetapa(objEtapa);*/
+            
+      return getDao().saveTrazabilidadDocumento(objT);
+   }
+	
+	@SuppressWarnings("unused")
+	@Transactional
+	public Trazabilidaddocumento saveTrazabilidadDocumentoMasivos(Documento objD, Usuario objUsuario,Integer iPlazoDia,Integer iPlazoHora,
+			String fechaLimiteAtencion, String asunto, String contenido, Etapa objEtapa,Accion accionOpt,Usuario destinatario) {
+		log.debug("-> [Service] TrazabilidaddocumentoService - saveTrazabilidadDocumentoMasivos():Trazabilidaddocumento ");
+		
+		Trazabilidaddocumento objMT = this.findByMaxNroRegistro(objD.getIdDocumento(), objD.getAccion().getNombre(), null, null);
+      Trazabilidaddocumento objT = new Trazabilidaddocumento();
+  	  
+      Integer totalComp=0;
+  	  
+	  totalComp=totalCompartidos(objUsuario.getIdusuario());
+	  objT.setRemitente(objUsuario);
+	  objT.setCompartido(totalComp==0?null:objUsuario);     
+      objT.setDestinatario(destinatario);
+      objT.setDocumento(objD);
+      objT.setIdproceso(objD.getExpediente().getProceso());
+      objT.setAccion(accionOpt);
+      objT.setNroregistro((objMT == null) ? 1 : objMT.getNroregistro() + 1);
+
+      log.debug("asunto ["+asunto+"]"+asunto.length());
+      log.debug("contenido ["+contenido+"]"+contenido.length());
+
+      if(asunto!=null){
+    	  objT.setAsunto(asunto);
+      }else{
+    	  objT.setAsunto(objD.getExpediente().getAsunto());
+      }
+      if(contenido!=null){
+    	  objT.setContenido(contenido);
+      }else{
+    	  objT.setContenido(objD.getExpediente().getContenido());
+      }
+      if(objD.getAccion().getNombre().equals(Constantes.ACCION_DERIVAR2)){
+    	  objT.setVerSeguimiento(Constantes.VER_SEGUIMIENTO_SI.charAt(0)); 
+      }      
+      objT.setObservacion(objD.getObservacion());
+      objT.setFechacreacion(new Date());   
+      
+	  SimpleDateFormat sdfMes=new SimpleDateFormat("MM");
+      Integer fechacreacionmonth=Integer.parseInt(sdfMes.format(objT.getFechacreacion()));
+      objT.setFechacreacionmonth(fechacreacionmonth);
+      SimpleDateFormat sdfAnio=new SimpleDateFormat("yyyy");
+      Integer fechacreacionyear = Integer.parseInt(sdfAnio.format(objT.getFechacreacion()));
+      objT.setFechacreacionyear(fechacreacionyear);
+      
+      aplicarPlazosADocumento(objT, iPlazoDia, iPlazoHora, fechaLimiteAtencion,"revisar sin plazo?"); 
+      if (objEtapa!=null)
+    	  objT.setIdetapa(objEtapa);
+      
+      return getDao().saveTrazabilidadDocumento(objT);
+   }	
+	@Transactional
+	public Trazabilidaddocumento saveTrazabilidadDocumento(Trazabilidaddocumento td){
+		log.debug("-> [Service] TrazabilidaddocumentoService - saveTrazabilidadDocumento():Trazabilidaddocumento ");
+		
+		return  getDao().saveTrazabilidadDocumento(td);  
+	}
+	
+	public List<Trazabilidaddocumento> getListTrazabilidadExpedienteByIdExpediente(Integer expedienteId){ 
+		log.debug("-> [Service] TrazabilidaddocumentoService - getListTrazabilidadExpedienteByIdExpediente():List<Trazabilidaddocumento> ");
+		
+		return dao.getListTrazabilidadExpedienteByIdExpediente(expedienteId) ;
+	}
+	
+	public Trazabilidaddocumento findTrabilidadbyId(Integer  idtrazabilidaddocumento) {
+		log.debug("-> [Service] TrazabilidaddocumentoService - findTrabilidadbyId():Trazabilidaddocumento ");
+		
+		return getDao().findTrabilidadbyId(idtrazabilidaddocumento);
+	}
+	
+	 
+	@Override
+	@Transactional  
+	public void cambiarFechaLimite(Integer idtrazabilidaddocumento,Date nuevafecha){
+		log.debug("-> [Service] TrazabilidaddocumentoService - cambiarFechaLimite():void ");
+		
+		Trazabilidaddocumento trazabilidad = getDao().findTrabilidadbyId(idtrazabilidaddocumento);
+		log.debug("idtrazabilidaddocumento [" + idtrazabilidaddocumento + "]");
+		
+		SimpleDateFormat sd1 = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat sd2 = new SimpleDateFormat("HH:mm");
+		SimpleDateFormat sd3 = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		try {
+		nuevafecha = sd3.parse(sd1.format(nuevafecha)+" "+sd2.format(trazabilidad.getFechalimiteatencion()) );
+      log.debug("nuevafecha [" + nuevafecha + "]");
+		}catch (Exception ex) {
+                    log.error(ex.getMessage(),ex);
+		}		
+		trazabilidad.setFechalimiteatencion(nuevafecha);  
+		
+		List <Trazabilidaddocumento> trExpList = getDao().getListTrazabilidadExpedienteByIdExpediente(trazabilidad.getDocumento().getExpediente().getIdexpediente()) ;
+		Trazabilidaddocumento last = trExpList.get(trExpList.size()-1) ;
+		dao.saveTrazabilidadDocumento(trazabilidad);
+		if(last.getDestinatario().getIdusuario().intValue() == last.getDocumento().getPropietario().getIdusuario().intValue() ){
+			Documento doc = trazabilidad.getDocumento() ; 
+			doc.setFechaLimiteAtencion( nuevafecha ) ; 
+			documentoDAO.saveDocumento( doc ) ;
+		}
+		
+	}
+
+	public Trazabilidaddocumento aplicarPlazosADocumento(Trazabilidaddocumento objT,Integer iPlazoDia,Integer iPlazoHora,String fechaLimiteAtencion, String sinPlazo){
+		//corregido wcarrasco;	
+		log.debug("-> [Service] TrazabilidaddocumentoService - aplicarPlazosADocumento():Trazabilidaddocumento ");
+		
+		Date dNuevaFechaLimiteAtencion = new Date();
+		
+		SimpleDateFormat formatDate=new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		log.debug("Plazo Dia ["+iPlazoDia+"] Hora ["+iPlazoHora+"] Fecha Limite Atencion ["+fechaLimiteAtencion+"]");
+
+		//if(fechaLimiteAtencion!=null){
+		if(sinPlazo.equals(Constantes.SIN_PLAZO)){
+			log.debug("transferir sin Plazo");
+			objT.setPlazo(null);
+			objT.setFechalimiteatencion(null);
+			
+		}else{
+			if(!StringUtils.isEmpty(fechaLimiteAtencion)){
+				log.debug("calculo con fecha ");
+				Date fechaActual=new Date(0);
+				objT.setPlazo(null);
+				Calendar base=Calendar.getInstance();
+				try{
+					fechaActual = formatDate.parse(fechaLimiteAtencion + " " + base.get(Calendar.HOUR_OF_DAY) + ":" + base.get(Calendar.MINUTE) + ":" + base.get(Calendar.SECOND));			
+					dNuevaFechaLimiteAtencion = fechaLimite.calcularFechaLimite(fechaActual,objT.getDestinatario().getIdusuario());
+					objT.setFechalimiteatencion(dNuevaFechaLimiteAtencion);
+					
+				}catch(ParseException e){
+					log.error("Error parseando la fecha: "+fechaLimite.toString(),e);
+				}
+			}else{
+				log.debug("calculo con horas");
+				if(iPlazoDia==null)
+					iPlazoDia=0;
+				if(iPlazoHora==null)
+					iPlazoHora=0;
+				dNuevaFechaLimiteAtencion=fechaLimite.calcularFechaLimite(iPlazoDia,iPlazoHora,objT.getDestinatario().getIdusuario());
+				objT.setPlazo(iPlazoDia*Constantes.NUMERO_HORAS_LABORABLESXDIA+iPlazoHora);
+				objT.setFechalimiteatencion(dNuevaFechaLimiteAtencion);
+			}// fin de calculo por dias
+		}
+			
+		//}
+		return objT;
+	}
+
+	@Transactional
+	public Trazabilidaddocumento guardarTrazabilidad(Documento documento,Usuario remitente,Usuario destinatario,String accion,String asunto,String contenido, String nombrePC){
+		log.debug("-> [Service] TrazabilidaddocumentoService - guardarTrazabilidad():Trazabilidaddocumento ");
+		
+		log.debug(accion);
+		Accion laAccion=accionDao.findByNombre(accion);
+		return guardarTrazabilidad(documento,remitente,destinatario,laAccion,asunto,contenido, nombrePC);
+	}
+	
+	
+	public Trazabilidaddocumento saveTrazabilidadDocumento(Documento objD,Usuario objUsuario){
+		log.debug("-> [Service] TrazabilidaddocumentoService - saveTrazabilidadDocumento():Trazabilidaddocumento ");
+		
+		// Trazabilidaddocumento objMT =
+		// this.findByMaxNroRegistro(objD.getIdDocumento(),null,
+		// objD.getAccion().getIdAccion(),null);
+		Trazabilidaddocumento objMT=this.findByMaxNroRegistro(objD.getIdDocumento(),null,null,null);
+		Trazabilidaddocumento objT=new Trazabilidaddocumento();
+
+		Integer totalComp=0;
+		Map<String,Object> mapSession=ActionContext.getContext().getSession();
+		Usuario user=(Usuario)mapSession.get(Constantes.SESSION_USUARIO);
+		totalComp=totalCompartidos(user.getIdusuario());
+		Object obj=ServletActionContext.getRequest().getSession().getAttribute("UsuarioCompartido");
+		if(obj!=null){
+			Usuario propietario=(Usuario)obj;
+			objT.setRemitente(propietario);	
+		}else{
+			objT.setRemitente(objUsuario);
+		}
+		objT.setCompartido(totalComp==0?null:objUsuario);
+		
+		objT.setDestinatario(objD.getPropietario());
+		objT.setDocumento(objD);
+		objT.setIdproceso(objD.getExpediente().getProceso());
+		objT.setAccion(objD.getAccion());
+		objT.setNroregistro((objMT == null) ? 1 : objMT.getNroregistro() + 1);
+		objT.setAsunto(objD.getExpediente().getAsunto());
+		objT.setContenido(objD.getExpediente().getContenido());
+		objT.setObservacion(objD.getObservacion());
+		objT.setFechacreacion(new Date());
+
+		SimpleDateFormat sdfMes=new SimpleDateFormat("MM");
+		Integer fechacreacionmonth=Integer.parseInt(sdfMes.format(objT.getFechacreacion()));
+		objT.setFechacreacionmonth(fechacreacionmonth);
+		SimpleDateFormat sdfAnio=new SimpleDateFormat("yyyy");
+		Integer fechacreacionyear=Integer.parseInt(sdfAnio.format(objT.getFechacreacion()));
+		objT.setFechacreacionyear(fechacreacionyear);
+
+		return getDao().saveTrazabilidadDocumento(objT);
+	}
+
+	@Override
+	public Trazabilidaddocumento encontrarUltimaTrazabilidadPorDocumento(int idDocumento){
+		log.debug("-> [Service] TrazabilidaddocumentoService - encontrarUltimaTrazabilidadPorDocumento():Trazabilidaddocumento ");
+		
+		return dao.encontrarUltimaTrazabilidadPorDocumento(idDocumento);
+	}
+
+	@Override
+	public Trazabilidaddocumento getTrazabilidadAnterior(Trazabilidaddocumento trazabilidad){
+		log.debug("-> [Service] TrazabilidaddocumentoService - getTrazabilidadAnterior():Trazabilidaddocumento ");
+		
+		return dao.getTrazabilidadAnterior(trazabilidad);
+	}
+
+	@Transactional
+	@Override
+	public Trazabilidaddocumento guardarTrazabilidad(Documento documento,Usuario remitente,Usuario destinatario,Accion accion,String asunto,String contenido, String nombrePC){
+		log.debug("-> [Service] TrazabilidaddocumentoService - guardarTrazabilidad():Trazabilidaddocumento ");
+		
+		Trazabilidaddocumento ultima=dao.findByMaxNroRegistro(documento.getIdDocumento(),null,null);
+		Trazabilidaddocumento trazabilidad=new Trazabilidaddocumento();
+		trazabilidad.setAsunto(asunto);
+		trazabilidad.setContenido(contenido);
+		
+		trazabilidad.setDocumento(documento);
+		Integer totalComp=0;
+		Map<String,Object> mapSession=ActionContext.getContext().getSession();
+		Usuario user=(Usuario)mapSession.get(Constantes.SESSION_USUARIO);
+		totalComp=totalCompartidos(user.getIdusuario());
+		/*Object obj=ServletActionContext.getRequest().getSession().getAttribute("UsuarioCompartido");
+		if(obj!=null){
+			Usuario propietario=(Usuario)obj;
+			trazabilidad.setRemitente(propietario);	
+		}else{*/
+			trazabilidad.setRemitente(remitente);
+		//}
+		
+		trazabilidad.setCompartido(totalComp==0?null:remitente);	
+		trazabilidad.setNombrePC(nombrePC);
+		trazabilidad.setDestinatario(destinatario);
+		trazabilidad.setAccion(accion);
+		trazabilidad.setFechacreacion(Calendar.getInstance().getTime());
+		trazabilidad.setIdproceso(documento.getExpediente().getProceso());
+		trazabilidad.setFechalimiteatencion(documento.getFechaLimiteAtencion());
+		trazabilidad.setNroregistro(ultima == null ? 1 : ultima.getNroregistro() + 1);
+		
+		
+		if(Constantes.ACCION_RECHAZAR.equals(accion.getNombre())){
+			trazabilidad.setVerSeguimiento(Constantes.VER_SEGUIMIENTO_SI.charAt(0));
+			ultima.setVerSeguimiento(Constantes.VER_SEGUIMIENTO_NO.charAt(0));
+			dao.saveTrazabilidadDocumento(ultima);
+		}		
+		return dao.saveTrazabilidadDocumento(trazabilidad);
+	}
+
+	@Override
+	public Trazabilidaddocumento guardarTrazabilidad(Documento documento,Usuario remitente,Usuario destinatario,Accion accion, String nombrePC){
+		log.debug("-> [Service] TrazabilidaddocumentoService - guardarTrazabilidad():Trazabilidaddocumento ");
+		
+		return guardarTrazabilidad(documento,remitente,destinatario,accion,documento.getAsunto(),documento.getContenido(), nombrePC);
+	}
+
+	@SuppressWarnings("static-access")
+	public List<Item> filtrarReporteDocumentos(String sFechaDesde, String sFechaHasta, String sDiasReporte, Integer idSede, Integer idProceso){
+		log.debug("-> [Service] TrazabilidaddocumentoService - filtrarReporteDocumentos():List<Item> ");
+		
+		List<String> nombreAcciones = new ArrayList<String>();
+		nombreAcciones.add(Constantes.ACCION_APROBAR_QAS);
+
+		Calendar calendar = GregorianCalendar.getInstance();
+		SimpleDateFormat sdHora=new SimpleDateFormat("HH");
+		SimpleDateFormat sdFechaAux=new SimpleDateFormat("yyyyMMdd");
+		SimpleDateFormat sdFecha=new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat sdNombreMes = new SimpleDateFormat("MM/yyyy");
+
+		List<Item> listItem = new ArrayList<Item>();
+		try{
+
+			Date diaInicio=sdFecha.parse(sFechaDesde);
+			calendar.setTime(diaInicio);
+			Integer diaFinal = calendar.getActualMaximum(GregorianCalendar.DAY_OF_MONTH);
+
+			calendar.set(calendar.get(calendar.YEAR), calendar.get(calendar.MONTH), 1);
+			String sFechaDesdeAux =  sdFecha.format(calendar.getTime());
+			calendar.set(calendar.get(calendar.YEAR), calendar.get(calendar.MONTH), diaFinal);
+			String sFechaHastaAux = sdFecha.format(calendar.getTime());
+
+			List<Object[]> listTrazabilidadAux= dao.filtrarReporteDocumentos(nombreAcciones, sFechaDesdeAux, sFechaHastaAux, idSede, idProceso);
+			int totalFoliosMensual = 0;
+			for(int i=0; i<listTrazabilidadAux.size(); i++){
+				totalFoliosMensual += Integer.valueOf(listTrazabilidadAux.get(i)[3].toString());
+			}
+			Item item=new Item();
+			item.setHorarioReporte("Total Folios: "+sdNombreMes.format(diaInicio).toString());
+			item.setReporteMP(totalFoliosMensual);
+			listItem.add(item);
+
+			nombreAcciones.add(Constantes.ACCION_DIGITALIZAR);
+			nombreAcciones.add(Constantes.ACCION_REGISTRAR);
+			List<Object[]> listTrazabilidad = dao.filtrarReporteDocumentos(nombreAcciones, sFechaDesde, sFechaHasta, idSede, idProceso);
+
+			calendar = new GregorianCalendar();
+			Accion accionMP = accionDao.buscarObjPor(Constantes.ACCION_REGISTRAR);
+			Accion accionDIG = accionDao.buscarObjPor(Constantes.ACCION_DIGITALIZAR);
+			Accion accionQAS = accionDao.buscarObjPor(Constantes.ACCION_APROBAR_QAS);
+
+			Parametro p=this.parametroDAO.findByTipo(Constantes.INICIOHORARIO).get(0);
+			int horainicio=new Integer(p.getValor());
+			p=this.parametroDAO.findByTipo(Constantes.FINHORARIO).get(0);
+			int horafin=new Integer(p.getValor());
+			log.debug("Fecha desde "+sFechaDesde);
+			log.debug("Fecha hasta "+sFechaHasta);
+
+			String[] listDias = new String[Integer.valueOf(sDiasReporte)];
+
+			for (int i=0; i<listDias.length; i++){
+				listDias[i]= sdFechaAux.format(diaInicio);
+				calendar.setTime(diaInicio);
+				calendar.add(Calendar.DATE, 1);
+				diaInicio = calendar.getTime();
+			}
+			for (int i=0 ; i<listDias.length; i++){
+				item=new Item();
+				item.setHorarioReporte("Reporte Documentos: "+ sdFecha.format(sdFechaAux.parse(listDias[i])));
+				listItem.add(item);
+				int totalMP=0;
+				int totalDIG=0;
+				int totalQAS=0;
+				int totalFolios=0;
+				for(int e=horainicio;e<=horafin;e++){
+					int reportesMP=0;
+					int reportesDIG=0;
+					int reportesQAS=0;
+					int reportesFolios=0;
+
+					item=new Item();
+					//Timestamp hora=new Timestamp(sdHora.parse((e<10 ? "0"+e : ""+e)).getTime());
+					item.setHorarioReporte(e+":00 - "+ (e+1)+":00");
+					for(Object[] objTrazabilidad : listTrazabilidad){
+						int horadoc=new Integer(sdHora.format(objTrazabilidad[2])).intValue();
+						String fechaDoc= sdFechaAux.format(objTrazabilidad[2]);
+						if(horadoc==e && fechaDoc.equals(listDias[i])){
+							if(objTrazabilidad[1].toString().equals(accionMP.getIdAccion().toString())){
+								reportesMP++;
+							}
+							if(objTrazabilidad[1].toString().equals(accionDIG.getIdAccion().toString())){
+								reportesDIG++;
+							}
+							if(objTrazabilidad[1].toString().equals(accionQAS.getIdAccion().toString())){
+								reportesQAS++;
+								reportesFolios += Integer.valueOf(objTrazabilidad[3].toString());
+							}
+						}
+					}
+					item.setReporteMP(reportesMP);
+					item.setReporteDIG(reportesDIG);
+					item.setReporteQAS(reportesQAS);
+					item.setReporteFolios(reportesFolios);
+					totalMP= totalMP+reportesMP;
+					totalDIG= totalDIG+reportesDIG;
+					totalQAS= totalQAS+reportesQAS;
+					totalFolios= totalFolios+reportesFolios;
+					listItem.add(item);
+				}
+				item=new Item();
+				item.setHorarioReporte("TOTAL");
+				item.setReporteMP(totalMP);
+				item.setReporteDIG(totalDIG);
+				item.setReporteQAS(totalQAS);
+				item.setReporteFolios(totalFolios);
+				listItem.add(item);
+			}
+		}catch(Exception e){
+			log.error(e.getCause());
+		}
+		return listItem;
+	}
+	
+	public List<Integer> findLstUsuarioDelProcAcc3(Documento d){
+		log.debug("-> [Service] TrazabilidaddocumentoService - findLstUsuarioDelProcAcc3():List<Integer> ");
+		
+		return dao.findLstUsuarioDelProcAcc3(d);
+	}
+
+	public List<Integer> findLstUsuarioDelProcAcc2(Proceso p){
+		log.debug("-> [Service] TrazabilidaddocumentoService - findLstUsuarioDelProcAcc2():List<Integer> ");
+		
+		return dao.findLstUsuarioDelProcAcc2(p);
+	}
+
+	public Integer totalCompartidos(int idUsuarioLogeado){
+		log.debug("-> [Service] TrazabilidaddocumentoService - totalCompartidos():Integer ");
+		
+		return dao.totalUsuarioCompartidos(idUsuarioLogeado);
+	}
+	
+	public Integer totalCompartidos(int idUsuarioLogeado,int idPropietarioDoc){
+		log.debug("-> [Service] TrazabilidaddocumentoService - totalCompartidos():Integer ");
+		
+		return dao.totalUsuarioCompartidos(idUsuarioLogeado,idPropietarioDoc);
+	}
+
+	public boolean esPrimeraEtapaExpediente(Integer idExpediente){
+		log.debug("-> [Service] TrazabilidaddocumentoService - esPrimeraEtapaExpediente():boolean ");
+		
+		Double maximoNumeroTrazas = dao.ratioTrazabilidadDocumento(idExpediente);
+		return maximoNumeroTrazas > 1d ? false : true;
+	}
+
+	// ////////////////////////////////
+	// Getters and Setters //
+	// ////////////////////////////////
+	public TrazabilidaddocumentoDAO getDao(){
+		return dao;
+	}
+
+	public void setDao(TrazabilidaddocumentoDAO dao){
+		this.dao=dao;
+	}
+
+	public FechaLimite getFechaLimite(){
+		return fechaLimite;
+	}
+
+	public void setFechaLimite(FechaLimite fechaLimite){
+		this.fechaLimite=fechaLimite;
+	}
+
+	public void setDaoauditoria(AuditoriaDAO daoauditoria){
+		this.daoauditoria=daoauditoria;
+	}
+
+	public AuditoriaDAO getDaoauditoria(){
+		return daoauditoria;
+	}
+	
+	public ProveidoDAO getProveidoDAO() {
+		return proveidoDAO;
+	}
+
+	public void setProveidoDAO(ProveidoDAO proveidoDAO) {
+		this.proveidoDAO = proveidoDAO;
+	}
+	
+	public void setDocumentoDAO(DocumentoDAO documentoDAO){
+		this.documentoDAO=documentoDAO;
+	}
+
+	public ParametroDAO getParametroDAO() {
+		return parametroDAO;
+	}
+
+	public void setParametroDAO(ParametroDAO parametroDAO) {
+		this.parametroDAO = parametroDAO;
+	}
+	
+	public void setAccionDao(AccionDAO accionDao){
+		this.accionDao=accionDao;
+	}
+
+	@Override
+	public Trazabilidaddocumento updateTrazabilidadDocumento(
+			Trazabilidaddocumento objT) {
+		
+		return dao.updateTrazabilidadDocumento(objT);
+	}
+
+}

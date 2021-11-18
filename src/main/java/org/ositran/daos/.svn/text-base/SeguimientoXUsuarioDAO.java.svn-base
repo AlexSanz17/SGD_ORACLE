@@ -1,0 +1,18 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.FilaBandejaUF;
+import com.btg.osinergmin.siged.domain.SeguimientoXUsuario;
+
+public interface SeguimientoXUsuarioDAO {
+	SeguimientoXUsuario guardarSeguimiento(SeguimientoXUsuario seguimiento);
+	
+	List<SeguimientoXUsuario> buscarSeguimientoXUsuario(SeguimientoXUsuario seguimiento);
+	
+	void eliminarSeguimiento(SeguimientoXUsuario seguimiento);
+	
+	List<FilaBandejaUF> buscarGridSeguimiento(Integer idUsuario);
+	
+	String buscarAreaRemitente(String idRemitente);
+}

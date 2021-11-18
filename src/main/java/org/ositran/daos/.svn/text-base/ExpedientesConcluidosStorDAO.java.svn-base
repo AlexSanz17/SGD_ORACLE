@@ -1,0 +1,12 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.ExpedientesConcluidosStor;
+
+public interface ExpedientesConcluidosStorDAO {
+
+	public abstract List<ExpedientesConcluidosStor> listarTodo();
+
+	public abstract List<ExpedientesConcluidosStor> generarLista(String fechaDesde, String fechaHasta);
+}

@@ -1,0 +1,9 @@
+package org.osinerg.daos;
+
+import com.btg.osinergmin.siged.domain.Resueltoxdocumento;
+
+public interface ResueltoxdocumentoDAO {
+
+	void saveObject(Resueltoxdocumento resueltoxdocumento);
+
+}

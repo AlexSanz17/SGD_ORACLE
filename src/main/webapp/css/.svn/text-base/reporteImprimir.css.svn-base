@@ -1,0 +1,28 @@
+@CHARSET "UTF-8";
+
+body {
+	background: none;
+	font-family:verdana;
+}
+
+h1.TxtTitulo {
+	background-color: #FFFFFF;
+	color: #000000;
+	text-align: center;
+	font-size: 16pt;
+}
+
+tr.cabecera {
+	background-color: #000000;
+	color: #FFFFFF;
+	text-align: center;
+}
+
+td.cent{
+	text-align: center;
+}
+
+table.tableForm{
+	border-collapse: collapse;
+	font-size:10pt;
+}

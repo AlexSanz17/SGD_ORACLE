@@ -1,0 +1,25 @@
+package org.osinerg.services;
+
+import java.util.Date;
+import java.util.List;
+import org.osinerg.utils.Busdiafestivo;
+
+import com.btg.osinergmin.siged.domain.DiaFestivo;
+
+
+public interface DiafestivoService {
+
+   public List<DiaFestivo> ViewAll();
+
+   public String saveDiafestivo(String strregion,String stranio,String strmes,String fech,String Strmotivo, Integer iIdMes,String sUsuarioSesion);
+
+   public List<Busdiafestivo> findlisdiafestivo(String Nomregion);
+   
+   public void deleteDiafestivo(int iddiafestivo);
+   
+   public List<DiaFestivo> getDiasFestivosPorUsuario(int idUsuario);
+   
+   public long tiempoTranscurrido(Date fechaDesde, Date fechaHasta, String nomreg);
+   
+   public void setIntervaloFeriados(Date fechaDesde, Date fechaHasta, String nomreg);
+}

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dwr PUBLIC "-//GetAhead Limited//DTD Direct Web Remoting 2.0//EN" "http://getahead.org/dwr/dwr20.dtd">
+<dwr>
+	<init></init>	
+	<allow>
+		<create creator="new" javascript="toolDwr">
+			<param name="class" value="org.ositran.ajax.autocomplete.toolDwr" />
+		</create>
+		<convert match="org.ositran.pojos.Campo" converter="bean" />
+	</allow>
+	<allow>
+		<create creator="new" javascript="Motivo" scope="script">
+			<param name="class" value="org.ositran.ajax.dwr.Motivo" />
+		</create>
+		<convert match="org.ositran.ajax.dwr.Submotivo" converter="bean" />
+	</allow>
+	<allow>
+		<create creator="new" javascript="Suministro" scope="script">
+			<param name="class" value="org.ositran.ajax.dwr.SuministroSet" />
+		</create>
+		<convert match="org.ositran.ajax.dwr.Suministro" converter="bean" />
+	</allow>
+	<allow>
+		<create creator="spring" javascript="Tipoenvio">
+			<param name="beanName" value="tipoenvioService" />
+			<include method="viewcodMensajeria" />
+		</create>
+		<convert match="org.ositran.pojos.Tipoenvio" converter="bean" />
+	</allow>
+	<allow>
+		<create creator="spring" javascript="Empresadestino">
+			<param name="beanName" value="empresadestinoService" />
+			<include method="Viewcod" />
+		</create>
+		<convert match="org.ositran.pojos.Empresadestino" converter="bean" />
+	</allow>
+	<allow>
+		<create creator="spring" javascript="Courier">
+			<param name="beanName" value="courrierService" />
+			<include method="viewcod" />
+		</create>
+		<convert match="org.ositran.pojos.Courier" converter="bean" />
+	</allow>
+
+	<allow>
+		<create creator="spring" javascript="UsuarioService">
+			<param name="beanName" value="usuarioService" />
+			<include method="getUsuarioByRolAjax" />
+			<include method="getUsuariosList" />
+		</create>
+		<convert match="org.ositran.pojos.Usuario" converter="bean" />
+	</allow>
+
+	<allow>
+		<create creator="spring" javascript="MotivoService">
+			<param name="beanName" value="motivoService" />
+			<include method="findAllAjax" />
+		</create>
+		<convert match="org.ositran.pojos.Motivo" converter="bean" />
+	</allow>
+
+	<allow>
+		<create creator="spring" javascript="SubMotivoService">
+			<param name="beanName" value="subMotivoService" />
+			<include method="findAllAjax" />
+		</create>
+		<convert match="org.ositran.pojos.Submotivo" converter="bean" />
+	</allow>
+</dwr>

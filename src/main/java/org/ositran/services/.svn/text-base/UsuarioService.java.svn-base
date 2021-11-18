@@ -1,0 +1,73 @@
+package org.osinerg.services;
+
+import java.util.List;
+import java.util.Map;
+import org.osinerg.dojo.tree.Nodo;
+
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.btg.osinergmin.siged.domain.seguridad.UsuarioSeguridad;
+
+public interface UsuarioService{
+
+	public Boolean esResponsableProceso(Integer iIdUsuario);
+
+	public boolean validarSesionEnIntalio(Map<String,Object> sesion);
+
+	public List<Nodo> getJerarquia();
+
+	public List<Usuario> findListByUsuarioFinal(char cUsuarioFinal);
+
+	public List<Usuario> findUsuariosByIdJefe(Integer iIdJefe);
+
+	public List<Usuario> getUsuarios();
+
+	public List<Usuario> getUsuarioList(String strRol);
+
+	List<Usuario> getDestinatariosXJerarquia(Usuario usuario);
+	
+	List<Usuario> findByApellidosNombresLike(String like);
+	
+	public Map<Integer,String> getMapByUsuarioFinal(char cUsuarioFinal);
+
+	public Map<Integer,String> getMapUsuarioFinalLeft(List<Usuario> lstContacto);
+
+	public Map<Integer,String> getMapUsuarioFinalRight(List<Usuario> lstContacto);
+
+	public Usuario findByUsuarioClave(String strUsuario,String strClave);
+
+	public Usuario findByIdUsuario(Integer iIdU);
+
+	public List<Usuario> findByRol(String strR);
+
+	public Usuario findByRolUnico(String rol);
+
+	public Usuario findByUsuario(String sUsuario,Integer iIdSede);
+	
+	public Usuario findByUsuario(String sUsuario);
+
+	public void saveUsuario(Usuario objUsuarioOld,Usuario objUsuarioNew,List<Integer> rolesUsuario,String sUsuarioSesion,String sTipoAuditoria,String usuarioAnterior);
+
+	public List<Usuario> findByParticipacionProceso(Proceso proceso);
+
+	public boolean esJefe(Usuario usuario);
+
+	public void sincronizarUsuariosSeguridad();
+
+	public void sincronizarUsuarioSeguridad(UsuarioSeguridad usuarioSeguridad);
+
+	public Usuario guardarUsuario(Usuario objUsuario);
+
+	public void guardarUsuariosLDAP();
+
+   public Map<String, Integer> resolveSomeResources(Usuario objUsuario, Map<String, Integer> mapRecurso);
+
+   public Usuario findObjectBy(String usuario, Character estado);
+
+   public Usuario guardarObj(Usuario objUsuario,List<Integer> lstAdministradorListaRight,List<Integer> lstParticipanteListaRight);
+
+   public List<Usuario> buscarUsuariosCompartidos(Integer id);
+   
+   public List<Usuario> findAllUF();
+   
+}

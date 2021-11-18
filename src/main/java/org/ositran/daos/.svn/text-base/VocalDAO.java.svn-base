@@ -1,0 +1,12 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Vocal;
+
+public interface VocalDAO {
+
+	   public Vocal findById(Integer idVocal);
+	   
+	   public List<Vocal> findAll();
+}

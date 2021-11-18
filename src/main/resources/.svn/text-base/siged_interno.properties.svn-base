@@ -1,0 +1,26 @@
+accion.derivar.id=2
+accion.rechazar.id=4
+
+# Alfresco
+alfresco.search.propertyname.nombre=cm:name
+alfresco.search.propertyname.titulo=cm:title
+alfresco.search.propertyname.autor=cm:author
+alfresco.search.propertyname.fechaCreacion=cm:created
+alfresco.search.propertyname.fechaModificacion=cm:modified
+alfresco.search.propertyname.numExpediente=sgd:numExpediente
+alfresco.search.propertyname.fechaCreacionExpediente=sgd:fechaCreacionExpediente
+alfresco.search.propertyname.idDocumento=sgd:idDocumento
+alfresco.search.propertyname.tipoDocumento=sgd:tipoDocumento
+alfresco.search.propertyname.numeroDocumento=sgd:numDocumento
+alfresco.search.propertyname.numeroFolios=sgd:numFolios
+alfresco.search.propertyname.fechaCreacionDocumento=sgd:fechaCreacionDocumento
+alfresco.search.propertyname.nroMesaPartes=sgd:nroMP
+alfresco.search.propertyname.nombreProceso=sgd:nombreProceso
+alfresco.search.propertyname.areaDestino=sgd:areaDestino
+alfresco.search.propertyname.destinatario=sgd:destinatario
+alfresco.search.propertyname.correntista=sgd:correntista
+alfresco.search.propertyname.tipoDocumentoTramitador=sgd:tipoDocumentoTram
+alfresco.search.propertyname.numeroDocumentoTramitador=sgd:numDocumentoTram
+alfresco.search.propertyname.razonSocialTramitador=sgd:razonSocialTram
+alfresco.search.propertyname.dirrecionTramitador=sgd:direccionTram
+alfresco.search.propertyname.direccionAlternaTramitador=sgd:direccionTram2

@@ -1,0 +1,89 @@
+package org.osinerg.daos;
+
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import com.btg.osinergmin.siged.domain.Numeracion;
+import com.btg.osinergmin.siged.domain.Unidad;
+
+@Repository
+public class NumeracionDAOImpl implements NumeracionDAO {
+
+   private EntityManager em;
+   private static Logger log=Logger.getLogger(NumeracionDAOImpl.class);
+   
+	
+   public Numeracion findByIdNumeracion(Integer idUnidad, Integer IdTipoDocumento) {
+	   try{
+      return (Numeracion) em.createNamedQuery("Numeracion.findByIdnumeracion")
+                            .setParameter("idunidad", idUnidad)
+                            .setParameter("idtipodocumento", IdTipoDocumento)
+                            .getSingleResult();
+	   }catch(Exception e){
+		   return null;
+	   }
+   }
+   
+   
+   public Numeracion findByIdNumeracionbyUnidad(Unidad idUnidad, Integer IdTipoDocumento) {
+	   
+	   Unidad unid = idUnidad ;
+	   Numeracion num =null ;  
+	   Integer idtipodoc = IdTipoDocumento ;  
+	   
+	   
+		while(unid != null&&num==null){
+			Integer idunidad=unid.getIdunidad();
+			try{
+				num=(Numeracion) em.createNamedQuery("Numeracion.findByIdnumeracion").setParameter("idunidad",idunidad).setParameter("idtipodocumento",idtipodoc).getSingleResult();
+				log.warn("Result for numeration idtipodoc:" + idtipodoc + " idunidad:" + idunidad); 
+			}catch(Exception ex){ 
+				log.warn("no result for numeration idtipodoc:" + idtipodoc + " idunidad:" + idunidad);
+				unid=unid.getDependencia();
+				log.info("switching to unid :" + (unid != null ? unid.getNombre() : "null"));
+			}
+			
+		}
+	    return  num; 
+	    
+	   }
+
+
+   public Numeracion actualizarObj(Numeracion objNumeracion) {
+      em.merge(objNumeracion);
+      em.flush();
+
+      return objNumeracion;
+   }
+
+   public Numeracion guardarObj(Numeracion objNumeracion) {
+      em.persist(objNumeracion);
+      em.flush();
+      em.refresh(objNumeracion);
+
+      return objNumeracion;
+   }
+
+   @SuppressWarnings("unchecked")
+   public List<Numeracion> findAll() {
+      return em.createNamedQuery("Numeracion.findAll").getResultList();
+   }
+
+   @PersistenceContext(unitName = "sigedPU")
+   public void setEm(EntityManager em) {
+      this.em = em;
+   }
+
+   public List<Numeracion> findAllUnidadAndTipoDoc(Integer idunidad,Integer idtipodoc){
+	@SuppressWarnings("unchecked")
+	List<Numeracion> listaNum =  em.createQuery("SELECT n FROM Numeracion n WHERE n.unidad.idunidad = :idunidad and n.tipodocumento.idtipodocumento = :idtipodocumento")
+	       		.setParameter("idunidad", idunidad)
+	       		.setParameter("idtipodocumento", idtipodoc)
+	       		.getResultList();
+	   return listaNum;
+   }
+   
+}

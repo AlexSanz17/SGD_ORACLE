@@ -1,0 +1,19 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import org.osinerg.dojo.BusquedaAvanzada;
+import org.osinerg.dojo.grid.Item;
+
+public interface ItemService {
+
+   public List<Item> findLstExpedienteBy(Integer iIdUsuario);
+
+   public List<Item> findLstInformativoBy(Integer iIdPropietario, Character cEstado);
+   
+   public List<Item> findLstInformativoBy(Integer iIdPropietario, BusquedaAvanzada objFiltro);
+
+   public List<Item> findLstNotificacionBy(Integer iIdPropietario, Character cEstado);
+
+   public List<Item> findLstDocumentoBy(Integer iIdExpediente);
+}

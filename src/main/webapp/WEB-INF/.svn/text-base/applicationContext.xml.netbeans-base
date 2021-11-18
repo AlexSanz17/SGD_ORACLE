@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
+
+    <!-- Datos de la conexion -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${bd.driver}" />
+        <property name="jdbcUrl" value="${bd.url}" />
+        <property name="user" value="${bd.usuario}" />
+        <property name="password" value="${bd.password}" />
+        <property name="acquireIncrement" value="${bd.acquireIncrement}" />
+        <property name="maxPoolSize" value="${bd.maxPoolSize}" />
+        <property name="minPoolSize" value="${bd.minPoolSize}" />
+        <property name="idleConnectionTestPeriod" value="${bd.idleConnectionTestPeriod}" />
+    </bean>
+
+    <!-- Datos de la conexion -->
+    <!-- 
+    <bean id="dataSourceSeguridad" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${bd.seguridad.driver}" />
+        <property name="jdbcUrl" value="${bd.seguridad.url}" />
+        <property name="user" value="${bd.seguridad.usuario}" />
+        <property name="password" value="${bd.seguridad.password}" />
+        <property name="acquireIncrement" value="${bd.seguridad.acquireIncrement}" />
+        <property name="maxPoolSize" value="${bd.seguridad.maxPoolSize}" />
+        <property name="minPoolSize" value="${bd.seguridad.minPoolSize}" />
+        <property name="idleConnectionTestPeriod" value="${bd.seguridad.idleConnectionTestPeriod}" />
+    </bean>
+ -->
+    <!-- Mapeo y creacion de sesiones -->
+    <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+	
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="sigedPU"/>
+        <property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="database" value="ORACLE" />
+                <property name="showSql" value="false" />
+                <property name="databasePlatform" value="org.hibernate.dialect.Oracle9iDialect" />
+            </bean>
+        </property>
+    </bean>
+	<!--
+    <bean id="entityManagerFactorySeguridad" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="seguridadPU"/>
+        <property name="dataSource" ref="dataSourceSeguridad" />
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="database" value="ORACLE" />
+                <property name="showSql" value="false" />
+                <property name="databasePlatform" value="org.hibernate.dialect.Oracle9iDialect" />
+            </bean>
+        </property>
+    </bean>
+    -->
+    <!-- Mapeo y creacion de sesiones -->
+
+
+    <!-- Archivos de Configuracion -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:siged/siged.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Manejador de transacciones -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    <!-- Manejador de transacciones -->
+
+    <import resource="application-service.xml" />
+    <import resource="application-rest.xml" />
+    <import resource="applicationContext-remote.xml" />
+
+</beans>

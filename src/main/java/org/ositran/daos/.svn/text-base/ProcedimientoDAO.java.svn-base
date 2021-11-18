@@ -1,0 +1,14 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Procedimiento;
+import com.btg.osinergmin.siged.domain.Unidadxprocedimiento;
+
+public interface ProcedimientoDAO {
+
+	public List<Procedimiento> getProcedimientos(List<Unidadxprocedimiento> procedimientos);
+
+	public Procedimiento getProcedimientoById(Integer procedimientos);
+
+}

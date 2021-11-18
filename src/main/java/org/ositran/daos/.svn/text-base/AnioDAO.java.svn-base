@@ -1,0 +1,10 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Anio;
+
+public interface AnioDAO {
+
+   public List<Anio> buscarLst();
+}

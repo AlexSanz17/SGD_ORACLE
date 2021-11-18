@@ -1,0 +1,17 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Motivo;
+
+public interface MotivoDAO{
+	
+	public List<Motivo> findAll();
+
+	public Motivo saveMotivo(Motivo motivo);
+
+	public Motivo findByIdmotivo(Integer idmotivo);
+	
+	public List<Motivo> encontrarPorProceso(int idProceso);
+	
+}

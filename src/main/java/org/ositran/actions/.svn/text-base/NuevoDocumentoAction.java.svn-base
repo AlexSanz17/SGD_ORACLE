@@ -1,0 +1,1870 @@
+package org.osinerg.actions;
+
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.ArchivoPendiente;
+import com.btg.osinergmin.siged.domain.ArchivoTemporal;
+import com.btg.osinergmin.siged.domain.Campo;
+import com.btg.osinergmin.siged.domain.Cliente;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Parametro;
+import com.btg.osinergmin.siged.domain.Plantilla;
+import com.btg.osinergmin.siged.domain.Tipodocumento;
+import com.btg.osinergmin.siged.domain.Tipoidentificacion;
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.btg.osinergmin.siged.domain.Valorcampo;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+import gob.osinergmin.siged.config.SigedProperties;
+import gob.osinergmin.siged.util.MessagePropertiesEnum;
+import gob.osinergmin.siged.util.SigedMessageSource;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.alfresco.webservice.util.AuthenticationDetails;
+import org.alfresco.webservice.util.AuthenticationUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+import org.osinerg.common.alfresco.AuthThreadLocalHolder;
+import org.osinerg.services.AccionService;
+import org.osinerg.services.ArchivoService;
+import org.osinerg.services.ArchivopendienteService;
+import org.osinerg.services.ClienteService;
+import org.osinerg.services.ConcesionarioService;
+import org.osinerg.services.DocumentoService;
+import org.osinerg.services.ExpedienteService;
+import org.osinerg.services.ManejoDeEmailService;
+import org.osinerg.services.NotificacionService;
+import org.osinerg.services.ParametroService;
+import org.osinerg.services.PlantillaService;
+import org.osinerg.services.ProcesoService;
+import org.osinerg.services.RepositorioService;
+import org.osinerg.services.TipodocumentoService;
+import org.osinerg.services.TipoidentificacionService;
+import org.osinerg.services.TrazabilidaddocumentoService;
+import org.osinerg.services.UsuarioService;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.DocumentoDetail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.task.TaskExecutor;
+
+public class NuevoDocumentoAction extends ActionSupport implements ServletRequestAware, ServletResponseAware {
+	
+	private static final long serialVersionUID=1865395431048493367L;
+	
+	private static Logger log=LoggerFactory.getLogger(NuevoDocumentoAction.class);
+	
+	private boolean bBandeja;
+	
+	private int narchivos;
+	
+	private Date fecha ;
+	
+	private Integer idcliente;
+	private Integer iddestinatario;
+	private Integer idcorrentista;
+	private Integer idtipoidentificacion;
+	private Integer idarchivos[];
+	private Integer iIdNotificacion;
+	
+	private String fullFileName;
+	private String uploadContentType;// The content type of the file
+	private String uploadFileName;// The uploaded file name
+	private String fileCaption;// The caption of the file entered by user
+	private String tipodocumento;
+	private String cargarData;
+	private String rutapadre;
+	private String mensaje;
+	private String correntista;
+	private String strDireccion;
+	private String strCorreoConcesionario;
+	private String strResponsable;
+	private String origenExpediente;
+	private String versionar;
+	private String tiponumeracion ;	
+	private String enumerarDocumento ;
+	private String origenDerivacion;
+	private List<String> condestinatarios;
+	private List<String> concopias;
+	
+	private ArchivopendienteService archivoPendienteService;
+	private DocumentoService documentoService;
+	private PlantillaService plantillaService;
+	private RepositorioService repositorioService;
+	private UsuarioService usuarioService;
+	private ArchivoService archivoService;
+	private ConcesionarioService concesionarioService;
+	private ClienteService clienteService;
+	private ProcesoService procesoService;
+	private TipodocumentoService tipodocumentoService;
+	private TipoidentificacionService tipoidentificacionService;
+	private ExpedienteService expedienteService;
+	private AccionService accionService;
+	private TrazabilidaddocumentoService trazabilidaddocumentoService;
+	private ParametroService parametroService;
+	private NotificacionService srvNotificacion;
+	private TaskExecutor taskExecutor;
+	private ManejoDeEmailService mailService;
+	private SigedMessageSource messageSource;
+	
+	private Documento objDocumento;
+	private Documento objDocumentoPrincipal;
+	private Expediente expediente;
+	private List<Documento> listaDocumentos;
+	private List<Tipoidentificacion> lstRadio;
+	private List<Parametro> listaParametros;
+	    
+	
+	public NuevoDocumentoAction(ArchivopendienteService archivoPendienteService,DocumentoService documentoService,PlantillaService plantillaService,RepositorioService repositorioService,UsuarioService usuarioService,ArchivoService archivoService,ConcesionarioService concesionarioService,ClienteService clienteService,ProcesoService procesoService,TipodocumentoService tipodocumentoService,TipoidentificacionService tipoidentificacionService,ExpedienteService expedienteService,AccionService accionService,TrazabilidaddocumentoService trazabilidaddocumentoService){
+		this.archivoPendienteService=archivoPendienteService;
+		this.documentoService=documentoService;
+		this.plantillaService=plantillaService;
+		this.repositorioService=repositorioService;
+		this.usuarioService=usuarioService;
+		this.archivoService=archivoService;
+		this.concesionarioService=concesionarioService;
+		this.clienteService=clienteService;
+		this.procesoService=procesoService;
+		this.tipodocumentoService=tipodocumentoService;
+		this.tipoidentificacionService=tipoidentificacionService;
+		this.expedienteService=expedienteService;
+		this.accionService=accionService;
+		this.trazabilidaddocumentoService=trazabilidaddocumentoService;
+	}
+	private DocumentoDetail objDD;
+	private Integer idDocumento;
+	private Integer idExpediente;
+	private Integer idArchivoPendiente;
+	private Documento documento;
+	private Integer idPlantilla;
+	private Integer idproceso;
+	private Integer idtipodocumento;
+	private String rutaArchivo;
+	private HttpServletRequest request;
+	private HttpServletResponse response;
+	private String cerrar;
+	private ArchivoPendiente archivopendiente;
+	private Date atenderAntesDe;
+	private String asunto;
+	private String departamento;
+	private Integer iddepartamento;
+	private String provincia;
+	private Integer idprovincia;
+	private String distrito;
+	private Integer iddistrito;
+	private String strTelefonoCliente;
+	private String strCorreoCliente;
+	private String proceso;
+	private String strUnidad;
+	private String ocultar;
+	private Integer idtipoid;
+
+	public Integer getIdtipoid(){
+		return idtipoid;
+	}
+
+	public void setIdtipoid(Integer idtipoid){
+		this.idtipoid=idtipoid;
+	}
+
+	public String getOcultar(){
+		return ocultar;
+	}
+
+	public void setOcultar(String ocultar){
+		this.ocultar=ocultar;
+	}
+
+	public String getStrUnidad(){
+		return strUnidad;
+	}
+
+	public void setStrUnidad(String strUnidad){
+		this.strUnidad=strUnidad;
+	}
+
+	public String getProceso(){
+		return proceso;
+	}
+
+	public void setProceso(String proceso){
+		this.proceso=proceso;
+	}
+
+	public String getStrCorreoCliente(){
+		return strCorreoCliente;
+	}
+
+	public void setStrCorreoCliente(String strCorreoCliente){
+		this.strCorreoCliente=strCorreoCliente;
+	}
+
+	public String getStrTelefonoCliente(){
+		return strTelefonoCliente;
+	}
+
+	public void setStrTelefonoCliente(String strTelefonoCliente){
+		this.strTelefonoCliente=strTelefonoCliente;
+	}
+
+	public String getDepartamento(){
+		return departamento;
+	}
+
+	public void setDepartamento(String departamento){
+		this.departamento=departamento;
+	}
+
+	public String getDistrito(){
+		return distrito;
+	}
+
+	public void setDistrito(String distrito){
+		this.distrito=distrito;
+	}
+
+	public Integer getIddepartamento(){
+		return iddepartamento;
+	}
+
+	public void setIddepartamento(Integer iddepartamento){
+		this.iddepartamento=iddepartamento;
+	}
+
+	public Integer getIddistrito(){
+		return iddistrito;
+	}
+
+	public void setIddistrito(Integer iddistrito){
+		this.iddistrito=iddistrito;
+	}
+
+	public Integer getIdprovincia(){
+		return idprovincia;
+	}
+
+	public void setIdprovincia(Integer idprovincia){
+		this.idprovincia=idprovincia;
+	}
+
+	public String getProvincia(){
+		return provincia;
+	}
+
+	public void setProvincia(String provincia){
+		this.provincia=provincia;
+	}
+	private Integer iIdExp;
+	private String tipoidentificacion;
+	private String nroidentificacion;
+	private String strRazonSocial;
+	private String strDireccionPrincipal;
+	private String strRUC;
+
+	public String getStrRUC(){
+		return strRUC;
+	}
+
+	public void setStrRUC(String strRUC){
+		this.strRUC=strRUC;
+	}
+
+	public String getStrRepresentanteLegal(){
+		return strRepresentanteLegal;
+	}
+
+	public void setStrRepresentanteLegal(String strRepresentanteLegal){
+		this.strRepresentanteLegal=strRepresentanteLegal;
+	}
+	private String strRepresentanteLegal;
+
+	public String getNroidentificacion(){
+		return nroidentificacion;
+	}
+
+	public void setNroidentificacion(String nroidentificacion){
+		this.nroidentificacion=nroidentificacion;
+	}
+
+	public String getStrDireccionPrincipal(){
+		return strDireccionPrincipal;
+	}
+
+	public void setStrDireccionPrincipal(String strDireccionPrincipal){
+		this.strDireccionPrincipal=strDireccionPrincipal;
+	}
+
+	public String getStrRazonSocial(){
+		return strRazonSocial;
+	}
+
+	public void setStrRazonSocial(String strRazonSocial){
+		this.strRazonSocial=strRazonSocial;
+	}
+
+	public String getTipoidentificacion(){
+		return tipoidentificacion;
+	}
+
+	public void setTipoidentificacion(String tipoidentificacion){
+		this.tipoidentificacion=tipoidentificacion;
+	}
+
+	public Integer getIIdExp(){
+		return iIdExp;
+	}
+
+	public void setIIdExp(Integer iIdExp){
+		this.iIdExp=iIdExp;
+	}
+
+	// private Map informacion = new HashMap();
+	@SuppressWarnings("unchecked")
+	public String inicio(){
+		Map<String,Object> session=ActionContext.getContext().getSession();
+		List<ArchivoTemporal> l=(List<ArchivoTemporal>) session.get("uploaded_list");
+		l=new ArrayList<ArchivoTemporal>();
+		Map<String,Object> mapUpload=(Map<String,Object>) session.get(Constantes.SESSION_UPLOAD_LIST);
+		if(mapUpload!=null){
+			mapUpload.remove("upload2");
+			mapUpload.put("upload2",l);
+			session.remove(Constantes.SESSION_UPLOAD_LIST);
+			session.put(Constantes.SESSION_UPLOAD_LIST,mapUpload);
+		}
+		return "inicio";
+	}
+
+
+	public String mostrarVista() throws Exception {
+      this.fecha = new Date();
+
+      //setLstRadio(getTipoidentificacionService().getTipoIdentificacionMap());
+      //this.setListaParametros(parametroService.findByTipo(Constantes.NUEVO_DOC_MARCA_DE_AGUA));
+      //this.setMarcaDeAgua("");
+      this.origenExpediente = Constantes.ORIGEN_EXPEDIENTE_NUEVO;
+      if(idExpediente != null){
+    	  expediente = expedienteService.findByIdExpediente(idExpediente);
+    	  this.origenExpediente = Constantes.ORIGEN_EXPEDIENTE_EXISTENTE;
+      }
+      if(idDocumento != null){
+    	  documento = documentoService.findByIdDocumento(idDocumento);
+      }
+      Map<String, Object> session = ActionContext.getContext().getSession();
+      //List<ArchivoTemporal> l = new ArrayList<ArchivoTemporal>();
+      ServletActionContext.getRequest().getSession().setAttribute("UsuarioCompartido",null);
+      //Map<String, Object> mapUpload = (Map<String, Object>) session.get(Constantes.SESSION_UPLOAD_LIST);
+
+      //if (mapUpload != null) {
+         //mapUpload.remove("upload2");
+         //mapUpload.put("upload2", l);
+         session.remove(Constantes.SESSION_UPLOAD_LIST);
+         //session.put(Constantes.SESSION_UPLOAD_LIST, mapUpload);
+      //}
+      return "nuevoDocumento";
+   }
+
+	public String mostrarEdicion(){
+		// this.objDD = new DocumentoDetail();
+		log.debug("mostrarEdicion retrieving archivoPendiente : "+this.getIdArchivoPendiente());
+		// setLstRadio(getTipoidentificacionService().getTipoIdentificacionMap());
+		this.setListaParametros(parametroService.findByTipo(Constantes.NUEVO_DOC_MARCA_DE_AGUA));
+		this.setMarcaDeAgua("");
+		return "inicioEdicion";
+	}
+
+	public String loadExpediente(){
+		try{
+			Expediente objE=null;
+			if(getIIdExp()==null){
+				throw new Exception("No existe el Id de expediente ");
+			}
+			objE=getExpedienteService().findByIdExpediente(getIIdExp());
+			if(objE==null){
+				throw new Exception("No existe el expediente con el Id "+getIIdExp());
+			}
+			setObjDD(getDocumentoService().getExpedienteData(getIIdExp()));
+			setIdtipoidentificacion(getObjDD().getIIdTipoIdentificacion());
+			setTipoidentificacion(getObjDD().getStrTipoIdentificacion());
+			setNroidentificacion(getObjDD().getStrNroIdentificacion());
+			setStrRazonSocial(getObjDD().getStrRazonSocial());
+			setStrRepresentanteLegal(getObjDD().getStrRepresentanteLegal());
+			setStrDireccionPrincipal(getObjDD().getStrDireccionPrincipal());
+			setIddepartamento(getObjDD().getIIdDepartamento());
+			setDepartamento(getObjDD().getStrDepartamento());
+			setIdprovincia(getObjDD().getIIdProvincia());
+			setProvincia(getObjDD().getStrProvincia());
+			setIddistrito(getObjDD().getIIdDistrito());
+			setDistrito(getObjDD().getStrDistrito());
+			setStrTelefonoCliente(getObjDD().getStrTelefonoCliente());
+			setStrCorreoCliente(getObjDD().getStrCorreoCliente());
+			setStrRUC(getObjDD().getStrRUC());
+			setIdcorrentista(getObjDD().getIIdCorrentista());
+			setCorrentista(getObjDD().getStrCorrentista());
+			setStrDireccion(getObjDD().getStrDireccionConcesionario());
+			setStrCorreoConcesionario(objE.getConcesionario().getCorreo());
+			setIdproceso(objE.getProceso().getIdproceso());
+			setProceso(objE.getProceso().getNombre());
+			setStrUnidad(objE.getProceso().getResponsable().getUnidad().getNombre());
+			setStrResponsable(objE.getProceso().getResponsable().getNombres()+" "+objE.getProceso().getResponsable().getApellidos());
+			this.setOcultar("NO");
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			mensaje=e.getMessage();
+		}
+		return "nuevoDocumento";
+	}
+
+//	@SuppressWarnings("unchecked")
+//	public String enviarArchivo(){
+//		Boolean bAlfrescoActivo=false;
+//		try{
+//			// /// :::::::: registrar() ::::::::::::::: INICIO /////
+//			Map<String,Object> session=ActionContext.getContext().getSession();
+//			AuthenticationDetails objAD=(AuthenticationDetails) session.get("objAD");
+//			setStrAcc("registrar");
+//			getObjDD().setIIdProceso(getIdproceso());
+//			getObjDD().setIIdTipoDocumento(getIdtipodocumento());
+//			getObjDD().setIIdTipoIdentificacion(getIdtipoidentificacion());
+//			getObjDD().setIIdCliente(getIdcliente());
+//			getObjDD().setStrNroIdentificacion(getNroidentificacion());
+//			getObjDD().setStrRepresentanteLegal(getStrRepresentanteLegal());
+//			getObjDD().setIIdDepartamento(getIddepartamento());
+//			getObjDD().setIIdProvincia(getIdprovincia());
+//			getObjDD().setIIdDistrito(getIddistrito());
+//			getObjDD().setIIdCorrentista(getIdcorrentista());
+//			getObjDD().setCEstado(Constantes.ESTADO_ACTIVO);
+//			// getObjDD().setStrNroDocumento(strNroDocumento)
+//			log.debug("nro.documento:"+getObjDD().getStrNroDocumento());
+//			if(getObjDD().getIIdExpediente()==null){
+//				getObjDD().setCPrincipal(Constantes.DOCUMENTO_PRINCIPAL);
+//			}else{
+//				getObjDD().setCPrincipal(Constantes.DOCUMENTO_NO_PRINCIPAL);
+//			}
+//			log.debug("Documento Principal ["+getObjDD().getCPrincipal()+"]");
+//			// // :::::::: registrar() ::::::::::::::: FIN /////
+//			// // :::::::: saveDoc() ::::::::FIN //////////
+//			String sUsuario=(String) session.get("usuario");
+//			String sClave=(String) session.get("clave");
+//			// String sRol = (String) session.get("rol");
+//			log.debug(" getObjDD().getStrAbreviado():"+getObjDD().getStrAbreviado());
+//			String sAlias=getObjDD().getStrAbreviado();
+//			Proceso p=procesoService.findByIdProceso(getObjDD().getIIdProceso());
+//			sAlias=p.getTipoproceso().getNombre();
+//			log.debug(" p.getAbreviado():"+p.getTipoproceso().getNombre());
+//			Usuario origen=(Usuario) session.get(Constantes.SESSION_USUARIO);
+//			// Integer iIdUsuario=(Integer) session.get("idusuario");
+//			// Usuario origen=getUsuarioService().findByIdUsuario(iIdUsuario);
+//			String strRol=(String) session.get("rol");
+//			/*** INTALIO - Inicio de proceso ***/
+//			if(sAlias.equals(Proceso.ABREV_TI)){
+//				String participantToken=ClienteProcesoTecnologiaInf.Autenticar(sUsuario,sClave);
+//				TaskMetadata data[]=ClienteProcesoTecnologiaInf.ObtenerTareas(participantToken);
+//				if(data!=null){
+//					Integer id=getObjDD().getIIdExpediente();
+//					String IdExpediente=String.valueOf(id);
+//					String Condicion="Aprobado";
+//					ClienteProcesoTecnologiaInf.IniciarProceso(participantToken,data,IdExpediente,Condicion);
+//				}
+//				Usuario destino=usuarioService.findByIdUsuario(8);
+//				if(destino.getEnviocorreo()=='1'){
+//					procesarEmail(origen,destino);
+//				}
+//			}
+//			if(getObjDD()!=null){
+//				DocumentoDetail objAux=getObjDD();
+//				this.objDD=new DocumentoDetail();
+//				if(usuarioService.validarSesionEnAlfresco(session)){
+//					bAlfrescoActivo=true;
+//				}
+//				setObjDD(getDocumentoService().saveDocumentTEMPORAL(objAux,getStrAcc(),getIddestinatario(),origen,strRol,bAlfrescoActivo));
+//				// Derivaciones manuales de los usuarios finales
+//				if(strRol.equals(Constantes.ROL_USUARIO_FINAL)){
+//					// Hay usuario para enviar una copia del documento
+//					if(getIdccdestinatario()!=null){
+//						setStrAcc(Constantes.ACCION_REGISTRAR);
+//						objAux.setIIdDocumento(null); // Se creara una copia del
+//						// documento
+//						getDocumentoService().saveDocumentTEMPORAL(objAux,getStrAcc(),getIdccdestinatario(),origen,strRol,bAlfrescoActivo);
+//					}
+//					log.debug("VALOR DE BANDEJA: "+isBBandeja());
+//					if(isBBandeja()){
+//						setStrAcc(Constantes.ACCION_REGISTRAR);
+//						objAux.setIIdDocumento(null); // Se creara una copia del
+//						// documento para la
+//						// bandeja del
+//						// propietario
+//						getDocumentoService().saveDocumentTEMPORAL(objAux,getStrAcc(),origen.getIdusuario(),origen,strRol,bAlfrescoActivo);
+//					}
+//				}
+//			}else{
+//				this.mensaje="No se encontraron Datos";
+//			}
+//			// // :::::::: saveDoc() ::::::::FIN //////////
+//			this.idDocumento=getObjDD().getDoc().getIdDocumento();
+//			// // :::::::: enviarArchivo() ::::::::INICIO //////////
+//			if(idDocumento!=null&&idDocumento.intValue()!=0){
+//				String ruta=(String) request.getSession().getAttribute("rutaArchivo");
+//				File file=new File(ruta);
+//				Archivo archivo=new Archivo();
+//				Plantilla plantilla=plantillaService.findByIdplantilla(idtipodocumento);
+//				Documento doc=documentoService.findByIdDocumento(idDocumento);
+//				String asunt=(String) request.getSession().getAttribute("asunto");
+//				if(asunt!=null){
+//					doc.setAsunto(asunt);
+//				}
+//				this.documentoService.saveDocumento(doc);
+//				archivo.setDescripcion(plantilla.getDescripcion());
+//				archivo.setEstadoDigitalizacion(Archivo.ESTADO_DISPONIBLE);
+//				archivo.setFechaCreacion(new Date());
+//				archivo.setDocumento(doc);
+//				String nombre[]=(ruta.replace(File.separator,"&").split("&"));
+//				// archivo.setNombre(nombre[nombre.length - 1]);
+//				// archivo.setRutaarchivopdf(ruta);
+//				// archivo.setRutaalfresco(RepositorioServiceImpl.
+//				// RUTA_PADRE_EXPEDIENTE
+//				// +"/"+doc.getExpediente().getNroexpediente
+//				// ()+"/"+nombre[nombre.length-1]);
+//				// log.debug(" antes de guardar ");
+//				// // log.debug(" %% antes de guardar el archivo ");
+//				// archivoService.saveArchivo(archivo);
+//				// log.debug(" %% despues de guardar el archivo ");
+//				// ahora trato de subirlo al repositorio
+//				Map<String,Object> mapUpload=(Map<String,Object>) session.get(Constantes.SESSION_UPLOAD_LIST);
+//				if(mapUpload!=null){
+//					List<org.osinerg.utils.ArchivoTemporal> l=(List<org.osinerg.utils.ArchivoTemporal>) mapUpload.get("upload2");
+//					log.debug(" %% antes de guardar temporal size : "+l.size());
+//					int y=1;
+//					for(org.osinerg.utils.ArchivoTemporal arch : l){
+//						log.debug(" %% entro en iteracuion: "+y);
+//						Documento objNuevoDocumento=new Documento();
+//						objNuevoDocumento.setTipoDocumento(tipodocumentoService.findByNombre("Otros"));
+//						objNuevoDocumento.setPropietario(origen);
+//						objNuevoDocumento.setExpediente(doc.getExpediente());
+//						objNuevoDocumento.setAsunto(arch.getFArchivo().getName());
+//						objNuevoDocumento.setAccion(getAccionService().findByNombre("registrar"));
+//						objNuevoDocumento.setPrincipal(Constantes.DOCUMENTO_NO_PRINCIPAL);
+//						objNuevoDocumento.setFechaAccion(new Date());
+//						objNuevoDocumento.setFechaCreacion(new Date());
+//						objNuevoDocumento.setEstado(Constantes.ESTADO_ACTIVO);
+//						getDocumentoService().saveDocumento(objNuevoDocumento);
+//						objNuevoDocumento.setNumeroDocumento(""+objNuevoDocumento.getIdDocumento());
+//						getDocumentoService().saveDocumento(objNuevoDocumento);
+//						trazabilidaddocumentoService.saveTrazabilidadDocumento(objNuevoDocumento,origen,false,false);
+//						/**************************************************************************/
+//						// Registrar Auditoria de los Archivos anexados
+//						/**************************************************************************/
+//						// registrarAuditoriaArchivos(session,
+//						// objNuevoDocumento,
+//						// arch, Constantes.TA_Adjuntar,
+//						// Constantes.TM_UserFinal,
+//						// Constantes.TO_Registrar);
+//						log.debug(" %% uploaded antes de grabar : "+y);
+//						archivoService.guardarArchivoTemporal(arch,objNuevoDocumento,y++);
+//						log.debug(" %% uploaded despues de grabar : "+y);
+//						repositorioService.subirArchivosTransformadosARepositorio(objNuevoDocumento.getIdDocumento(),false);
+//					}
+//				}else{
+//					log.info(" No hay archivos del upload para subir ... ");
+//				}
+//				/*
+//				 * Documento objNuevoDocumento = new Documento(); //
+//				 * objNuevoDocumento.setNumeroDocumento(tipodocumento)
+//				 * objNuevoDocumento.setTipoDocumento(
+//				 * tipodocumentoService.findByNombre(this.tipodocumento));
+//				 * objNuevoDocumento.setPropietario(origen);
+//				 * objNuevoDocumento.setExpediente(doc.getExpediente());
+//				 * objNuevoDocumento.setAsunto(file.getName() );
+//				 * objNuevoDocumento
+//				 * .setAccion(getAccionService().findByNombre("registrar"));
+//				 * objNuevoDocumento
+//				 * .setPrincipal(Constantes.DOCUMENTO_NO_PRINCIPAL);
+//				 * objNuevoDocumento.setFechaAccion(new Date());
+//				 * objNuevoDocumento.setFechaCreacion(new Date());
+//				 * objNuevoDocumento.setEstado(Constantes.ESTADO_ACTIVO);
+//				 * getDocumentoService().saveDocumento(objNuevoDocumento); //
+//				 * getDocumentoService().saveDocumento(objNuevoDocumento);
+//				 */
+//				log.debug(" %% antes de  subirArchivosTransformadosARepositorio ");
+//				log.debug(" ## doc.getIdDocumento() "+getObjDD().getDoc().getIdDocumento());
+//				log.debug("c  : "+file.getName()+"  nombre2:"+nombre[nombre.length-1]);
+//				org.osinerg.utils.ArchivoTemporal archt=new org.osinerg.utils.ArchivoTemporal(nombre[nombre.length-1],file);
+//				archivoService.guardarArchivoTemporal(archt,getObjDD().getDoc(),getObjDD().getDoc().getIdDocumento());
+//				// archivoService.uploadToAlfresco( at , doc, 1);
+//				// repositorioService.u
+//				repositorioService.subirArchivosTransformadosARepositorio(getObjDD().getDoc().getIdDocumento(),false);
+//				log.debug(" %% despues de  subirArchivosTransformadosARepositorio ");
+//				if(this.archivopendiente!=null&&this.archivopendiente.getIdArchivoPendiente()!=null){
+//					archivoPendienteService.deleteArchivopendiente(this.archivopendiente.getIdArchivoPendiente());
+//				}
+//				log.debug(" toto ok ");
+//				addActionMessage(" Archivo Subido Correctamente ");
+//				this.mensaje=ValoresProperties.getProperty(Constantes.NRODOCGENERATED,Constantes.FILE_MESSAGES)+doc.getNumeroDocumento();
+//				this.cerrar="ok";
+//				log.debug("##$ cerrar :"+this.cerrar);
+//				this.ocultar="NO";
+//				/**************************************************************************/
+//				// Registrar Auditoria del Nuevo Documento
+//				/**************************************************************************/
+//				// registrarAuditoriaDocumento(session, doc,
+//				// Constantes.TA_RegistrarNvoDoc_UserFinal,
+//				// Constantes.TM_UserFinal, Constantes.TO_Registrar);
+//				/**************************************************************************/
+//				// Registrar Noficacion Responsable del Expediente
+//				/**************************************************************************/
+//				Notificacion objNotificacionRespExp=new Notificacion();
+//				objNotificacionRespExp.setIdusuario(doc.getExpediente().getIdpropietario());
+//				objNotificacionRespExp.setIddocumento(doc);
+//				objNotificacionRespExp.setAsunto("Aviso de Nuevo Documento ["+doc.getTipoDocumento().getNombre()+"-"+doc.getNumeroDocumento()+"] en el Expediente:"+doc.getExpediente().getNroexpediente());
+//				objNotificacionRespExp.setContenido("Le recordamos que el documento "+doc.getTipoDocumento().getNombre()+"-"+doc.getNumeroDocumento()+" del Expediente:"+doc.getExpediente().getNroexpediente()+" se anexo al sistema.");
+//				objNotificacionRespExp.setTiponotificacion(Constantes.TIPO_NOTIFICACION_USUARIO);
+//				objNotificacionRespExp.setFechanotificacion(new Date());
+//				objNotificacionRespExp.setEstado('A');
+//				objNotificacionRespExp.setLeido(Constantes.ESTADO_NO_LEIDO);
+//				srvNotificacion.saveNotificacion(objNotificacionRespExp);
+//				/**************************************************************************/
+//				// Registrar Noficacion Responsable del Proceso
+//				/**************************************************************************/
+//				Notificacion objNotificacionRespProceso=new Notificacion();
+//				objNotificacionRespProceso.setIdusuario(doc.getExpediente().getProceso().getResponsable());
+//				objNotificacionRespProceso.setIddocumento(doc);
+//				objNotificacionRespProceso.setAsunto("Aviso de Nuevo Documento ["+doc.getTipoDocumento().getNombre()+"-"+doc.getNumeroDocumento()+"] en el Expediente:"+doc.getExpediente().getNroexpediente());
+//				objNotificacionRespProceso.setContenido("Le recordamos que el documento "+doc.getTipoDocumento().getNombre()+"-"+doc.getNumeroDocumento()+" del Expediente:"+doc.getExpediente().getNroexpediente()+" se anexo al sistema.");
+//				objNotificacionRespProceso.setTiponotificacion(Constantes.TIPO_NOTIFICACION_USUARIO);
+//				objNotificacionRespProceso.setFechanotificacion(new Date());
+//				objNotificacionRespProceso.setEstado('A');
+//				objNotificacionRespProceso.setLeido(Constantes.ESTADO_NO_LEIDO);
+//				srvNotificacion.saveNotificacion(objNotificacionRespExp);
+//				/*************************************************************************/
+//				// Desarrollo de notificaciones por correos y mensaje de texto.
+//				/*************************************************************************/
+//				// Notificando el correo al responsable del proceso.
+//				ManejoDeEmail.EnviarEmail(doc.getExpediente().getIdpropietario().getCorreo(),doc.getExpediente().getIdpropietario().getCorreo(),objNotificacionRespProceso.getAsunto(),objNotificacionRespProceso.getContenido(),sigedProperties.getString("smtp.host"),true);
+//				// Notificando el correo al responsable del Expediente.
+//				ManejoDeEmail.EnviarEmail(doc.getExpediente().getProceso().getResponsable().getCorreo(),doc.getExpediente().getProceso().getResponsable().getCorreo(),objNotificacionRespProceso.getAsunto(),objNotificacionRespProceso.getContenido(),sigedProperties.getString("smtp.host"),true);
+//				// Notificando el correo al responsable del expediente.
+//				// ManejoDeEmail.EnviarEmail("proylog01@osinerg.gob.pe",
+//				// "proylog01@osinerg.gob.pe", objNotificacionRespExp
+//				// .getAsunto(), objNotificacionRespExp
+//				// .getContenido(), sigedProperties
+//				// .getString("smtp.host"), true);
+//				//
+//				// // Notificando el correo al responsable del proceso.
+//				// ManejoDeEmail.EnviarEmail("proylog01@osinerg.gob.pe",
+//				// "proylog01@osinerg.gob.pe", objNotificacionRespProceso
+//				// .getAsunto(), objNotificacionRespProceso
+//				// .getContenido(), sigedProperties
+//				// .getString("smtp.host"), true);
+//			}
+//			// // :::::::: enviarArchivo() ::::::::INICIO //////////
+//		}catch(Exception e){
+//			log.error(e.getMessage(), e);
+//			addActionError(e.getMessage());
+//		}
+//		setLstRadio(getTipoidentificacionService().getTipoIdentificacionMap());
+//		log.debug("returning view : "+"nuevoDocumento");
+//		return "nuevoDocumento";
+//	}
+
+	@SuppressWarnings("unchecked")
+	public String upload() throws Exception{
+		setLstRadio(getTipoidentificacionService().getTipoIdentificacionMap());
+		// this.setOcultar("NO");
+		try{
+			Map<String,Object> session=ActionContext.getContext().getSession();
+			// AuthenticationDetails objAD = (AuthenticationDetails)
+			// session.get("objAD");
+			// Documento objDocumento = null;
+			Integer iContador=(Integer) session.get("contador");
+			// Integer iIdUsuario = (Integer) session.get("idusuario");
+			// String sRol = (String) session.get("rol");
+			String strTempo=SigedProperties.getProperty(SigedProperties.SigedPropertyEnum.DIRECTORIO_TEMPORAL);
+			log.debug("ENTRO AL UPLOAD ["+upload+"]");
+			fullFileName=ServletActionContext.getServletContext().getRealPath("/")+strTempo+uploadFileName;
+			log.debug("uploadFileName ["+uploadFileName+"]");
+			log.debug("fullFileName ["+fullFileName+"]");
+			File theFile=new File(fullFileName);
+			// copiar a uno temporal ... en este caso sera RealPah/upload/ para
+			// aprovechar
+			FileUtils.copyFile(upload,theFile);
+			org.osinerg.utils.ArchivoTemporal at=new org.osinerg.utils.ArchivoTemporal(uploadFileName,theFile);
+			if(iContador==null){
+				iContador=1;
+			}else{
+				iContador++;
+			}
+			session.put("contador",iContador);
+			List<org.osinerg.utils.ArchivoTemporal> l=(List<org.osinerg.utils.ArchivoTemporal>) session.get("uploaded_list");
+			if(l==null){
+				l=new ArrayList<org.osinerg.utils.ArchivoTemporal>();
+			}
+			l.add(at);
+			session.put("uploaded_list",l);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+		}
+		return "nuevoDocumento";
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public String guardarPendiente(){
+		try{
+			// /// :::::::: registrar() ::::::::::::::: INICIO /////
+			Map<String,Object> session=ActionContext.getContext().getSession();
+			Map<String,Object> parameter=ActionContext.getContext().getParameters();
+			String[] parss=(String[])parameter.get("suministroCache");
+			log.debug(" parss   "+parss);
+			if(parss!=null){
+				log.debug(" parss length:"+parss.length);
+			}
+			// // Comienzo
+			ArchivoPendiente ap=new ArchivoPendiente();
+			ap.setExpediente(this.getObjDD().getIIdExpediente());
+			ap.setProceso(procesoService.findByIdProceso(this.getIdproceso()));
+			ap.setResponsable(this.getObjDD().getIIdResponsable());
+			ap.setTipoDocumento(this.getIdtipodocumento());
+			ap.setNumeroDocumento(this.getObjDD().getStrNroDocumento());
+			ap.setNumeroFolios(this.getObjDD().getINroFolios());
+			ap.setAsunto(this.getObjDD().getStrAsunto());
+			ap.setTipoIdentificacion(this.getIdtipoidentificacion());
+			log.debug("guardando cliente id :"+this.getIdcliente());
+			ap.setCliente(this.getIdcliente());
+			ap.setDireccionAlternativa(this.getObjDD().getStrDireccionAlternativa());
+			// ap.setConcesionario(concesionarioService.findByIdConcesionario(this
+			// .getIdcorrentista()));
+			ap.setObservacion(this.getObjDD().getStrObservacion());
+			log.debug("Fecha Documento"+objDD.getStrFechaLimiteAtencion());
+			try{
+				ap.setFechaDocumento(new SimpleDateFormat("dd/MM/yyyy").parse(objDD.getStrFechaDocumento()));
+			}catch(Exception e){
+                            log.error(e.getMessage(),e);
+			}
+			Integer iIdUsuario=(Integer) session.get("idusuario");
+			Usuario origen=getUsuarioService().findByIdUsuario(iIdUsuario);
+			log.debug(" usuario x: "+origen.getClave()+" id:"+origen.getIdusuario());
+			ap.setUsuario(origen);
+			Map<String,Object> mapUpload=(Map) session.get(Constantes.SESSION_UPLOAD_LIST);
+			List<org.osinerg.utils.ArchivoTemporal> l=(mapUpload!=null ? ((List<org.osinerg.utils.ArchivoTemporal>) mapUpload.get("upload2")) : null);
+			List<ArchivoTemporal> lista=new ArrayList<ArchivoTemporal>();
+			for(org.osinerg.utils.ArchivoTemporal arch : l){
+				ArchivoTemporal archdest=new ArchivoTemporal();
+				archdest.setRuta(arch.getFArchivo().getPath());
+				archdest.setArchivoPendiente(ap);
+				lista.add(archdest);
+			}
+			ap.setArchivosTemporales(lista);
+			// //////////// AQUI BASE 64 /////////////////
+			List<Campo> campos=plantillaService.listCamposByTipoPlantilla(idtipodocumento);
+			Plantilla p=plantillaService.findByIdplantilla(this.idtipodocumento);
+			ap.setPlantilla(p);
+			List<Valorcampo> valores=new ArrayList<Valorcampo>();
+			// Map parameters = ActionContext.getContext().getParameters();
+			log.debug("////// enumeration size  "+parameter.size());
+			/*
+			 * Iterator<String> ee = parameter.keySet().iterator();
+			 * 
+			 * while (ee.hasNext()) { String code = ee.next();
+			 * log.debug(code + ":" + parameter.get(code) + "" +
+			 * parameter.get(code).toString() + " class :" +
+			 * parameter.get(code).getClass()); }
+			 */
+			for(Campo c : campos){
+				String valor=((String[])parameter.get("valor"+c.getIdCampo()))[0];
+				c.setValor((valor==null ? "" : valor));
+				// log.debug(" !!!!!! valor"+c.getIdcampo()+": '"+c.getValor().toString()+"'");
+				if(valor!=null){
+					Valorcampo vc=new Valorcampo();
+					vc.setCampo(c);
+					vc.setArchivopendiente(ap);
+					vc.setValor(valor.toString());
+					valores.add(vc);
+				}
+			}
+			ap.setValoresCampo(valores);
+			ap.setEstado(Constantes.DOC_PENDIENTE_NUEVO_DOCUMENTO);
+			log.debug(" before saving all archivoPendiente ... "+ap.getValoresCampo().size());
+			this.getArchivoPendienteService().saveArchivopendiente(ap,null,null);
+			log.debug(" after  saving all archivoPendiente ... ok  ");
+			this.archivopendiente=ap;
+		}catch(Exception e){
+                    log.error(e.getMessage(),e);
+		}
+		this.cerrar="ok";
+		this.ocultar="NO";
+		this.mensaje=messageSource.getMessage(MessagePropertiesEnum.NEW_DOCUMENTO_SAVED);
+		log.debug(" mensaje :"+this.mensaje);
+		setLstRadio(getTipoidentificacionService().getTipoIdentificacionMap());
+		return "nuevoDocumento";
+	}
+
+	@SuppressWarnings("unchecked")
+	public String mostrarVistaEdicion(){
+		Map<String,Object> session=ActionContext.getContext().getSession();
+		log.debug(" retrieving archivoPendiente : "+this.getIdArchivoPendiente());
+		archivopendiente=archivoPendienteService.findByIdarchivopendiente(this.getIdArchivoPendiente());
+		archivopendiente.setStrTipoDocumento(archivopendiente.getPlantilla().getDescripcion());
+		log.debug("mostrarVistaEdicion::archivopendiente size:"+archivopendiente.getValoresCampo().size());
+		if(this.getObjDD()==null)
+			this.setObjDD(new DocumentoDetail());
+		this.getObjDD().setIIdExpediente(archivopendiente.getExpediente());
+		this.setIdproceso(archivopendiente.getProceso().getIdproceso());
+		this.setProceso(archivopendiente.getProceso().getNombre());
+		this.getObjDD().setIIdResponsable(archivopendiente.getResponsable());
+		this.setIdtipodocumento(archivopendiente.getTipoDocumento());
+		Tipodocumento tipo=tipodocumentoService.findByIdTipoDocumento(archivopendiente.getTipoDocumento());
+		this.setTipoDocumento((tipo!=null ? tipo.getNombre() : ""));
+		this.getObjDD().setStrNroDocumento(archivopendiente.getNumeroDocumento());
+		this.getObjDD().setINroFolios(archivopendiente.getNumeroFolios());
+		this.getObjDD().setStrAsunto(archivopendiente.getAsunto());
+		Date fecha=archivopendiente.getFechaDocumento();
+		this.getObjDD().setStrFechaDocumento((fecha!=null ? new SimpleDateFormat("dd/MM/yyyy").format(fecha) : ""));
+		this.setIdtipoidentificacion(archivopendiente.getTipoIdentificacion());
+		this.setIdtipoid(archivopendiente.getTipoIdentificacion());
+		this.setIdcliente(archivopendiente.getCliente());
+		log.debug("cliente id :"+this.getIdcliente());
+		if(this.getIdcliente()!=null){
+			Cliente cli=this.getClienteService().findByIdCliente(archivopendiente.getCliente());
+			this.tipoidentificacion=cli.getTipoIdentificacion().getNombre();
+			this.nroidentificacion=cli.getNumeroIdentificacion();
+			this.setStrRazonSocial(cli.getRazonSocial());
+			this.setStrRepresentanteLegal(cli.getRepresentanteLegal());
+			this.setStrDireccionPrincipal(cli.getDireccionPrincipal());
+			// Distrito d = Distr cli.getUbigeoprincipal().getIddistrito()
+		}
+		this.setStrRUC(this.archivopendiente.getConcesionario()!=null ? this.archivopendiente.getConcesionario().getRuc() : "");
+		this.setTipoidentificacion(tipoidentificacion);
+		this.getObjDD().setStrDireccionAlternativa(archivopendiente.getDireccionAlternativa());
+		// this.setIdcorrentista(archivopendiente.getConsecionario());
+		this.getObjDD().setStrObservacion(archivopendiente.getObservacion());
+		setLstRadio(getTipoidentificacionService().getTipoIdentificacionMap());
+		Iterator<ArchivoTemporal> i=archivopendiente.getArchivosTemporales().iterator();
+		List<org.osinerg.utils.ArchivoTemporal> files=new ArrayList<org.osinerg.utils.ArchivoTemporal>();
+		while(i.hasNext()){
+			int iBracket=-1;
+			String sRealName=null;
+			ArchivoTemporal at=i.next();
+			iBracket=at.getRuta().indexOf(Constantes.ARCHIVO_BRACKET_FIN);
+			if(iBracket!=-1){
+				sRealName=at.getRuta().substring(iBracket+1);
+			}
+			org.osinerg.utils.ArchivoTemporal att=new org.osinerg.utils.ArchivoTemporal(sRealName,new File(at.getRuta()));
+			files.add(att);
+		}
+		Map<String,Object> mapUpload=(Map<String,Object>) session.get(Constantes.SESSION_UPLOAD_LIST);
+		if(mapUpload!=null){
+			mapUpload.remove("upload2");
+			mapUpload.put("upload2",files);
+			session.remove(Constantes.SESSION_UPLOAD_LIST);
+			session.put(Constantes.SESSION_UPLOAD_LIST,mapUpload);
+		}else{
+			mapUpload=new HashMap<String,Object>();
+			mapUpload.put("upload2",files);
+			session.put(Constantes.SESSION_UPLOAD_LIST,mapUpload);
+		}
+		this.setListaParametros(parametroService.findByTipo(Constantes.NUEVO_DOC_MARCA_DE_AGUA));
+		this.setMarcaDeAgua("");
+		// session.put("uploaded_list", files);
+		this.cargarData="ok";
+		log.debug("^^ cargardata :"+this.cargarData);
+		this.ocultar="NO";
+		return "edicionDocumento";
+	}
+
+	@SuppressWarnings("unchecked")
+	public String actualizarPendiente(){
+		try{
+			// /// :::::::: registrar() ::::::::::::::: INICIO /////
+			Map<String,Object> session=ActionContext.getContext().getSession();
+			Map<String,Object> parameter=ActionContext.getContext().getParameters();
+			String[] parss=(String[])parameter.get("suministroCache");
+			log.debug(" parss   "+parss);
+			if(parss!=null){
+				log.debug(" parss length:"+parss.length);
+			}
+			// // Comienzo
+			ArchivoPendiente ap=this.getArchivopendiente();
+			ap.setExpediente(this.getObjDD().getIIdExpediente());
+			ap.setProceso(procesoService.findByIdProceso(this.getIdproceso()));
+			ap.setResponsable(this.getObjDD().getIIdResponsable());
+			ap.setTipoDocumento(this.getIdtipodocumento());
+			ap.setNumeroDocumento(this.getObjDD().getStrNroDocumento());
+			ap.setNumeroFolios(this.getObjDD().getINroFolios());
+			ap.setAsunto(this.getObjDD().getStrAsunto());
+			ap.setTipoIdentificacion(this.getIdtipoidentificacion());
+			log.debug("guardando cliente id :"+this.getIdcliente());
+			ap.setCliente(this.getIdcliente());
+			ap.setDireccionAlternativa(this.getObjDD().getStrDireccionAlternativa());
+			ap.setObservacion(this.getObjDD().getStrObservacion());
+			log.debug("Fecha Documento"+objDD.getStrFechaLimiteAtencion());
+			try{
+				ap.setFechaDocumento(new SimpleDateFormat("dd/MM/yyyy").parse(objDD.getStrFechaDocumento()));
+			}catch(Exception e){
+                            log.error(e.getMessage(),e);
+			}
+			Integer iIdUsuario=(Integer) session.get("idusuario");
+			Usuario origen=getUsuarioService().findByIdUsuario(iIdUsuario);
+			log.debug(" usuario x: "+origen.getClave()+" id:"+origen.getIdusuario());
+			ap.setUsuario(origen);
+			Map<String,Object> mapUpload=(Map<String,Object>) session.get(Constantes.SESSION_UPLOAD_LIST);
+			List<org.osinerg.utils.ArchivoTemporal> l=(List<org.osinerg.utils.ArchivoTemporal>) mapUpload.get("upload2");
+			Iterator<org.osinerg.utils.ArchivoTemporal> i=(l!=null ? l.iterator() : null);
+			List<ArchivoTemporal> lista=new ArrayList<ArchivoTemporal>();
+			while(l!=null&&i.hasNext()){
+				org.osinerg.utils.ArchivoTemporal arch=i.next();
+				ArchivoTemporal archdest=new ArchivoTemporal();
+				archdest.setRuta(arch.getFArchivo().getPath());
+				archdest.setArchivoPendiente(ap);
+				lista.add(archdest);
+			}
+			// /// lo agrego despues de borrar los antiguos
+			ap.setArchivosTemporales(lista);
+			// //////////// AQUI BASE 64 /////////////////
+			List<Campo> campos=plantillaService.listCamposByTipoPlantilla(idtipodocumento);
+			Plantilla p=plantillaService.findByIdplantilla(this.idtipodocumento);
+			ap.setPlantilla(p);
+			List<Valorcampo> valores=new ArrayList<Valorcampo>();
+			// Map parameters = ActionContext.getContext().getParameters();
+			log.debug("////// enumeration size  "+parameter.size());
+			/*
+			 * Iterator ee = parameters.keySet().iterator();
+			 * 
+			 * while (ee.hasNext()) { Object code = ee.next();
+			 * log.debug(code + ":" + ((String[])
+			 * parameters.get(code))[0]); }
+			 */
+			for(Campo c : campos){
+				String valor=((String[])parameter.get("valor"+c.getIdCampo()))[0];
+				c.setValor((valor==null ? "" : valor));
+				log.debug(" !!!!!! valor"+c.getIdCampo()+": '"+c.getValor().toString()+"'");
+				Valorcampo vc=new Valorcampo();
+				vc.setCampo(c);
+				vc.setArchivopendiente(ap);
+				vc.setValor(c.getValor().toString());
+				valores.add(vc);
+			}
+			ap.setValoresCampo(valores);
+			ap.setEstado(Constantes.DOC_PENDIENTE_NUEVO_DOCUMENTO);
+			log.debug(" before saving all archivoPendiente ... "+ap.getValoresCampo().size());
+			this.getArchivoPendienteService().saveArchivopendiente(ap,null,null);
+			log.debug(" after  saving all archivoPendiente ... ok  ");
+			this.archivopendiente=ap;
+		}catch(Exception ex){
+                    log.error(ex.getMessage(),ex);
+		}
+		this.cerrar="ok";
+		this.ocultar="NO";
+		this.mensaje=messageSource.getMessage(MessagePropertiesEnum.NEW_DOCUMENTO_SAVED);
+		setLstRadio(getTipoidentificacionService().getTipoIdentificacionMap());
+		return "edicionDocumento";
+	}
+
+	/**REN Metodo encargado de abrir la ventana "Adjuntar" ------------------------------------------------------------------*/
+	public String verSubirConMetadata(){
+		try{
+			Map<String,Object> session=ActionContext.getContext().getSession();
+			log.debug("Removiendo archivos adjuntos de la sesion");
+			session.remove(Constantes.SESSION_UPLOAD_LIST);
+			Integer[] arrIdDoc=new Integer[1];
+			arrIdDoc[0]=this.idDocumento;
+			session.put("arrIdDoc",arrIdDoc);
+			this.objDocumento=new Documento();
+			this.objDocumento.setFechaDocumento(new Date());
+			this.objDocumentoPrincipal=documentoService.findDocExpedienteByIdDocumento(this.idDocumento);
+			
+			this.expediente=objDocumentoPrincipal.getExpediente();
+			
+			//FIXME esto esta mal
+			//this.rutapadre=RepositorioServiceWebservice.RUTA_PADRE_EXPEDIENTE+"/"+this.expediente.getNroexpediente()+"/";
+         this.rutapadre = repositorioService.obtenerRutaExpediente(expediente);
+			this.narchivos=0;
+			if(this.expediente!=null&&this.expediente.getDocumentoList()!=null&&this.expediente.getDocumentoList().size()>0){
+				List<Documento> docs=this.expediente.getDocumentoList();
+				for(Documento d : docs){
+					narchivos+=(d.getArchivos()!=null) ? d.getArchivos().size() : 0;
+//					if(d.getArchivos()!=null&&d.getArchivos().size()>0){
+//						for(Archivo a : d.getArchivos()){
+//							log.debug(" archivo  "+a.getRutaAlfresco());
+//						}
+//					}
+				}
+			}
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+		}
+		return "subirconmetadata";
+	}
+	
+	
+	public String verVersionar(){
+		try{
+			Map<String,Object> session=ActionContext.getContext().getSession();
+			log.debug("Removiendo archivos adjuntos de la sesion");
+			session.remove(Constantes.SESSION_UPLOAD_LIST);
+			Integer[] arrIdDoc=new Integer[1];
+			arrIdDoc[0]=this.idDocumento;
+			session.put("arrIdDoc",arrIdDoc);
+			this.objDocumento=new Documento();
+			this.objDocumento.setFechaDocumento(new Date());
+			this.objDocumentoPrincipal=documentoService.findByIdDocumento(this.idDocumento);
+			
+			this.expediente=objDocumentoPrincipal.getExpediente();
+			//FIXME esto esta mal
+			//this.rutapadre=RepositorioServiceWebservice.RUTA_PADRE_EXPEDIENTE+"/"+this.expediente.getNroexpediente()+"/";
+         this.rutapadre = repositorioService.obtenerRutaExpediente(expediente);
+			this.narchivos=0;
+			if(this.expediente!=null&&this.expediente.getDocumentoList()!=null&&this.expediente.getDocumentoList().size()>0){
+				List<Documento> docs=this.expediente.getDocumentoList();
+				for(Documento d : docs){
+					narchivos+=(d.getArchivos()!=null) ? d.getArchivos().size() : 0;
+					if(d.getArchivos()!=null&&d.getArchivos().size()>0){
+						for(Archivo a : d.getArchivos()){
+							log.debug(" archivo  "+a.getRutaAlfresco());
+						}
+					}
+				}
+			}
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+		}
+		return "versionar";
+	}
+
+	/**REN se llama cuando se adjunta un documento al expediente mediante el detalle -------------------------------------*/
+	@SuppressWarnings("unchecked")
+	public String dosubirConMetadata(){
+		log.info("origen derivacion : "+this.origenDerivacion);
+		Map<String,Object> sesion=ActionContext.getContext().getSession();
+			Usuario usuario=(Usuario) sesion.get(Constantes.SESSION_USUARIO);
+			Map<String,List<org.osinerg.utils.ArchivoTemporal>> upload=(Map<String,List<org.osinerg.utils.ArchivoTemporal>>) sesion.get(Constantes.SESSION_UPLOAD_LIST);
+			   
+			log.debug("### dosubirConMetadata");
+			Integer principal=objDocumento.getIdDocumento();
+			objDocumento.setTiponumeracion(this.tiponumeracion);
+			objDocumento.setCondestinatarios(this.condestinatarios); 
+			log.debug("Numero de Documento: "+objDocumento.getNumeroDocumento()+"  " ); 
+			objDocumento.setConcopias(this.concopias );
+			log.debug("Tipo enumeracion :"+tiponumeracion+"  , "+objDocumento.getTiponumeracion());
+			log.debug("Enumerar Documento form:"+enumerarDocumento+"  " ); 
+			objDocumento.setEnumerarDocumento(enumerarDocumento!=null?enumerarDocumento.equals("S"):false);
+			log.debug("Enumerar Documento doc:"+objDocumento.getEnumerarDocumento()+"  " ); 
+			try{
+	 
+				objDocumento=documentoService.subirConMetadata(usuario,upload,idDocumento,objDocumento,objDD,versionar,idarchivos);
+				
+			}catch(RuntimeException e){
+				log.error("No se pudo subir el archivo a alfresco.",e);
+				return Constantes.ERROR_ALFRESCO; 
+				//return Constantes.ERROR_ALFRESCO;
+			}
+			this.cerrar="OK";
+			
+			if(versionar != null && versionar.equalsIgnoreCase(""+true)){
+				this.mensaje="             " + messageSource.getMessage(MessagePropertiesEnum.VERSIONED) + "                     ";
+				if(principal!=null&&objDocumento!=null&&objDocumento.getIdDocumento()!=null&&principal.intValue()!=objDocumento.getIdDocumento().intValue()){
+					this.mensaje="\\n"+((objDocumento.getNumeroDocumento()==null||objDocumento.getNumeroDocumento().equalsIgnoreCase(Constantes.NRODCUMENTO_SIN_NUMERO) )?  messageSource.getMessage(MessagePropertiesEnum.DOC_ADDED) : messageSource.getMessage(MessagePropertiesEnum.NRODOC_GENERATED, new String[] {((objDocumento.getNumeroDocumento()).replace(".", ""))}) );
+				} 
+			}else{
+				this.mensaje=((objDocumento.getNumeroDocumento()==null||objDocumento.getNumeroDocumento().equalsIgnoreCase(Constantes.NRODCUMENTO_SIN_NUMERO) )?  messageSource.getMessage(MessagePropertiesEnum.DOC_ADDED) : messageSource.getMessage(MessagePropertiesEnum.NRODOC_GENERATED, new String[] {((objDocumento.getNumeroDocumento()).replace(".", ""))}) );
+			
+			}
+			
+			return "subirconmetadata";
+	}
+
+	
+	public String verVentanaNumeracion(){
+		log.debug("-> [Action] NuevoDocumentoAction - verVentanaNumeracion():String ");
+		
+		try{
+			
+			Map<String,Object> session=ActionContext.getContext().getSession();
+			Usuario logeado=(Usuario) session.get(Constantes.SESSION_USUARIO);
+			this.documento=documentoService.findByIdDocumento(this.idDocumento);
+			this.expediente=documento.getExpediente();
+			this.listaDocumentos=documentoService.findDocumentosPorNumerar(logeado,this.expediente);
+			
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+		}
+		return "numeracion";
+	}
+	
+	
+	public String verVentanaFirmar(){
+		
+		try{
+			
+			Map<String,Object> session=ActionContext.getContext().getSession();
+			Usuario logeado=(Usuario) session.get(Constantes.SESSION_USUARIO);
+			this.objDocumentoPrincipal=documentoService.findByIdDocumento(this.idDocumento);
+			this.expediente=objDocumentoPrincipal.getExpediente();
+			this.listaDocumentos=documentoService.findDocumentosPorFirmar(logeado,this.expediente);
+			
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+		}
+		return "firmar";
+	}
+
+	/**Numera los documentos seleccionados en el popup "Enumerar documento".
+	 */
+	public void guardarNumeracionFirma() {
+		log.debug("-> [Action] NuevoDocumentoAction - guardarNumeracionFirma():void ");
+      Map<String, Object> sesion = ActionContext.getContext().getSession();
+      String[] documentosPorEnumerar = this.getRequest().getParameterValues("documentosPorEnumerar");
+      String[] documentosPorFirmar = this.getRequest().getParameterValues("documentosPorFirmar");
+      Map<Integer, Integer> documentsToModify = new HashMap<Integer, Integer>();
+
+      if (documentosPorEnumerar != null && documentosPorEnumerar.length > 0) {
+         log.info("Enumerando {} documento(s)", documentosPorEnumerar.length);
+
+         for (String id : documentosPorEnumerar) {
+            documentsToModify.put(Integer.valueOf(id), Integer.valueOf(Constantes.DO_ENUMERAR));
+         }
+      } else {
+         log.info("Ningun documento por enumerar");
+      }
+
+      if (documentosPorFirmar != null && documentosPorFirmar.length > 0) {
+         log.info("Firmando {} documento(s)", documentosPorFirmar.length);
+
+         for (String id : documentosPorFirmar) {
+            if (documentsToModify.containsKey(Integer.valueOf(id))) {
+               documentsToModify.put(Integer.valueOf(id), Integer.valueOf(Constantes.DO_ENUMERAR_FIRMAR));
+               continue;
+            }
+
+            documentsToModify.put(Integer.valueOf(id), Integer.valueOf(Constantes.DO_FIRMAR));
+         }
+      } else {
+         log.info("Ningun documento por firmar");
+      }
+
+      // obtener detalle de autenticacion de alfresco porque se almacena en ThreadLocal y vamos a cambiar de hilo
+      AuthenticationDetails authDetails = AuthenticationUtils.getAuthenticationDetails();
+      // llamada asincrona
+      taskExecutor.execute(new ModifyDocumentsTask(sesion, documentoService, documentsToModify, authDetails));
+   }
+
+   public void modificacionEnProceso() {
+      try {
+         Map<String, Object> sesion = ActionContext.getContext().getSession();
+         Boolean enProceso = (Boolean) sesion.get("MODIFICACION_EN_PROCESO");
+
+         if (enProceso == null) {
+            enProceso = false;
+         }
+
+         String mensaje = (String) sesion.get("MODIFICACION_MENSAJE");
+         String numero = (String) sesion.get("NUMERO_GENERADO");
+         String jsonString = " { 'enProceso': " + enProceso + ", 'mensaje': '" + mensaje + "', 'numero': '" + numero + "'}";
+         HttpServletResponse response = ServletActionContext.getResponse();
+         response.setContentType("text/x-json;charset=UTF-8");
+         PrintWriter out = response.getWriter();
+         out.print(jsonString);
+      } catch (IOException ex) {
+         log.error(ex.getMessage(), ex);
+      }
+   }
+
+    /**
+     * @return the mailService
+     */
+    public ManejoDeEmailService getMailService() {
+        return mailService;
+    }
+
+    /**
+     * @param mailService the mailService to set
+     */
+    public void setMailService(ManejoDeEmailService mailService) {
+        this.mailService = mailService;
+    }
+
+    public void setMessageSource(SigedMessageSource ms) {
+        this.messageSource = ms;
+    }
+        
+        public String mostrarCambiarFirmante(){
+        	Integer iddoc=Integer.parseInt(ServletActionContext.getRequest().getParameter("iddoc"));
+        	objDocumento=documentoService.findByIdDocumento(iddoc);
+        	return "editFirmante";
+        }
+        
+        public String validarFirmante(){
+        	String firmante=ServletActionContext.getRequest().getParameter("firmante");
+        	if(firmante!=""){
+	        	mensaje="_1";
+        	}
+        	else{
+        		mensaje="_No selecciono ningun firmante";
+        	}
+        	return "exito";
+        }
+        
+        public String guardarFirmante(){
+        	String firmante=ServletActionContext.getRequest().getParameter("firmante");
+        	String id=ServletActionContext.getRequest().getParameter("iddoc");
+        	Integer iddoc=Integer.parseInt(id);
+        	Documento doc=documentoService.findByIdDocumento(iddoc);
+        	Integer idUsuario=Integer.parseInt(firmante.split("_")[1]);
+        	Usuario userFirmante=usuarioService.findByIdUsuario(idUsuario);
+        	doc.setFirmante(userFirmante);
+        	try{
+        	documentoService.guardarDocumento(doc);
+        	mensaje="Se registro el nuevo firmante";
+        	}catch(Exception e){
+        		log.error("Error al guardar Firmante");
+        	}
+        	return "exito";
+        }        
+        
+	@SuppressWarnings("unused")
+	private void procesarEmail(Usuario Origen,Usuario Destino){
+		/****** Simular un envio de correo *****/
+		String to=Destino.getCorreo();
+		String from=Origen.getCorreo();
+		String subject="Notificacion de Siged";
+		String msgText="Ud Tiene un mensaje en su bandeja de siged por favor revicelo que le envia el Sr:"+Origen.getNombres();
+		String hostSmtp="192.168.1.200";
+		boolean debug=true;
+		getMailService().EnviarEmail(to,from,subject,msgText,hostSmtp,debug);
+	}
+
+   private class ModifyDocumentsTask implements Runnable {
+
+      private DocumentoService documentoService;
+      private Map<String, Object> sesion;
+      private Map<Integer, Integer> documentsToModify;
+      private AuthenticationDetails authDetails;
+
+      public ModifyDocumentsTask(Map<String, Object> sesion, DocumentoService documentoService, Map<Integer, Integer> documentsToModify, AuthenticationDetails authDetails) {
+         this.documentoService = documentoService;
+         this.sesion = sesion;
+         this.documentsToModify = documentsToModify;
+         this.authDetails = authDetails;
+      }
+
+      @Override
+      public void run() {
+         // setear los detalles de autenticacion de alfresco para que se almacenen en el nuevo hilo
+    	  log.debug("-> [Action] NuevoDocumentoAction - run():void ");
+         AuthenticationUtils.setAuthenticationDetails(authDetails);
+         Usuario usuario = (Usuario) sesion.get(Constantes.SESSION_USUARIO);
+         // es necesario setear el usuario en el ThreadLocal para poder usar los webservices de Alfresco
+         AuthThreadLocalHolder.setUsuario(usuario);
+         sesion.put("MODIFICACION_EN_PROCESO", true);
+         List<Documento> listaDocumentos = null;
+
+         try {
+            listaDocumentos = documentoService.modifyDocuments(usuario, documentsToModify);
+         } catch (Exception e) {
+            log.error(e.getMessage(), e);
+         }
+
+         StringBuilder cadena = new StringBuilder();
+         String numero = "";
+         try {
+            cadena.append("Lista de Documentos Modificados:");
+
+            if (listaDocumentos != null) {
+               for (Documento objDocumento : listaDocumentos) {
+                  cadena.append("\\n");
+                  cadena.append(objDocumento.getTipoDocumento().getNombre()).append("-").append(objDocumento.getNumeroDocumento());
+                  numero = objDocumento.getTipoDocumento().getNombre()+"-"+objDocumento.getNumeroDocumento();
+               }
+            }
+         } catch (Exception e) {
+            log.error(e.getMessage(), e);
+         }
+
+         sesion.put("MODIFICACION_EN_PROCESO", false);
+         sesion.put("MODIFICACION_MENSAJE", cadena.toString());
+         sesion.put("NUMERO_GENERADO", numero);
+      }
+   }
+
+	public ArchivopendienteService getArchivoPendienteService(){
+		return archivoPendienteService;
+	}
+
+	public void setArchivoPendienteService(ArchivopendienteService archivoPendienteService){
+		this.archivoPendienteService=archivoPendienteService;
+	}
+
+	public ArchivoService getArchivoService(){
+		return archivoService;
+	}
+
+	public void setArchivoService(ArchivoService archivoService){
+		this.archivoService=archivoService;
+	}
+
+	public ArchivoPendiente getArchivopendiente(){
+		return archivopendiente;
+	}
+
+	public void setArchivopendiente(ArchivoPendiente archivopendiente){
+		this.archivopendiente=archivopendiente;
+	}
+
+	public String getAsunto(){
+		return asunto;
+	}
+
+	public void setAsunto(String asunto){
+		this.asunto=asunto;
+	}
+
+	public Date getAtenderAntesDe(){
+		return atenderAntesDe;
+	}
+
+	public void setAtenderAntesDe(Date atenderAntesDe){
+		this.atenderAntesDe=atenderAntesDe;
+	}
+
+	public String getCerrar(){
+		return cerrar;
+	}
+
+	public void setCerrar(String cerrar){
+		this.cerrar=cerrar;
+	}
+
+	public ClienteService getClienteService(){
+		return clienteService;
+	}
+
+	public void setClienteService(ClienteService clienteService){
+		this.clienteService=clienteService;
+	}
+
+	public ConcesionarioService getConcesionarioService(){
+		return concesionarioService;
+	}
+
+	public void setConcesionarioService(ConcesionarioService concesionarioService){
+		this.concesionarioService=concesionarioService;
+	}
+
+	public Documento getDocumento(){
+		return documento;
+	}
+
+	public void setDocumento(Documento documento){
+		this.documento=documento;
+	}
+
+	public DocumentoService getDocumentoService(){
+		return documentoService;
+	}
+
+	public void setDocumentoService(DocumentoService documentoService){
+		this.documentoService=documentoService;
+	}
+
+	public ExpedienteService getExpedienteService(){
+		return expedienteService;
+	}
+
+	public void setExpedienteService(ExpedienteService expedienteService){
+		this.expedienteService=expedienteService;
+	}
+
+	public Integer getIdArchivoPendiente(){
+		return idArchivoPendiente;
+	}
+
+	public void setIdArchivoPendiente(Integer idArchivoPendiente){
+		this.idArchivoPendiente=idArchivoPendiente;
+	}
+
+	public Integer getIdDocumento(){
+		return idDocumento;
+	}
+
+	public void setIdDocumento(Integer idDocumento){
+		this.idDocumento=idDocumento;
+	}
+
+	public Integer getIdPlantilla(){
+		return idPlantilla;
+	}
+
+	public void setIdPlantilla(Integer idPlantilla){
+		this.idPlantilla=idPlantilla;
+	}
+
+	public Integer getIdproceso(){
+		return idproceso;
+	}
+
+	public void setIdproceso(Integer idproceso){
+		this.idproceso=idproceso;
+	}
+
+	public Integer getIdtipodocumento(){
+		return idtipodocumento;
+	}
+
+	public void setIdtipodocumento(Integer idtipodocumento){
+		this.idtipodocumento=idtipodocumento;
+	}
+
+	public DocumentoDetail getObjDD(){
+		return objDD;
+	}
+
+	public void setObjDD(DocumentoDetail objDD){
+		this.objDD=objDD;
+	}
+
+	public PlantillaService getPlantillaService(){
+		return plantillaService;
+	}
+
+	public void setPlantillaService(PlantillaService plantillaService){
+		this.plantillaService=plantillaService;
+	}
+
+	public ProcesoService getProcesoService(){
+		return procesoService;
+	}
+
+	public void setProcesoService(ProcesoService procesoService){
+		this.procesoService=procesoService;
+	}
+
+	public RepositorioService getRepositorioService(){
+		return repositorioService;
+	}
+
+	public void setRepositorioService(RepositorioService repositorioService){
+		this.repositorioService=repositorioService;
+	}
+
+	public HttpServletRequest getRequest(){
+		return request;
+	}
+
+	public void setRequest(HttpServletRequest request){
+		this.request=request;
+	}
+
+	public HttpServletResponse getResponse(){
+		return response;
+	}
+
+	public void setResponse(HttpServletResponse response){
+		this.response=response;
+	}
+
+	public String getRutaArchivo(){
+		return rutaArchivo;
+	}
+
+	public void setRutaArchivo(String rutaArchivo){
+		this.rutaArchivo=rutaArchivo;
+	}
+
+	public TipodocumentoService getTipoDocumentoService(){
+		return tipodocumentoService;
+	}
+
+	public void setTipodocumentoService(TipodocumentoService tipodocumentoService){
+		this.tipodocumentoService=tipodocumentoService;
+	}
+
+	public TipoidentificacionService getTipoidentificacionService(){
+		return tipoidentificacionService;
+	}
+
+	public void setTipoidentificacionService(TipoidentificacionService tipoidentificacionService){
+		this.tipoidentificacionService=tipoidentificacionService;
+	}
+
+	public UsuarioService getUsuarioService(){
+		return usuarioService;
+	}
+
+	public void setUsuarioService(UsuarioService usuarioService){
+		this.usuarioService=usuarioService;
+	}
+
+	public List<Tipoidentificacion> getLstRadio(){
+		return lstRadio;
+	}
+
+	public void setLstRadio(List<Tipoidentificacion> lstRadio){
+		this.lstRadio=lstRadio;
+	}
+
+	public Documento getObjDocumento(){
+		return objDocumento;
+	}
+
+	public void setObjDocumento(Documento objDocumento){
+		this.objDocumento=objDocumento;
+	}
+
+	
+	public NotificacionService getSrvNotificacion(){
+		return srvNotificacion;
+	}
+
+	public void setSrvNotificacion(NotificacionService srvNotificacion){
+		this.srvNotificacion=srvNotificacion;
+	}
+
+	public Documento getObjDocumentoPrincipal(){
+		return objDocumentoPrincipal;
+	}
+
+	public void setObjDocumentoPrincipal(Documento objDocumentoPrincipal){
+		this.objDocumentoPrincipal=objDocumentoPrincipal;
+	}
+
+	public Expediente getExpediente(){
+		return expediente;
+	}
+
+	public void setExpediente(Expediente expediente){
+		this.expediente=expediente;
+	}
+
+	public String getRutapadre(){
+		return rutapadre;
+	}
+
+	public void setRutapadre(String rutapadre){
+		this.rutapadre=rutapadre;
+	}
+
+	public int getNarchivos(){
+		return narchivos;
+	}
+
+	public void setNarchivos(int narchivos){
+		this.narchivos=narchivos;
+	}
+
+	public Integer[] getIdarchivos(){
+		return idarchivos;
+	}
+
+	public void setIdarchivos(Integer[] idarchivos){
+		this.idarchivos=idarchivos;
+	}
+
+	public String getVersionar(){
+		return versionar;
+	}
+
+	public void setVersionar(String versionar){
+		this.versionar=versionar;
+	}
+
+	public String getOrigenExpediente(){
+		return origenExpediente;
+	}
+
+	public void setOrigenExpediente(String origenExpediente){
+		this.origenExpediente=origenExpediente;
+	}
+
+	public Integer getIdExpediente(){
+		return idExpediente;
+	}
+
+	public void setIdExpediente(Integer idExpediente){
+		this.idExpediente=idExpediente;
+	}
+
+	public String getOrigenDerivacion() {
+		return origenDerivacion;
+	}
+
+	public void setOrigenDerivacion(String origenDerivacion) {
+		this.origenDerivacion = origenDerivacion;
+	}
+
+	public Integer getiIdNotificacion() {
+		return iIdNotificacion;
+	}
+
+	public void setiIdNotificacion(Integer iIdNotificacion) {
+		this.iIdNotificacion = iIdNotificacion;
+	}
+
+    public TaskExecutor getTaskExecutor() {
+        return taskExecutor;
+    }
+
+    public void setTaskExecutor(TaskExecutor taskExecutor) {
+        this.taskExecutor = taskExecutor;
+    }
+    
+    public String getEnumerarDocumento() {
+		return enumerarDocumento;
+	}
+
+	public void setEnumerarDocumento(String enumerarDocumento) {
+		this.enumerarDocumento = enumerarDocumento;
+	}
+
+	public String getTiponumeracion() {
+		return tiponumeracion;
+	}
+
+	public void setTiponumeracion(String tiponumeracion) {
+		this.tiponumeracion = tiponumeracion;
+	}
+
+	public List<String> getCondestinatarios() {
+		return condestinatarios;
+	}
+
+	public void setCondestinatarios(List<String> condestinatarios) {
+		this.condestinatarios = condestinatarios;
+	}
+
+	public List<String> getConcopias() {
+		return concopias;
+	}
+
+	public void setConcopias(List<String> concopias) {
+		this.concopias = concopias;
+	}
+
+	public Date getFecha() {
+		return fecha;
+	}
+
+	public void setFecha(Date fecha) {
+		this.fecha = fecha;
+	}
+
+	public List<Documento> getListaDocumentos(){
+		return listaDocumentos;
+	}
+
+	public void setListaDocumentos(List<Documento> listaDocumentos){
+		this.listaDocumentos=listaDocumentos;
+	}
+
+	public List<Parametro> getListaParametros(){
+		return listaParametros;
+	}
+
+	public void setListaParametros(List<Parametro> listaParametros){
+		this.listaParametros=listaParametros;
+	}
+
+	public ParametroService getParametroService(){
+		return parametroService;
+	}
+
+	public void setParametroService(ParametroService parametroService){
+		this.parametroService=parametroService;
+	}
+	private String marcaDeAgua;
+
+	public String getMarcaDeAgua(){
+		return marcaDeAgua;
+	}
+
+	public void setMarcaDeAgua(String marcaDeAgua){
+		this.marcaDeAgua=marcaDeAgua;
+	}
+
+	public TrazabilidaddocumentoService getTrazabilidaddocumentoService(){
+		return trazabilidaddocumentoService;
+	}
+
+	public void setTrazabilidaddocumentoService(TrazabilidaddocumentoService trazabilidaddocumentoService){
+		this.trazabilidaddocumentoService=trazabilidaddocumentoService;
+	}
+
+	public AccionService getAccionService(){
+		return accionService;
+	}
+
+	public void setAccionService(AccionService accionService){
+		this.accionService=accionService;
+	}
+
+	public String getCargarData(){
+		return cargarData;
+	}
+
+	public void setCargarData(String cargarData){
+		this.cargarData=cargarData;
+	}
+
+	public String getTipoDocumento(){
+		return tipodocumento;
+	}
+
+	public void setTipoDocumento(String tipodocumento){
+		this.tipodocumento=tipodocumento;
+	}
+
+	public String getFileCaption(){
+		return fileCaption;
+	}
+
+	public void setFileCaption(String fileCaption){
+		this.fileCaption=fileCaption;
+	}
+
+	public String getUploadContentType(){
+		return uploadContentType;
+	}
+
+	public void setUploadContentType(String uploadContentType){
+		this.uploadContentType=uploadContentType;
+	}
+
+	public String getUploadFileName(){
+		return uploadFileName;
+	}
+
+	public void setUploadFileName(String uploadFileName){
+		this.uploadFileName=uploadFileName;
+	}
+
+	public String getFullFileName(){
+		return fullFileName;
+	}
+
+	public void setFullFileName(String fullFileName){
+		this.fullFileName=fullFileName;
+	}
+	private File upload;
+
+	public File getUpload(){
+		return upload;
+	}
+
+	public void setUpload(File upload){
+		this.upload=upload;
+	}
+
+	public boolean isBBandeja(){
+		return bBandeja;
+	}
+
+	public void setBBandeja(boolean bBandeja){
+		this.bBandeja=bBandeja;
+	}
+
+	public Integer getIdccdestinatario(){
+		return idccdestinatario;
+	}
+
+	public void setIdccdestinatario(Integer idccdestinatario){
+		this.idccdestinatario=idccdestinatario;
+	}
+	private Integer idccdestinatario;
+
+	public Integer getIddestinatario(){
+		return iddestinatario;
+	}
+
+	public void setIddestinatario(Integer iddestinatario){
+		this.iddestinatario=iddestinatario;
+	}
+
+	public Integer getIdcliente(){
+		return idcliente;
+	}
+
+	public void setIdcliente(Integer idcliente){
+		this.idcliente=idcliente;
+	}
+	private String strAcc;
+
+	public String getStrAcc(){
+		return strAcc;
+	}
+
+	public void setStrAcc(String strAcc){
+		this.strAcc=strAcc;
+	}
+
+	public void setServletRequest(HttpServletRequest request){
+		this.request=request;
+	}
+
+	public void setServletResponse(HttpServletResponse response){
+		this.response=response;
+	}
+
+	public String getStrResponsable(){
+		return strResponsable;
+	}
+
+	public void setStrResponsable(String strResponsable){
+		this.strResponsable=strResponsable;
+	}
+
+	public String getStrCorreoConcesionario(){
+		return strCorreoConcesionario;
+	}
+
+	public void setStrCorreoConcesionario(String strCorreoConcesionario){
+		this.strCorreoConcesionario=strCorreoConcesionario;
+	}
+
+	public String getStrDireccion(){
+		return strDireccion;
+	}
+
+	public void setStrDireccion(String strDireccion){
+		this.strDireccion=strDireccion;
+	}
+
+	public String getCorrentista(){
+		return correntista;
+	}
+
+	public void setCorrentista(String correntista){
+		this.correntista=correntista;
+	}
+
+	public Integer getIdcorrentista(){
+		return idcorrentista;
+	}
+
+	public void setIdcorrentista(Integer idcorrentista){
+		this.idcorrentista=idcorrentista;
+	}
+
+	public Integer getIdtipoidentificacion(){
+		return idtipoidentificacion;
+	}
+
+	public void setIdtipoidentificacion(Integer idtipoidentificacion){
+		this.idtipoidentificacion=idtipoidentificacion;
+	}
+
+	public String getMensaje(){
+		return mensaje;
+	}
+
+	public void setMensaje(String mensaje){
+		this.mensaje=mensaje;
+	}
+}

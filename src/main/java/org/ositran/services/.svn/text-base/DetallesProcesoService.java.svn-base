@@ -1,0 +1,13 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import org.osinerg.dojo.grid.Estructura;
+
+public interface DetallesProcesoService {
+
+	public List<Estructura> getEstructuraAltU(String grupoclasificacion);
+	public String hello();
+	public String getGrupoclasificacion();
+	public void setGrupoclasificacion(String grupoclasificacion);
+}

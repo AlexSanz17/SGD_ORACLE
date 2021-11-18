@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Sistema de Gesti&oacute;n Documentaria - Reporte Vista</title>
+        <script type="text/javascript" src="js/siged/layout/reporteVista.js"></script>
+    </head>
+    <body>
+        <div dojoType="dijit.TitlePane" id="titlePaneFiltroReporteVista" jsId="titlePaneFiltroReporteVista" open="true" title="Filtro para los Reportes">
+             <div dojoType="dojox.layout.ContentPane" id="contentPaneFiltroReporteVista" jsId="contentPaneFiltroReporteVista" href="pages/reportes/filtroReporteVista.html" title="Datos Reporte" style="width:100%;height:340px;"></div>
+        </div>
+        <div dojoType="dojox.layout.ContentPane" region="center" id="centralAvanzadaReporte" style="width:100%;height:48%;">
+            <div id="mensajeError" style="width: 100%;height: 100px;text-align: center;display:none;">No se encontro ning&uacute;n resultado para el Reporte.</div>
+        </div>
+       
+        <!-- creamos la  div con el nombre cargando    le damos los estilos  class="cargando" lo cual tiene una imagen y un texto -->
+        <div id="cargandoReporte" style="display: none;" class="cargando">
+            <img src="images/cargandoGrid.gif" alt="Cargando" />
+            <strong>Cargando...</strong>
+        </div>
+    </body>
+</html>

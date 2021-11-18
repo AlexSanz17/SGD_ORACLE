@@ -1,0 +1,12 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Tipoidentificacion;
+
+public interface TipoidentificacionDAO {
+
+   public List<Tipoidentificacion> findAll();
+
+   public Tipoidentificacion buscarObjPor(String sNombre);
+}

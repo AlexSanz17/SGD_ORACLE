@@ -1,0 +1,319 @@
+package org.osinerg.daos;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.osinerg.dojo.BusquedaAvanzada;
+
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.FilaHojaRuta;
+import com.btg.osinergmin.siged.domain.FilaReporteAPN2;
+import com.btg.osinergmin.siged.domain.NodoDocReporteAPN3;
+import com.btg.osinergmin.siged.domain.NodoExpReporteAPN3;
+import com.btg.osinergmin.siged.domain.ReporteAPN1;
+
+public class ReporteAPNDAOImpl implements ReporteAPNDAO {
+	
+	private static Logger log = Logger.getLogger(ReporteAPNDAOImpl.class);
+	private EntityManager em;
+	
+	
+	public EntityManager getEm() {
+		return em;
+	}
+
+	@PersistenceContext(unitName = "sigedPU")
+	public void setEm(EntityManager em) {
+		this.em = em;
+	}
+
+	public static Logger getLog() {
+		return log;
+	}
+
+	public static void setLog(Logger log) {
+		ReporteAPNDAOImpl.log = log;
+	}
+
+	@SuppressWarnings({ "unchecked", "deprecation" })
+	@Override
+	public List<ReporteAPN1> getListaReporteAPN1(String idAreaOrigen,
+			String idTipoDocumento, String idPrioridad,String fechaDesde, String fechaHasta) {
+		
+			Integer idAreaOrigen_=0;
+			Integer idTipoDocumento_ =0;				
+			Date fechaDesde_ = null;
+			Date fechaHasta_ = null;
+			SimpleDateFormat fechita = new SimpleDateFormat("dd/MM/yyyy");
+			String sQuery = "SELECT f FROM ReporteAPN1 f ";
+			boolean flagWhere = false;
+			
+			
+			if(!((idAreaOrigen.toString().trim()).equals("Todos"))){
+				idAreaOrigen_= Integer.parseInt(idAreaOrigen.toString().trim());
+				sQuery += "WHERE f.idAreaOrigen like :idAreaOrigen ";
+				flagWhere=true;
+			}
+			
+			if(!((idTipoDocumento.toString().trim()).equals("Todos"))){
+				idTipoDocumento_= Integer.parseInt(idTipoDocumento.toString().trim());
+				if(flagWhere){
+					sQuery +="AND f.idTipoDocumento like :idTipoDocumento ";
+				}else{
+					sQuery +="WHERE f.idTipoDocumento like :idTipoDocumento ";
+					flagWhere = true;
+				}
+			}
+
+			if(!((idPrioridad.toString().trim()).equals("Todos"))){
+				if(flagWhere){
+					sQuery +="AND f.idPrioridad like :idPrioridad ";
+				}else{
+					sQuery +="WHERE f.idPrioridad like :idPrioridad ";
+					flagWhere = true;
+				}
+			}
+			
+			if(!((fechaDesde.toString().trim()).equals("Todos"))){
+				try {
+					fechaDesde_= fechita.parse(fechaDesde);
+					
+					fechaHasta_= fechita.parse(fechaHasta);
+					fechaHasta_.setHours(24);
+					fechaHasta_.setMinutes(0);
+					fechaHasta_.setSeconds(0);
+					
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				if(flagWhere){
+					sQuery +="AND f.fechaCreacion >= :fechaDesde AND f.fechaCreacion <= :fechaHasta ";
+				}else{
+					sQuery +="WHERE f.fechaCreacion >= :fechaDesde AND f.fechaCreacion <= :fechaHasta ";
+					flagWhere = true;
+				}
+			}	
+			
+			sQuery += "ORDER BY f.fechaCreacion ASC ";
+			
+			//-----------------------------------------------------
+			Query obj = em.createQuery(sQuery);
+			//-----------------------------------------------------
+			
+			if(!((idAreaOrigen.toString().trim()).equals("Todos"))){
+				obj.setParameter("idAreaOrigen", idAreaOrigen_);
+			}
+			if(!((idTipoDocumento.toString().trim()).equals("Todos"))){
+				obj.setParameter("idTipoDocumento", idTipoDocumento_);
+			}
+			if(!((idPrioridad.toString().trim()).equals("Todos"))){
+				obj.setParameter("idPrioridad", idPrioridad);
+			}
+			if(!((fechaDesde.toString().trim()).equals("Todos"))){
+				obj.setParameter("fechaDesde", fechaDesde_);
+			}
+			if(!((fechaHasta.toString().trim()).equals("Todos"))){
+				obj.setParameter("fechaHasta", fechaHasta_);
+			}
+			return obj.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<FilaReporteAPN2> getListaReporteAPN2(BusquedaAvanzada objFiltro){
+		String sql = "SELECT f FROM FilaReporteAPN2 f WHERE 1=1 ";
+		
+		//1
+		if(!StringUtils.isEmpty(objFiltro.getAreaOrigen()) && !objFiltro.getAreaOrigen().equals("0")){
+			sql += "AND f.idAreaRegistro = :idAreaOrigen ";
+		}
+		//2
+		if(!StringUtils.isEmpty(objFiltro.getAreaDestino()) && !objFiltro.getAreaDestino().equals("0")){
+			sql += "AND f.idAreaDestino = :idAreaDestino ";
+		}
+		//3
+		if(!StringUtils.isEmpty(objFiltro.getTipoDocumento()) && !objFiltro.getTipoDocumento().equals("0")){
+			sql += "AND f.idTipoDocumento = :idTipoDocumento ";
+		}
+		//4
+		if(!StringUtils.isEmpty(objFiltro.getGrupoProceso()) && !objFiltro.getGrupoProceso().equals("0")){
+			sql += "AND f.idGrupoProceso = :idGrupoProceso ";
+		}
+		//5
+		if(!StringUtils.isEmpty(objFiltro.getProceso()) && !objFiltro.getProceso().equals("0")){
+			sql += "AND f.idProceso = :idProceso ";
+		}
+		//6
+		if(!StringUtils.isEmpty(objFiltro.getFechaDesde())){
+			sql += "AND f.fechaCreacion >= :fechaDesde ";
+		}
+		//7
+		if(!StringUtils.isEmpty(objFiltro.getFechaHasta())){
+			sql += "AND f.fechaCreacion <= :fechaHasta ";			
+		}
+		
+		sql += "ORDER BY f.fechaCreacion ASC ";
+		Query q = em.createQuery(sql);
+		
+		//1
+		if(!StringUtils.isEmpty(objFiltro.getAreaOrigen()) && !objFiltro.getAreaOrigen().equals("0")){
+			q.setParameter("idAreaOrigen", Integer.parseInt(objFiltro.getAreaOrigen()));
+		}
+		//2
+		if(!StringUtils.isEmpty(objFiltro.getAreaDestino()) && !objFiltro.getAreaDestino().equals("0")){
+			q.setParameter("idAreaDestino", Integer.parseInt(objFiltro.getAreaDestino()));
+		}
+		//3
+		if(!StringUtils.isEmpty(objFiltro.getTipoDocumento()) && !objFiltro.getTipoDocumento().equals("0")){
+			q.setParameter("idTipoDocumento", Integer.parseInt(objFiltro.getTipoDocumento()));
+		}
+		//4
+		if(!StringUtils.isEmpty(objFiltro.getGrupoProceso()) && !objFiltro.getGrupoProceso().equals("0")){
+			q.setParameter("idGrupoProceso", Integer.parseInt(objFiltro.getGrupoProceso()));
+		}
+		//5
+		if(!StringUtils.isEmpty(objFiltro.getProceso()) && !objFiltro.getProceso().equals("0")){
+			q.setParameter("idProceso", Integer.parseInt(objFiltro.getProceso()));
+		}
+		//6
+		if(!StringUtils.isEmpty(objFiltro.getFechaDesde())){
+			try {
+				SimpleDateFormat fechita = new SimpleDateFormat("yyyy-MM-dd");
+				
+				Calendar fechaDesde = Calendar.getInstance();
+				fechaDesde.setTime(fechita.parse(objFiltro.getFechaDesde()));
+				fechaDesde.set(Calendar.HOUR, 0);
+				fechaDesde.set(Calendar.MINUTE, 0);
+				fechaDesde.set(Calendar.SECOND, 0);
+				
+				q.setParameter("fechaDesde", fechaDesde.getTime());
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		//7
+		if(!StringUtils.isEmpty(objFiltro.getFechaHasta())){
+			try {
+				SimpleDateFormat fechita = new SimpleDateFormat("yyyy-MM-dd");
+				
+				Calendar fechaHasta = Calendar.getInstance();
+				fechaHasta.setTime(fechita.parse(objFiltro.getFechaHasta()));
+				fechaHasta.set(Calendar.HOUR, 23);
+				fechaHasta.set(Calendar.MINUTE, 59);
+				fechaHasta.set(Calendar.SECOND, 59);
+				
+				q.setParameter("fechaHasta", fechaHasta.getTime());
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return q.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<NodoExpReporteAPN3> getListaNodosExpedienteReporteAPN3(BusquedaAvanzada objFiltro){
+		List<NodoExpReporteAPN3> lista = new ArrayList<NodoExpReporteAPN3>();
+		
+		String sql = "SELECT new Expediente(ex.id, ex.proceso, ex.nroexpediente, ex.cliente, (SELECT d.asunto FROM Documento d WHERE d.expediente.id = ex.id AND d.idDocumento = (SELECT MIN(dd.idDocumento) FROM Documento dd WHERE dd.expediente.id = ex.id))) FROM Expediente ex WHERE 1=1 ";
+		
+		//1
+		if(!StringUtils.isEmpty(objFiltro.getProceso()) && !objFiltro.getProceso().equals("0")){
+			sql += "AND ex.proceso.idproceso = :idProceso ";
+		}
+		//2
+		if(!StringUtils.isEmpty(objFiltro.getFechaDesde())){
+			sql += "AND ex.fechacreacion >= :fechaDesde ";
+		}
+		//3
+		if(!StringUtils.isEmpty(objFiltro.getFechaHasta())){
+			sql += "AND ex.fechacreacion <= :fechaHasta ";			
+		}
+		//4
+		if(!StringUtils.isEmpty(objFiltro.getCliente())){
+			sql += "AND ex.cliente.idCliente = :idCliente ";
+		}
+		
+		sql += "ORDER BY ex.fechacreacion ASC ";
+		Query q = em.createQuery(sql);
+		
+		//1
+		if(!StringUtils.isEmpty(objFiltro.getProceso()) && !objFiltro.getProceso().equals("0")){
+			q.setParameter("idProceso", Integer.parseInt(objFiltro.getProceso()));
+		}
+		//2
+		if(!StringUtils.isEmpty(objFiltro.getFechaDesde())){
+			try {
+				SimpleDateFormat fechita = new SimpleDateFormat("yyyy-MM-dd");
+				
+				Calendar fechaDesde = Calendar.getInstance();
+				fechaDesde.setTime(fechita.parse(objFiltro.getFechaDesde()));
+				fechaDesde.set(Calendar.HOUR, 0);
+				fechaDesde.set(Calendar.MINUTE, 0);
+				fechaDesde.set(Calendar.SECOND, 0);
+				
+				q.setParameter("fechaDesde", fechaDesde.getTime());
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		//3
+		if(!StringUtils.isEmpty(objFiltro.getFechaHasta())){
+			try {
+				SimpleDateFormat fechita = new SimpleDateFormat("yyyy-MM-dd");
+				
+				Calendar fechaHasta = Calendar.getInstance();
+				fechaHasta.setTime(fechita.parse(objFiltro.getFechaHasta()));
+				fechaHasta.set(Calendar.HOUR, 23);
+				fechaHasta.set(Calendar.MINUTE, 59);
+				fechaHasta.set(Calendar.SECOND, 59);
+				
+				q.setParameter("fechaHasta", fechaHasta.getTime());
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		//4
+		if(!StringUtils.isEmpty(objFiltro.getCliente())){
+			q.setParameter("idCliente", Integer.parseInt(objFiltro.getCliente()));
+		}
+		
+		List<Expediente> expedientes = (List<Expediente>)q.getResultList();
+		
+		if(expedientes != null && !expedientes.isEmpty()){
+			for(Expediente expediente : expedientes){
+				NodoExpReporteAPN3 nodo = new NodoExpReporteAPN3(expediente.getId(), expediente.getProceso().getTiempoatencion(), expediente.getNroexpediente(), expediente.getCliente().getNombreRazon(), expediente.getAsunto());
+				lista.add(nodo);
+			}
+		}
+		
+		return lista;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<NodoDocReporteAPN3> getListaNodosDocumentoReporteAPN3(Integer idExpediente){
+		String sql = "SELECT n FROM NodoDocReporteAPN3 n WHERE n.idExpediente = :idExpediente";
+		return em.createQuery(sql).setParameter("idExpediente", idExpediente).getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<FilaHojaRuta> getHojaRuta(Integer idDocumento){
+		String sql = "SELECT f FROM FilaHojaRuta f WHERE f.documento = :idDocumento";
+		return em.createQuery(sql).setParameter("idDocumento", idDocumento).getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<FilaHojaRuta> getHojaRutaExpediente(Integer idExpediente){
+		String sql = "SELECT f FROM FilaHojaRuta f WHERE (SELECT d.expediente.id FROM Documento d WHERE d.idDocumento = f.documento) = :idExpediente";
+		return em.createQuery(sql).setParameter("idExpediente", idExpediente).getResultList();
+	}
+}

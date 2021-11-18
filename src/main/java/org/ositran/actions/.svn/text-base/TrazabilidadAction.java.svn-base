@@ -1,0 +1,819 @@
+package org.osinerg.actions;
+
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.FilaHojaRuta;
+import com.btg.osinergmin.siged.domain.Proceso;
+import com.btg.osinergmin.siged.domain.Trazabilidadapoyo;
+import com.btg.osinergmin.siged.domain.Trazabilidadcopia;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Trazabilidadexpediente;
+import com.btg.osinergmin.siged.domain.Usuario;
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.ActionContext;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import org.apache.log4j.Logger;
+import org.osinerg.pojos.ArchivoVersionado;
+import org.osinerg.services.ArchivoService;
+import org.osinerg.services.DocumentoService;
+import org.osinerg.services.EtapaService;
+import org.osinerg.services.ProcesoService;
+import org.osinerg.services.ReporteAPNService;
+import org.osinerg.services.RepositorioService;
+import org.osinerg.services.TrazabilidadapoyoService;
+import org.osinerg.services.TrazabilidadcopiaService;
+import org.osinerg.services.TrazabilidaddocumentoService;
+import org.osinerg.services.TrazabilidadexpedienteService;
+import org.osinerg.services.UsuarioService;
+import org.osinerg.utils.Constantes;
+import org.osinerg.utils.DateUtil;
+import org.osinerg.utils.SigedUtils;
+import org.osinerg.utils.StringUtil;
+
+public class TrazabilidadAction {
+
+    private static Logger log = Logger.getLogger(TrazabilidadAction.class);
+    
+    private Date fechaLimite;
+    
+    private Character tipoOrigen;
+    
+    private Long apoyosPendientes;
+    
+    @SuppressWarnings("unused")
+	private boolean noHayAlfresco;
+    private boolean mostrarDetalle;
+    private boolean mostrarEtapa;
+    private boolean mostrarActividad;
+    private boolean mostrarAdjuntos;
+    private boolean mostrarToolbar;
+    private boolean puedeReferenciar;
+    
+    private Integer iIdDocumento;
+    private Integer iIdExp;
+    private Integer idTrazabilidad;
+    
+    private String fechaEnTexto;
+    private String creador;
+    private String idOrigen;
+    private String mode;
+    private String origenDetalleDoc = null;
+    private String indexTreeExp;
+    
+    @SuppressWarnings("unused")
+	private Trazabilidaddocumento objTrazabilidadDocumento;
+    private Usuario usuarioLogeado;
+    private Documento objDocumento;
+    private List<Trazabilidaddocumento> lstTrazabilidadDocumento;
+    private List<Trazabilidadexpediente> lstTrazabilidadExpediente;
+    private List<Trazabilidadcopia> lstTrazabilidadCopia;
+    private List<Trazabilidadapoyo> lstTrazabilidadapoyo;
+    private List<ArchivoVersionado> versionamiento;
+    private List<FilaHojaRuta> trazabilidadUnificada;
+    
+    private DocumentoService documentoService;
+    private TrazabilidaddocumentoService trazabilidadDocumentoService;
+    private TrazabilidadexpedienteService srvTrazabilidadEx;
+    private ArchivoService archivoService;
+    private UsuarioService usuarioService;
+    private RepositorioService repositorioService;
+    private ProcesoService procesoService;
+    private EtapaService etapaService;
+    private TrazabilidadcopiaService trazabilidadcopiaService;
+    private TrazabilidadapoyoService trazabilidadapoyoService;
+    private ReporteAPNService reporteAPNService;
+    
+    public TrazabilidadAction(TrazabilidaddocumentoService srvTrazabilidad, ArchivoService archivoService, UsuarioService usuarioService, RepositorioService repositorioService, TrazabilidadexpedienteService srvTrazabilidadEx) {
+        setTrazabilidadDocumentoService(srvTrazabilidad);
+        this.setArchivoService(archivoService);
+        this.setUsuarioService(usuarioService);
+        this.setRepositorioService(repositorioService);
+        this.setSrvTrazabilidadEx(srvTrazabilidadEx);
+    }
+
+    /**Llamado cuando se abre el popup de "Ver Trazabilidad"
+     * Carga los datos a ser mostrados en la ventana "Trazabilidad Documento"
+     */
+	public String viewSeguimiento() throws Exception {
+    	log.debug("-> [Action] TrazabilidadAction - viewSeguimiento():String ");
+        if (getIIdDocumento() == null) {
+            log.error("No se recibio ningun ID Documento");
+            return Action.ERROR;
+        }
+        
+        List<Trazabilidaddocumento> traza = new ArrayList<Trazabilidaddocumento>();
+        
+        if ("documento".equalsIgnoreCase(mode)) {
+            objDocumento = documentoService.findByIdDocumento(iIdDocumento);
+            lstTrazabilidadDocumento = trazabilidadDocumentoService.findByIdDocumento(iIdDocumento);
+
+            return Action.SUCCESS;
+        }
+        String action = "";
+        if("imprimir".equalsIgnoreCase(mode)){
+        	action = "print";
+        }else{
+        	action = Action.SUCCESS;
+        }
+        //try{
+        log.debug("Documento recibido con ID [" + getIIdDocumento() + "]");
+        apoyosPendientes = 0l;
+        objDocumento = documentoService.findByIdDocumento(getIIdDocumento());
+
+        //Expediente expediente=expedienteService.findPropietarioByIdExpediente(getObjDD().getIIdExpediente());
+        mostrarEtapa = false;
+        Proceso proceso = procesoService.findByIdProceso(objDocumento.getExpediente().getProceso().getIdproceso());
+        List<Etapa> listaEtapas = etapaService.findEtapabyProceso(proceso.getIdproceso());
+        if (listaEtapas != null && listaEtapas.size() > 0) {
+            mostrarEtapa = true;
+        }
+        Integer idDocumento = objDocumento.getDocumentoreferencia() != null ? objDocumento.getDocumentoreferencia() : objDocumento.getIdDocumento();
+        /**REN Cambio desde aqui para la trazabilidad de lla vista*/
+        trazabilidadUnificada = reporteAPNService.generarHojaRuta(idDocumento);
+        Trazabilidaddocumento ultimo = null;
+        if(trazabilidadUnificada != null && !trazabilidadUnificada.isEmpty()){
+        	trazabilidadUnificada.get(0).setDestinatario("-");
+        	for(int i = trazabilidadUnificada.size()-1; i>=0; i--){
+            	if(trazabilidadUnificada.get(i).getPk().getTipo().equalsIgnoreCase("transferencia")){
+            		ultimo = trazabilidadDocumentoService.findTrabilidadbyId(trazabilidadUnificada.get(i).getPk().getId());
+            		break;
+            	}
+            }
+        }
+        
+        /*
+        setLstTrazabilidadDocumento(trazabilidadDocumentoService.findByIdDocumento(idDocumento));
+        log.debug("Obteniendo ultimo documento");
+        Trazabilidaddocumento ultimo = lstTrazabilidadDocumento.get(lstTrazabilidadDocumento.size() -1);
+        mostrarActividad = false;
+        //Trazabilidad con copia del documento principal
+        boolean primero = true;
+        for (Trazabilidaddocumento actual : lstTrazabilidadDocumento) {
+            Calendar fechaUltima = Calendar.getInstance();
+            fechaUltima.setTime(ultimo.getFechacreacion());
+            Calendar fechaActual = Calendar.getInstance();
+            fechaActual.setTime(actual.getFechacreacion());
+            if (fechaUltima.compareTo(fechaActual) < 0) {
+                ultimo = actual;
+            }
+            
+            if(primero){
+            	actual.setDestinatario(null);
+            	primero = false;
+            }
+            actual.setEstado(SigedUtils.getDescripcionEstado(actual.getDocumento().getEstado()));
+            traza.add(actual);
+            
+            /**Adicionamos las trazabilidades de las copias -------------------------------------------------------------------*
+            List<Trazabilidadcopia> copias = trazabilidadcopiaService.buscarPorOrigen(actual.getIdtrazabilidaddocumento(), Constantes.TIPO_ORIGEN_TRAZADOCUMENTO); 
+            copias.addAll(trazabilidadcopiaService.buscarPorOrigen(actual.getIdtrazabilidaddocumento(), Constantes.TIPO_ORIGEN_TRAZACOPIA));
+            if(copias != null && !copias.isEmpty()){
+            	for(Trazabilidadcopia copia : copias){
+            		Trazabilidaddocumento temp = new Trazabilidaddocumento();
+                	temp.setFechacreacion(copia.getFechacreacion());
+            		temp.setRemitente(copia.getRemitente());
+            		temp.setDestinatario(copia.getDestinatario());
+            		temp.setAccion(copia.getAccion());
+            		temp.setConCopias(true);
+            		temp.setEstado(actual.getEstado());
+            		traza.add(temp);
+            		//traza.addAll(this.buscarCopiasRec(copia));
+            	}
+            }
+            
+            /*if (trazabilidadcopiaService.numeroCopias(actual.getIdtrazabilidaddocumento(), Constantes.TIPO_ORIGEN_TRAZADOCUMENTO) > 0) {
+                actual.setConCopias(true);
+            } else {
+                actual.setConCopias(false);
+            }*
+            
+            List<Trazabilidadapoyo> apoyos = trazabilidadapoyoService.buscarPorOrigen(actual.getIdtrazabilidaddocumento());
+            
+            if(apoyos != null && !apoyos.isEmpty()){
+            	for(Trazabilidadapoyo apoyo : apoyos){
+            		Trazabilidaddocumento temp = new Trazabilidaddocumento();
+                	temp.setFechacreacion(apoyo.getFechacreacion());
+            		temp.setRemitente(apoyo.getRemitente());
+            		temp.setDestinatario(apoyo.getDestinatario());
+            		temp.setAccion(apoyo.getAccion());
+            		temp.setConApoyo(true);
+            		temp.setEstado(actual.getEstado());
+            		temp.setEstado(apoyo.getEstado().getDescripcion());
+            		traza.add(temp);
+            	}
+            }
+            
+            /*
+            if(trazabilidadapoyoService.numeroApoyos(actual.getIdtrazabilidaddocumento()) > 0){
+            	actual.setConApoyo(true);
+            	apoyosPendientes += trazabilidadapoyoService.numeroApoyosPendientes(actual.getIdtrazabilidaddocumento());
+            }else{
+            	actual.setConApoyo(false);
+            }*
+            
+            
+            if (!StringUtil.isEmpty(actual.getActividad())) {
+                mostrarActividad = true;
+            }
+        }
+        log.debug("ultimo documento: " + ultimo.getRemitente().getNombres());
+        fechaLimite = ultimo.getFechalimiteatencion();
+        log.debug("Fecha limite: " + fechaLimite);*/
+        if(objDocumento.getDocumentoreferencia() == null){
+        	fechaLimite = ultimo.getFechalimiteatencion();
+        }else{
+        	Trazabilidadapoyo ta = trazabilidadapoyoService.buscarUltimaDelegacionUsuario(objDocumento.getPropietario().getIdusuario(), objDocumento.getIdDocumento());
+        	fechaLimite = ta.getFechalimiteatencion();
+        }
+        log.debug("Fecha limite: " + fechaLimite);
+        
+        Date f = fechaLimite;
+
+        if (f != null) {
+            fechaEnTexto = DateUtil.getDia(f) + " " + DateUtil.getDiadeMes(f) + " de " + DateUtil.getMes(f) + " del " + DateUtil.getAnio(f) + " a las " + DateUtil.getHora(f) + " horas.";
+        }
+/*
+        lstTrazabilidadDocumento = traza;
+*/      
+        return action;
+        /*}catch(Exception e){
+        log.error(e.getMessage(),e);
+        return Action.ERROR;
+        }*/
+    }
+
+    public String viewSeguimientoProceso() throws Exception {
+    	log.debug("-> [Action] TrazabilidadAction - viewSeguimientoProceso():String ");
+        if (getIIdDocumento() == null) {
+            log.error("No se recibio ningun ID Documento");
+            return Action.ERROR;
+        }
+        try {
+            Documento objDocRecibido = null;
+            Documento objDocumentoMasAntiguo = null;
+            log.debug("Documento recibido con ID [" + getIIdDocumento() + "]");
+            objDocRecibido = documentoService.findByIdDocumento(getIIdDocumento());
+            log.debug("Expediente [" + objDocRecibido.getExpediente().getNroexpediente() + "] con ID [" + objDocRecibido.getExpediente().getIdexpediente() + "]");
+            objDocumentoMasAntiguo = documentoService.buscarDocumentoMasAntiguoPor(objDocRecibido.getExpediente().getIdexpediente());
+            log.debug("Documento mas antiguo con ID [" + objDocumentoMasAntiguo.getIdDocumento() + "]");
+            objDocumento = objDocumentoMasAntiguo;
+            // setLstTrazabilidadDocumento(getSrvTrazabilidad().findByIdDocumento(objDocumentoMasAntiguo.getIddocumento()));
+            List<Trazabilidadexpediente> lstTrazabilidadExpedientex = getSrvTrazabilidadEx().findByIdExpediente(objDocumentoMasAntiguo.getExpediente().getIdexpediente());
+            setLstTrazabilidadExpediente(lstTrazabilidadExpedientex);
+            return Action.SUCCESS;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Action.ERROR;
+        }
+    }
+
+    public String viewSeguimientoProcesoSAS() throws Exception {
+    	log.debug("-> [Action] TrazabilidadAction - viewSeguimientoProcesoSAS():String ");
+        if (getIIdDocumento() == null) {
+            log.error("No se recibio ningun ID Documento");
+            return Action.ERROR;
+        }
+        try {
+            Documento objDocRecibido = null;
+            Documento objDocumentoMasAntiguo = null;
+            log.debug("Documento recibido con ID [" + getIIdDocumento() + "]");
+            objDocRecibido = documentoService.findByIdDocumento(getIIdDocumento());
+            log.debug("Expediente [" + objDocRecibido.getExpediente().getNroexpediente() + "] con ID [" + objDocRecibido.getExpediente().getIdexpediente() + "]");
+            objDocumentoMasAntiguo = documentoService.buscarDocumentoMasAntiguoPor(objDocRecibido.getExpediente().getIdexpediente());
+            log.debug("Documento mas antiguo con ID [" + objDocumentoMasAntiguo.getIdDocumento() + "]");
+            objDocumento = objDocumentoMasAntiguo;
+            // setLstTrazabilidadDocumento(getSrvTrazabilidad().findByIdDocumento(objDocumentoMasAntiguo.getIddocumento()));
+            List<Trazabilidadexpediente> lstTrazabilidadExpedientex = getSrvTrazabilidadEx().findByIdExpediente(objDocumentoMasAntiguo.getExpediente().getIdexpediente());
+            setLstTrazabilidadExpediente(lstTrazabilidadExpedientex);
+            return Action.SUCCESS;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Action.ERROR;
+        }
+    }
+
+    /**
+     * Obtiene los detalles de la trazabilidad para un documento en Documentos
+     * Adicionales. Optimizado por German...
+     *
+     * @author German Enriquez
+     */
+    /**REN: Carga toda la página adicional del detalle de documentos ----------------------------------------------------------*/
+    @SuppressWarnings("unused")
+    public String viewTrazabilidad() {
+    	log.debug("-> [Action] TrazabilidadAction - viewTrazabilidad():String ");
+        Documento doc = documentoService.findByIdDocumento(getIIdDocumento());
+        Integer idExpediente = getIIdExp();
+        Map<String, Object> session = ActionContext.getContext().getSession();
+        Usuario usuario = (Usuario) session.get(Constantes.SESSION_USUARIO);
+        usuarioLogeado = usuario;
+        Integer counttraza = 0;
+        setObjDocumento(doc);
+        //TODO
+        mostrarAdjuntos = true;
+        mostrarToolbar = true;
+        
+        setLstTrazabilidadDocumento(trazabilidadDocumentoService.findByIdDocumento(getIIdDocumento()));
+        List<Trazabilidaddocumento> lstTraza = new ArrayList<Trazabilidaddocumento>();
+        
+        for (Trazabilidaddocumento actual : lstTrazabilidadDocumento) {
+
+        	actual.setEstado(SigedUtils.getDescripcionEstado(actual.getDocumento().getEstado()));
+            lstTraza.add(actual);
+            
+            /**Adicionamos las trazabilidades de las copias -------------------------------------------------------------------*/
+            List<Trazabilidadcopia> copias = trazabilidadcopiaService.buscarPorOrigen(actual.getIdtrazabilidaddocumento(), Constantes.TIPO_ORIGEN_TRAZADOCUMENTO); 
+            
+            if(copias != null && !copias.isEmpty()){
+            	for(Trazabilidadcopia copia : copias){
+            		Trazabilidaddocumento temp = new Trazabilidaddocumento();
+                	temp.setFechacreacion(copia.getFechacreacion());
+            		temp.setRemitente(copia.getRemitente());
+            		temp.setDestinatario(copia.getDestinatario());
+            		temp.setAccion(copia.getAccion());
+            		temp.setConCopias(true);
+            		temp.setEstado(actual.getEstado());
+            		lstTraza.add(temp);
+            	}
+            }
+            
+            /*if (trazabilidadcopiaService.numeroCopias(actual.getIdtrazabilidaddocumento(), Constantes.TIPO_ORIGEN_TRAZADOCUMENTO) > 0) {
+                actual.setConCopias(true);
+            } else {
+                actual.setConCopias(false);
+            }*/
+            
+            List<Trazabilidadapoyo> apoyos = trazabilidadapoyoService.buscarPorOrigen(actual.getIdtrazabilidaddocumento());
+            
+            if(apoyos != null && !apoyos.isEmpty()){
+            	for(Trazabilidadapoyo apoyo : apoyos){
+            		Trazabilidaddocumento temp = new Trazabilidaddocumento();
+                	temp.setFechacreacion(apoyo.getFechacreacion());
+            		temp.setRemitente(apoyo.getRemitente());
+            		temp.setDestinatario(apoyo.getDestinatario());
+            		temp.setAccion(apoyo.getAccion());
+            		temp.setConApoyo(true);
+            		temp.setEstado(apoyo.getEstado().getDescripcion());
+            		lstTraza.add(temp);
+            	}
+            }
+        }
+        setLstTrazabilidadDocumento(lstTraza);
+        int tam = lstTrazabilidadDocumento.size();
+        if (tam > 0) {
+            //trazabiliad documento creadora
+            //	objTrazabilidadDocumento=lstTrazabilidadDocumento.get(tam-1);
+            //creador=objTrazabilidadDocumento.getRemitente().getNombres()+" "+objTrazabilidadDocumento.getRemitente().getApellidos();
+            creador = (doc.getAutor() != null ? doc.getAutor().getNombreCompleto() : null);
+            counttraza =0 ;
+            List<Trazabilidaddocumento> traz = trazabilidadDocumentoService.findByMaxtrazabyIddocumento(getIIdDocumento());
+            if (traz != null) {
+                counttraza = traz.size();
+            }
+
+            if (creador == null && counttraza <= 1) {
+                creador = usuarioLogeado.getNombres() + (StringUtil.isEmpty(usuarioLogeado.getApellidos()) ? "" : " " + usuarioLogeado.getApellidos());
+            } else if (creador == null || creador.trim().equals("")) {
+                creador = Constantes.MESA_PARTES;
+            }
+        }
+        setVersionamiento(archivoService.getVersions(doc));
+        log.debug("(viewTrazabilidad) Usuario Sesion->" + usuario.getIdusuario());
+        log.debug("(viewTrazabilidad) Proceso->" + doc.getExpediente().getProceso().getNombre());
+        log.debug("(viewTrazabilidad) Responsable Proceso->" + doc.getExpediente().getProceso().getResponsable().getIdusuario());
+        log.debug("(viewTrazabilidad) Responsable Documento->" + doc.getPropietario().getIdusuario());
+        puedeReferenciar = (usuario.equals(doc.getPropietario()) && !this.origenDetalleDoc.equals("busquedaAvanzada"));
+
+        Integer idDocumentoBandeja = (Integer) session.get(Constantes.SESSION_IDDOCUMENTO);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Obteniendo de sesion idDocumento [" + idDocumentoBandeja + "]");
+        }
+
+        mostrarDetalle = false;
+
+        if (idDocumentoBandeja != null) {
+            Documento documentoBandeja = documentoService.findByIdDocumento(idDocumentoBandeja);
+            mostrarDetalle = doc.getExpediente().equals(documentoBandeja.getExpediente());
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Mostrar Detalle [" + mostrarDetalle + "]");
+        }
+        
+        if (tam > 0) {
+        	lstTrazabilidadDocumento.get(0).setDestinatario(null);
+        }
+        
+        if(doc.getConfidencial().equals(Constantes.Si)){
+        	List<Integer> permitidos = documentoService.getUsuariosPermitidos(doc.getIdDocumento());
+        	if(!permitidos.contains(new BigDecimal(usuario.getIdusuario()))){
+        		mostrarDetalle = false;
+        		mostrarAdjuntos = false;
+        		mostrarToolbar = false;
+            }
+        }
+        
+        return Action.SUCCESS;
+    }
+    
+    /**REN Cuando se hace click en el botón "Copias" en la ventana de trazabilidad --------------------------------------------*/
+    public String detalleCopias() {
+    	log.debug("-> [Action] TrazabilidadAction - detalleCopias():String ");
+        //log.debug("DOCUMENTO [" + objDocumento.getIdDocumento() + "]");
+
+        lstTrazabilidadCopia = trazabilidadcopiaService.buscarPorOrigen(idTrazabilidad, tipoOrigen);
+        if (tipoOrigen.equals(Constantes.TIPO_ORIGEN_TRAZADOCUMENTO)) {
+            idOrigen = trazabilidadDocumentoService.findTrabilidadbyId(idTrazabilidad).getDocumento().getExpediente().getNroexpediente();
+        } else {
+            idOrigen = Integer.toString(trazabilidadcopiaService.buscarPorId(idTrazabilidad).getIdorigen().getIdtrazabilidaddocumento());
+        }
+        for (Trazabilidadcopia actual : lstTrazabilidadCopia) {
+            if (trazabilidadcopiaService.numeroCopias(actual.getIdtrazabilidadcopia(), Constantes.TIPO_ORIGEN_TRAZACOPIA) > 0) {
+                actual.setConCopias(true);
+            } else {
+                actual.setConCopias(false);
+            }
+        }
+        return Action.SUCCESS;
+    }
+
+    /**REN Cuando se hace click en el botón "Copias de Apoyo" en la ventana de trazabilidad -----------------------------------*/
+    public String detalleApoyos(){
+    	log.debug("-> [Action] TrazabilidadAction - detalleApoyos():String ");
+    	lstTrazabilidadapoyo = trazabilidadapoyoService.buscarPorOrigen(idTrazabilidad);
+    	idOrigen = trazabilidadDocumentoService.findTrabilidadbyId(idTrazabilidad).getDocumento().getExpediente().getNroexpediente();
+    	return Action.SUCCESS;
+    }
+    
+    public String mostrarTrazabilidadExpediente(){
+    	log.debug("-> [Action] TrazabilidadAction - mostrarTrazabilidadExpediente():String ");
+    	
+    	String action = "trazabilidadExpediente";
+    		
+    	if(mode != null && "imprimir".equalsIgnoreCase(mode)){
+           	action = "print";
+        }
+    	
+    	objDocumento = documentoService.findByIdDocumento(iIdDocumento);
+    	
+    	List<Trazabilidaddocumento> traza = new ArrayList<Trazabilidaddocumento>();
+    	lstTrazabilidadDocumento = trazabilidadDocumentoService.buscarTrazaCompleta(objDocumento.getExpediente().getId());
+    	//boolean primero = true;
+    	for (Trazabilidaddocumento actual : lstTrazabilidadDocumento) {
+                        
+            /*if(primero){
+            	actual.setDestinatario(null);
+            	primero = false;
+            }*/
+    		actual.setEstado(SigedUtils.getDescripcionEstado(actual.getDocumento().getEstado()));
+            traza.add(actual);
+            
+            /**Adicionamos las trazabilidades de las copias -------------------------------------------------------------------*/
+            List<Trazabilidadcopia> copias = trazabilidadcopiaService.buscarPorOrigen(actual.getIdtrazabilidaddocumento(), Constantes.TIPO_ORIGEN_TRAZADOCUMENTO); 
+            copias.addAll(trazabilidadcopiaService.buscarPorOrigen(actual.getIdtrazabilidaddocumento(), Constantes.TIPO_ORIGEN_TRAZACOPIA));
+            if(copias != null && !copias.isEmpty()){
+            	for(Trazabilidadcopia copia : copias){
+            		Trazabilidaddocumento temp = new Trazabilidaddocumento();
+            		Documento doc = new Documento();
+            		doc.setNumeroDocumento(actual.getDocumento().getNumeroDocumento());
+                	temp.setFechacreacion(copia.getFechacreacion());
+            		temp.setRemitente(copia.getRemitente());
+            		temp.setDestinatario(copia.getDestinatario());
+            		temp.setAccion(copia.getAccion());
+            		temp.setConCopias(true);
+            		temp.setDocumento(doc);
+            		temp.setEstado(actual.getEstado());
+            		traza.add(temp);
+            	}
+            }
+                        
+            List<Trazabilidadapoyo> apoyos = trazabilidadapoyoService.buscarPorOrigen(actual.getIdtrazabilidaddocumento());
+            
+            if(apoyos != null && !apoyos.isEmpty()){
+            	for(Trazabilidadapoyo apoyo : apoyos){
+            		Trazabilidaddocumento temp = new Trazabilidaddocumento();
+            		Documento doc = new Documento();
+            		doc.setNumeroDocumento(actual.getDocumento().getNumeroDocumento());
+                	temp.setFechacreacion(apoyo.getFechacreacion());
+            		temp.setRemitente(apoyo.getRemitente());
+            		temp.setDestinatario(apoyo.getDestinatario());
+            		temp.setAccion(apoyo.getAccion());
+            		temp.setConApoyo(true);
+            		temp.setEstado(apoyo.getEstado().getDescripcion());
+            		temp.setDocumento(doc);
+            		traza.add(temp);
+            	}
+            }
+            
+            if (!StringUtil.isEmpty(actual.getActividad())) {
+                mostrarActividad = true;
+            }
+        }
+    	
+    	lstTrazabilidadDocumento = traza;
+    	
+    	return action;
+	}
+    
+    // ////////////////////////////////
+    // Getters and Setters //
+    // ////////////////////////////////
+    public Documento getObjDocumento() {
+        return objDocumento;
+    }
+
+    public void setObjDocumento(Documento objDocumento) {
+        this.objDocumento = objDocumento;
+    }
+
+    public void setDocumentoService(DocumentoService documentoService) {
+        this.documentoService = documentoService;
+    }
+
+    public Integer getIIdDocumento() {
+        return iIdDocumento;
+    }
+
+    public void setIIdDocumento(Integer iIdDocumento) {
+        this.iIdDocumento = iIdDocumento;
+    }
+
+    public List<Trazabilidaddocumento> getLstTrazabilidadDocumento() {
+        return lstTrazabilidadDocumento;
+    }
+
+    public void setLstTrazabilidadDocumento(List<Trazabilidaddocumento> lstTrazabilidadDocumento) {
+        this.lstTrazabilidadDocumento = lstTrazabilidadDocumento;
+    }
+
+    public void setTrazabilidadDocumentoService(TrazabilidaddocumentoService trazabilidadDocumentoService) {
+        this.trazabilidadDocumentoService = trazabilidadDocumentoService;
+    }
+
+    public RepositorioService getRepositorioService() {
+        return repositorioService;
+    }
+
+    public void setRepositorioService(RepositorioService repositorioService) {
+        this.repositorioService = repositorioService;
+    }
+
+    public UsuarioService getUsuarioService() {
+        return usuarioService;
+    }
+
+    public void setUsuarioService(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
+    public ArchivoService getArchivoService() {
+        return archivoService;
+    }
+
+    public void setArchivoService(ArchivoService archivoService) {
+        this.archivoService = archivoService;
+    }
+
+    public List<ArchivoVersionado> getVersionamiento() {
+        return versionamiento;
+    }
+
+    public void setVersionamiento(List<ArchivoVersionado> versionamiento) {
+        this.versionamiento = versionamiento;
+    }
+
+    public void setLstTrazabilidadExpediente(List<Trazabilidadexpediente> lstTrazabilidadExpediente) {
+        this.lstTrazabilidadExpediente = lstTrazabilidadExpediente;
+    }
+
+    public List<Trazabilidadexpediente> getLstTrazabilidadExpediente() {
+        return lstTrazabilidadExpediente;
+    }
+
+    public void setSrvTrazabilidadEx(TrazabilidadexpedienteService srvTrazabilidadEx) {
+        this.srvTrazabilidadEx = srvTrazabilidadEx;
+    }
+
+    public TrazabilidadexpedienteService getSrvTrazabilidadEx() {
+        return srvTrazabilidadEx;
+    }
+
+    public Date getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(Date fechaLimite) {
+        this.fechaLimite = fechaLimite;
+    }
+
+    public String getCreador() {
+        return creador;
+    }
+
+    public void setCreador(String creador) {
+        this.creador = creador;
+    }
+
+    public String getFechaEnTexto() {
+        return fechaEnTexto;
+    }
+
+    public void setFechaEnTexto(String fechaEnTexto) {
+        this.fechaEnTexto = fechaEnTexto;
+    }
+
+    public boolean isPuedeReferenciar() {
+        return puedeReferenciar;
+    }
+
+    public void setPuedeReferenciar(boolean puedeReferenciar) {
+        this.puedeReferenciar = puedeReferenciar;
+    }
+
+    public boolean isMostrarDetalle() {
+        return mostrarDetalle;
+    }
+
+    public void setMostrarDetalle(boolean mostrarDetalle) {
+        this.mostrarDetalle = mostrarDetalle;
+    }
+
+    public Integer getIIdExp() {
+        return iIdExp;
+    }
+
+    public void setIIdExp(Integer idExp) {
+        iIdExp = idExp;
+    }
+
+    public boolean isMostrarEtapa() {
+        return mostrarEtapa;
+    }
+
+    public void setMostrarEtapa(boolean mostrarEtapa) {
+        this.mostrarEtapa = mostrarEtapa;
+    }
+
+    public ProcesoService getProcesoService() {
+        return procesoService;
+    }
+
+    public void setProcesoService(ProcesoService procesoService) {
+        this.procesoService = procesoService;
+    }
+
+    public EtapaService getEtapaService() {
+        return etapaService;
+    }
+
+    public void setEtapaService(EtapaService etapaService) {
+        this.etapaService = etapaService;
+    }
+
+    public TrazabilidadcopiaService getTrazabilidadcopiaService() {
+        return trazabilidadcopiaService;
+    }
+
+    public void setTrazabilidadcopiaService(
+          TrazabilidadcopiaService trazabilidadcopiaService) {
+        this.trazabilidadcopiaService = trazabilidadcopiaService;
+    }
+
+    public Integer getIdTrazabilidad() {
+        return idTrazabilidad;
+    }
+
+    public void setIdTrazabilidad(Integer idTrazabilidad) {
+        this.idTrazabilidad = idTrazabilidad;
+    }
+
+    public Character getTipoOrigen() {
+        return tipoOrigen;
+    }
+
+    public void setTipoOrigen(Character tipoOrigen) {
+        this.tipoOrigen = tipoOrigen;
+    }
+
+    public List<Trazabilidadcopia> getLstTrazabilidadCopia() {
+        return lstTrazabilidadCopia;
+    }
+
+    public void setLstTrazabilidadCopia(List<Trazabilidadcopia> lstTrazabilidadCopia) {
+        this.lstTrazabilidadCopia = lstTrazabilidadCopia;
+    }
+
+    public String getIdOrigen() {
+        return idOrigen;
+    }
+
+    public void setIdOrigen(String idOrigen) {
+        this.idOrigen = idOrigen;
+    }
+
+    public boolean isMostrarActividad() {
+        return mostrarActividad;
+    }
+
+    public void setMostrarActividad(boolean mostrarActividad) {
+        this.mostrarActividad = mostrarActividad;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public String getOrigenDetalleDoc() {
+        return origenDetalleDoc;
+    }
+
+    public void setOrigenDetalleDoc(String origenDetalleDoc) {
+        this.origenDetalleDoc = origenDetalleDoc;
+    }
+
+    public Usuario getUsuarioLogeado() {
+        return usuarioLogeado;
+    }
+
+    public void setUsuarioLogeado(Usuario usuarioLogeado) {
+        this.usuarioLogeado = usuarioLogeado;
+    }
+
+	public TrazabilidadapoyoService getTrazabilidadapoyoService() {
+		return trazabilidadapoyoService;
+	}
+
+	public void setTrazabilidadapoyoService(
+			TrazabilidadapoyoService trazabilidadapoyoService) {
+		this.trazabilidadapoyoService = trazabilidadapoyoService;
+	}
+
+	public List<Trazabilidadapoyo> getLstTrazabilidadapoyo() {
+		return lstTrazabilidadapoyo;
+	}
+
+	public void setLstTrazabilidadapoyo(List<Trazabilidadapoyo> lstTrazabilidadapoyo) {
+		this.lstTrazabilidadapoyo = lstTrazabilidadapoyo;
+	}
+
+	public Long getApoyosPendientes() {
+		return apoyosPendientes;
+	}
+
+	public void setApoyosPendientes(Long apoyosPendientes) {
+		this.apoyosPendientes = apoyosPendientes;
+	}
+
+	public String getIndexTreeExp() {
+		return indexTreeExp;
+	}
+
+	public void setIndexTreeExp(String indexTreeExp) {
+		this.indexTreeExp = indexTreeExp;
+	}
+
+	public List<FilaHojaRuta> getTrazabilidadUnificada() {
+		return trazabilidadUnificada;
+	}
+
+	public void setTrazabilidadUnificada(List<FilaHojaRuta> trazabilidadUnificada) {
+		this.trazabilidadUnificada = trazabilidadUnificada;
+	}
+
+	public ReporteAPNService getReporteAPNService() {
+		return reporteAPNService;
+	}
+
+	public void setReporteAPNService(ReporteAPNService reporteAPNService) {
+		this.reporteAPNService = reporteAPNService;
+	}
+
+	public boolean isMostrarAdjuntos() {
+		return mostrarAdjuntos;
+	}
+
+	public void setMostrarAdjuntos(boolean mostrarAdjuntos) {
+		this.mostrarAdjuntos = mostrarAdjuntos;
+	}
+
+	public boolean isMostrarToolbar() {
+		return mostrarToolbar;
+	}
+
+	public void setMostrarToolbar(boolean mostrarToolbar) {
+		this.mostrarToolbar = mostrarToolbar;
+	}
+	
+	
+}

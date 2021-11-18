@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://100.134.1.191:8080/wsiotramite/Tramite?wsdl" uri="wsdl/100.134.1.191_8080/wsiotramite/Tramite.wsdl"/>
+    <system systemId="http://100.134.1.191:8080/wsiotramite/Tramite?xsd=1" uri="wsdl/100.134.1.191_8080/wsiotramite/Tramite.xsd_1.xsd"/>
+    <system systemId="http://ws3.pide.gob.pe/services/PcmCuo?wsdl" uri="wsdl/ws3.pide.gob.pe/services/PcmCuo.wsdl"/>
+    <system systemId="http://200.48.76.125/wsentidad/Entidad?wsdl" uri="wsdl/200.48.76.125/wsentidad/Entidad.wsdl"/>
+    <system systemId="https://ws3.pide.gob.pe/services/PcmIMgdTramite?wsdl" uri="wsdl/ws3.pide.gob.pe/services/PcmIMgdTramite.wsdl"/>
+    <system systemId="https://ws3.pide.gob.pe/services/PcmIMgdEntidad?wsdl" uri="wsdl/ws3.pide.gob.pe/services/PcmIMgdEntidad.wsdl"/>
+    <system systemId="https://ws3.pide.gob.pe/services/PcmCuo?wsdl" uri="wsdl/ws3.pide.gob.pe/services/PcmCuo.wsdl"/>
+    <system systemId="http://200.48.76.125/wsiopidetramite/IOTramite?wsdl" uri="wsdl/200.48.76.125/wsiopidetramite/IOTramite.wsdl"/>
+    <system systemId="http://100.134.1.191:1050/wsiotramitesgd/Tramite?wsdl" uri="wsdl/100.134.1.191_1050/wsiotramitesgd/Tramite.wsdl"/>
+    <system systemId="http://100.134.1.191:1050/wsiotramitesgd/Tramite?xsd=1" uri="wsdl/100.134.1.191_1050/wsiotramitesgd/Tramite.xsd_1.xsd"/>
+    <system systemId="https://ws5.pide.gob.pe/services/ReniecConsultaDni?wsdl" uri="wsdl/ws5.pide.gob.pe/services/ReniecConsultaDni.wsdl"/>
+    <system systemId="https://ws3.pide.gob.pe/services/MigraCarnetdeExtrajeria?wsdl" uri="wsdl/ws3.pide.gob.pe/services/MigraCarnetdeExtrajeria.wsdl"/>
+</catalog>

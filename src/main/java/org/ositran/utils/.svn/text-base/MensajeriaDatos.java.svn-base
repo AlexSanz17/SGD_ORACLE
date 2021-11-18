@@ -1,0 +1,178 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.osinerg.utils;
+
+import java.util.Date;
+
+/**
+ *
+ * @author WMH
+ */
+
+public class MensajeriaDatos {
+
+	private int idmen;
+	private String tipocumento;
+	private String numerodoc;
+	private String destinatario;
+	private String asunto;
+	private Date fechaderiva;
+	private String numinterno;
+	private String usudestino;
+	private String tievcodigo;
+	private String tiev1;
+	private String tiev2;
+	private String direc;
+	private String departamento;
+	private String provincia;
+	private String distrito;
+	private String referencia;
+	private String empdescod;
+	private String empdesnom;
+	private String codtipoambito;
+	private String nomtipoambito;
+	
+        private String referenciaDireccionCliente;
+	
+
+	
+	
+	public void setIdmen(int idmen) {
+		this.idmen = idmen;
+	}
+	public int getIdmen() {
+		return idmen;
+	}
+	public void setTipocumento(String tipocumento) {
+		this.tipocumento = tipocumento;
+	}
+	public String getTipocumento() {
+		return tipocumento;
+	}
+	public void setNumerodoc(String numerodoc) {
+		this.numerodoc = numerodoc;
+	}
+	public String getNumerodoc() {
+		return numerodoc;
+	}
+	public void setDestinatario(String destinatario) {
+		this.destinatario = destinatario;
+	}
+	public String getDestinatario() {
+		return destinatario;
+	}
+	public void setAsunto(String asunto) {
+		this.asunto = asunto;
+	}
+	public String getAsunto() {
+		return asunto;
+	}
+	public void setFechaderiva(Date fechaderiva) {
+		this.fechaderiva = fechaderiva;
+	}
+	public Date getFechaderiva() {
+		return fechaderiva;
+	}
+	public void setNuminterno(String numinterno) {
+		this.numinterno = numinterno;
+	}
+	public String getNuminterno() {
+		return numinterno;
+	}
+	public void setUsudestino(String usudestino) {
+		this.usudestino = usudestino;
+	}
+	public String getUsudestino() {
+		return usudestino;
+	}
+	public void setTievcodigo(String tievcodigo) {
+		this.tievcodigo = tievcodigo;
+	}
+	public String getTievcodigo() {
+		return tievcodigo;
+	}
+	public void setTiev1(String tiev1) {
+		this.tiev1 = tiev1;
+	}
+	public String getTiev1() {
+		return tiev1;
+	}
+	public void setTiev2(String tiev2) {
+		this.tiev2 = tiev2;
+	}
+	public String getTiev2() {
+		return tiev2;
+	}
+	public void setDepartamento(String departamento) {
+		this.departamento = departamento;
+	}
+	public String getDepartamento() {
+		return departamento;
+	}
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+	public String getProvincia() {
+		return provincia;
+	}
+	public void setDistrito(String distrito) {
+		this.distrito = distrito;
+	}
+	public String getDistrito() {
+		return distrito;
+	}
+	public void setReferencia(String referencia) {
+		this.referencia = referencia;
+	}
+	public String getReferencia() {
+		return referencia;
+	}
+	public void setEmpdescod(String empdescod) {
+		this.empdescod = empdescod;
+	}
+	public String getEmpdescod() {
+		return empdescod;
+	}
+	public void setEmpdesnom(String empdesnom) {
+		this.empdesnom = empdesnom;
+	}
+	public String getEmpdesnom() {
+		return empdesnom;
+	}
+	public void setDirec(String direc) {
+		this.direc = direc;
+	}
+	public String getDirec() {
+		return direc;
+	}
+	public String getCodtipoambito() {
+		return codtipoambito;
+	}
+	public void setCodtipoambito(String codtipoambito) {
+		this.codtipoambito = codtipoambito;
+	}
+	public String getNomtipoambito() {
+		return nomtipoambito;
+	}
+	public void setNomtipoambito(String nomtipoambito) {
+		this.nomtipoambito = nomtipoambito;
+	}
+	
+    /**
+     * @return the referenciaDireccionCliente
+     */
+    public String getReferenciaDireccionCliente() {
+        return referenciaDireccionCliente;
+    }
+
+    /**
+     * @param referenciaDireccionCliente the referenciaDireccionCliente to set
+     */
+    public void setReferenciaDireccionCliente(String referenciaDireccionCliente) {
+        this.referenciaDireccionCliente = referenciaDireccionCliente;
+    }
+	
+	
+}

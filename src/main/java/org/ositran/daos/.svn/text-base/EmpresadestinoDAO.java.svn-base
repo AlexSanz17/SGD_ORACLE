@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Empresadestino;
+
+
+public interface EmpresadestinoDAO {
+
+   public Empresadestino findCod(String codigo);
+   
+   public List<Empresadestino> findAll();
+   
+   public Empresadestino findkey(int Id);
+
+}

@@ -1,0 +1,12 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Documentoxcliente;
+
+public interface DocumentoxclienteService {
+
+   public Documentoxcliente guardarObj(Documentoxcliente objDocXCli);
+   
+   public List<Documentoxcliente> findClientesbyIdDocumento (Integer idDocumento);
+}

@@ -1,0 +1,12 @@
+package org.osinerg.services;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Sala;
+
+public interface SalaService {
+
+	public List<Sala> findAll();
+	
+	public Sala findByIdSala(Integer iIdSala);
+}

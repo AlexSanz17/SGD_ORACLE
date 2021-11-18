@@ -1,0 +1,17 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Supervisor;
+
+public interface SupervisorDAO {
+
+   public Supervisor findByCriteria(Integer iIdDoc, String strNombre);
+
+   public Supervisor findById(Integer idArchivo);
+
+   public Supervisor saveSupervisor(Supervisor objA);
+   
+   public List<Supervisor> findAll();
+
+}

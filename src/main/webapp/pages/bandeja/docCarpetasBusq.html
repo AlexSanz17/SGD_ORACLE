@@ -1,0 +1,501 @@
+<html>
+<head>
+<title>Tramite Documentario</title>
+<link rel="stylesheet" type="text/css" href="../../css/estilo.css">
+<script language="javascript" src="../../js/switchMenu.js"></script>
+<script language="javascript" src="../../js/form.js"> </script>
+<script language="Javascript" src="../../js/general.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="../../css/calendar-green.css">
+<script type="text/javascript" src="../../js/calendar.js"></script>
+<script type="text/javascript" src="../../js/calendar-es.js"></script>
+<script type="text/javascript" src="../../js/calendar-setup.js"></script>
+
+
+<script language="JavaScript">
+function Abrir_ventana (pagina) {
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=620, height=280, top=180, left=200";
+window.open(pagina,"",opciones);
+}
+
+function Abrir_pagina (pagina) {
+var opciones="location=mainFrame";
+window.open(pagina,"",opciones);
+}
+
+var ObjAnt="f0";
+
+function A(c,i,page)
+{
+document.getElementById(ObjAnt).style.backgroundColor="#ffffff";
+document.getElementById(i).style.backgroundColor=c;
+ObjAnt=i;
+interno.location.href=page;
+}
+
+
+/*function A(c,i)
+{
+document.getElementById(i).style.backgroundColor=c;
+}
+
+function overmouse()
+{
+color: #D3E1EE;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 11px;
+TEXT-INDENT: 0px;
+}
+function outMouse()
+{
+color: #FFFFFF;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 11px;
+TEXT-INDENT: 0px;
+
+}*/
+
+</script>
+
+<script type="text/javascript">
+
+function poorman_toggle(id)
+{
+	var tr = document.getElementById(id);
+	if (tr==null) { return; }
+	var bExpand = tr.style.display == '';
+	tr.style.display = (bExpand ? 'none' : '');
+}
+function poorman_changeimage(id, sMinus, sPlus)
+{
+	var img = document.getElementById(id);
+	if (img!=null)
+	{
+	    var bExpand = img.src.indexOf(sPlus) >= 0;
+		if (!bExpand)
+			img.src = sPlus;
+		else
+			img.src = sMinus;
+	}
+}
+
+function Toggle_repHeader2()
+{
+    poorman_changeimage('repHeader2_Img', '../../images/signo_menos.gif', '../../images/signo_mas.gif');
+    poorman_toggle('row1');
+    poorman_toggle('row2');
+    poorman_toggle('row3');
+}
+
+function Toggle_repHeader1()
+{
+    poorman_changeimage('repHeader1_Img', '../../images/avanzada.bmp', '../../images/avanzada.bmp');
+    poorman_toggle('trRow1');
+}
+
+function tabdataInit() {
+	var tables = document.getElementsByTagName('table');
+	for (var t=0; t<tables.length; t++) {
+		if ('tabclass'==tables[t].className) {
+		var rows = document.getElementsByTagName('tr');
+			for (var i = 0; i < rows.length; i++) {
+				rows[i].onmouseover = function() {
+					this.className += ' hilite';
+				}
+				rows[i].onmouseout = function() {
+					this.className = this.className.replace('hilite', '');
+				}
+			}
+		}
+	}
+}
+window.onload=tabdataInit;
+
+</script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+body {
+	background-color: #ffffff;
+}
+-->
+</style>
+<STYLE TYPE="text/css">
+<!--
+.barra {
+           scrollbar-3dlight-color:#CCCCCC;
+           scrollbar-arrow-color:#568BBF;
+           scrollbar-base-color:#C3D5E9;
+           scrollbar-darkshadow-color:#666666;
+           scrollbar-face-color:;
+           scrollbar-highlight-color:#669BCD;
+           scrollbar-shadow-color:#999999;
+		   }
+		   
+-->
+	   
+</STYLE>
+</head>
+<body class="barra">
+<form>
+
+ <table width="100%">
+   <tr> 
+      <td height="4"  colspan="6"></td>
+   </tr>
+  <!-- <tr> 
+      <td width="3%" height="14"> </td>
+	  <td width="16%"><font color="#568BBF">Busqueda</font> </td>
+	   <td width="12%"><input type="radio" name="radiobutton" value="radiobutton" /></td>
+	   onClick="location.href='../../pages/bandeja/docRecibidosBusqueda.html'"
+	   <td width="16%"><font color="#568BBF">Busqueda Avanzada</font> </td>
+	   <td width="12%"><input type="radio" name="radiobutton" value="radiobutton" /></td>
+	   onClick="location.href='../../pages/bandeja/docRecibidosLista.html'"
+	   <td width="41%"> </td>
+    </tr>-->
+	<tr> 
+	 <td height="20" colspan="6" width="99%">
+	  <table width="99%" border="0" align="center">
+          <td width="0%" height="14" rowspan="2"> </td>
+            <td width="29%" align="left"><font color="669BCD">Bienvenido</font><font color="0099FF"> 
+              JONATHAN PASTOR</font></td>
+          <td width="14%" rowspan="2"></td>
+		  
+          <td width="39%" rowspan="2" align="right">
+		   <img onClick="location.href='../../pages/bandeja/prueba.html'" src="../../images/botonNuevoExp.gif"style="cursor:hand"/>&nbsp;&nbsp;
+		  <img onClick="location.href='../../pages/bandeja/crearLista.html'" src="../../images/lista.gif" style="cursor:hand"/>&nbsp;&nbsp;
+		  <img onClick="location.href='../../pages/bandeja/calendario.html'" name="date" id="campo_fecha1" src="../../images/calendario.bmp" style="cursor:hand"/>&nbsp;&nbsp;
+		  <img onClick="location.href='../../pages/bandeja/nuevoArch.html'" src="../../images/botonNuevo.gif"style="cursor:hand"/></td>
+          <td width="16%" rowspan="2" align="right"><input name="nombre" type="text" class="cajaMontoTotal" value="" size="20"> 
+            <img  align="absmiddle"onClick="location.href='../../pages/bandeja/docCarpetasBusq.html'" src="../../images/search.gif" border="0" style="cursor:hand"/></td>
+          <td width="2%" rowspan="2"> </td>
+          <tr> 
+            <td align="left"><font color="0099FF">
+			<a href="../../login.html" target="_parent">Cerrar Sesi&oacute;n</a></font></td>
+        </table>
+	  </td>
+    </tr>
+ 
+	<tr> 
+      <td height="4"  colspan="6"></td>
+    </tr>
+	
+	<tr>
+		<td height="20"colspan="6" class="titulo" width="99%">
+		      <table width="45%" border="0" height="20" align="left">
+					<tr>
+					   <td bgcolor="#BFD9F1" width="65%" align="center" class="titulo" onClick="location.href='../../pages/bandeja/docCarpetas.html'">Documentos Recibidos : Luz del Sur</td>
+					   <td width="2%" align="center"></td>
+					   
+            <td bgcolor="#4481B8" width="49%" align="center" class="tituloRojo">Busqueda 
+              : "Memorando"</td>
+					</tr>
+					
+				</table>
+		   </td>
+	</tr>
+  <!--////////////////////////////////////////-->
+	 <tr id="repHeader1">
+      <td height="10" colspan="6">
+	     <table cellpadding="1" cellspacing="1" class="tableForm" width="95%" align="center">
+		 <tr onMouseOver="overMouse(this)" onMouseOut="outMouse(this)" class="altRow2" style="cursor:hand" > 
+		   <td height="15">
+		    <img onclick="javascript:Toggle_repHeader1();" src="../../images/avanzada.bmp" id="repHeader1_Img"/></td>
+         </tr>
+	    </table>
+    </td>
+	 </tr>
+	 
+	 
+	 <tr id="trRow1"> 
+      <td height="14" colspan="6">
+	  <table width="95%"  border="1" align="center" bordercolor="#669BCD" bgcolor="#BFD9F1">
+	   <tr>
+       <td height="100">
+	  <table width="100%" height="97" align="center" >
+                <tr> 
+                  <td width="1%" ></td>
+                  <td width="19%" height="5" ></td>
+                  <td width="15%" ></td>
+                  <td width="12%" ></td>
+                  <td width="19%" ></td>
+                  <td width="14%" ></td>
+                  <td width="18%" ></td>
+                  <td width="2%" ></td>
+                </tr>
+                <tr> 
+                  <td></td>
+                  <td height="16" align="left">DNI</td>
+                  <td><input class="cajaMontoTotal" name="textfield" type="text" size="12" maxlength="20"></td>
+                  <td align="left">RUC</td>
+                  <td align="left" width="19%"><input class="cajaMontoTotal" name="textfield" type="text" size="12" maxlength="20"></td>
+                  <td align="left">Otro Doc</td>
+                  <td align="left" width="18%"> <input class="cajaMontoTotal" name="textfield" type="text" size="12" maxlength="20"></td>
+                  <td></td>
+                </tr>
+                <tr> 
+                  <td ></td>
+                  <td height="16" align="left">Nombre / Razon Social</td>
+                  <td colspan="5"><input class="cajaMontoTotal" name="textfield" type="text" size="60" maxlength="60"></td>
+                  <td></td>
+                </tr>
+               <tr> 
+                  <td ></td>
+                  <td height="16" align="left">Expediente</td>
+                  <td colspan="5"><input class="cajaMontoTotal" name="textfield" type="text" size="40" maxlength="80"></td>
+                  <td></td>
+                </tr>
+               <tr> 
+                  <td ></td>
+                  <td height="16" align="left">Asunto</td>
+                  <td colspan="5"><input class="cajaMontoTotal" name="textfield" type="text" size="60" maxlength="80"></td>
+                  <td></td>
+                </tr>
+                <tr> 
+                  <td height="5" ></td>
+                </tr>
+              </table>
+	</td>
+      </tr>
+  </table>
+ </td>
+ </tr>
+     <!--////////////////////////////////////////-->
+	 
+	 
+	<tr>
+    <td colspan="6">
+    <table id="tablaMenuExpandido" width="100%" border="1" height="100" cellpadding="0" cellspacing="0">
+     <tr>
+      <td width="100%" style="height:auto" valign="top">
+	
+		 
+	<div id="tbl-container">
+	 <table id="tb1" cellpadding="1" cellspacing="1" width="99%" align="center" class="tableForm" border="0">
+	  <thead>
+	  <tr class="header">
+	                  <th width="5%" class="data"><img src="../../images/bolita.gif" border="0"/></th>
+			          <th width="26%" class="data">Remitente</th>
+                      <th width="48" class="data">Asunto</th>
+                      <th width="14%" class="data">Fecha</th>
+                      <th width="6%" class="data"><img src="../../images/clic.gif"/></th>
+	 </tr>
+	</thead>
+	<tbody>
+       <tr id="f0" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" >
+		    <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		    <td><div align="left">Pedro Ruiz - Gerente de Fiscaliz Electrica</div></td>
+            <td><div align="left"> Memorando dirigida a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td><div align="center">Mie,16/07/08 14:54</div></td>
+           <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+	  </tr>
+	 <tbody>
+	   <tr id="f1" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Juan Pastor - Gerente de Planeamiento </div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de RR-HH/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Mie, 16/07/08 14:59</div></td>
+           <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+       </tr>
+	 <tr id="f2" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+            <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+			<td ><div align="left">Veronica Peralta - Jefe de RR-HH</div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Jue, 17/07/08 11:21</div></td>
+            <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+          </tr>
+    <tr id="f3" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Julio Puertas- Jefe de Sistemas</div></td>
+            <td ><div align="left"> Memorando dirigido a Jefe de Logistica y OAF/ 
+                          Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Sab, 19/07/08 15:12</div></td>
+            <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+            </tr>
+	<tr id="f4" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Pedro Ruiz - Gerente de Fiscaliz Electrica</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Planeamiento/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Sab, 19/07/08 19:01</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+   <tr id="f5" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Violeta Rodriguez- Jefe de Logistica</div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de General /Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Lun, 21/07/08 09:21</div></td>
+           <td ><div align="center"></div></td>
+          </tr>
+	<tr id="f6" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Guillermo Shinno- Gerente de Mineria</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Mar, 22/07/08 11:12</div></td>
+            <td ><div align="center"></div></td>
+         </tr>
+     <tr id="f7" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Maria L.Sabogal- Jefe de AOF</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Mineria/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Mie, 23/07/08 15:32</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+		<tr id="f8" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+            <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+			<td ><div align="left">Pedro Ruiz - Gerente de Fiscaliz Electrica</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Jue, 24/07/08 16:13</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+          <tr id="f9" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Juan Pastor - Gerente de Planeamiento</div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de RR-HH/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Vie, 25/07/08 10:23</div></td>
+            <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+          </tr>
+		   <tr id="f10" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		    <td ><div align="left">Veronica Peralta - Jefe de RR-HH</div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Vie, 25/07/08 12:35</div></td>
+            <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+          </tr>
+         <tr id="f11" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Julio Puertas- Jefe de Sistemas</div></td>
+            <td ><div align="left"> Memorando dirigido a Jefe de Logistica y OAF/ 
+                          Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Sab, 26/07/08 14:58</div></td>
+            <td ><div align="center"></div></td>
+            </tr>
+		<tr id="f12" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+          <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		  <td ><div align="left">Pedro Ruiz - Gerente de Fiscaliz Electrica</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Planeamiento/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Mie, 30/07/08 09:13</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+          <tr id="f13" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+            <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+			<td ><div align="left">Violeta Rodriguez- Jefe de Logistica</div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de General /Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Mie, 30/07/08 10:54</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+		 <tr id="f14" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Guillermo Shinno- Gerente de Mineria</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Mie, 30/07/08 13:21</div></td>
+            <td ><div align="center"></div></td>
+        </tr>
+        <tr id="f15" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+		  <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		  <td ><div align="left">Maria L.Sabogal- Jefe de AOF</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Mineria/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Jue, 31/07/08 15:26</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+		 <tr id="f16" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		    <td ><div align="left">Pedro Ruiz - Gerente de Fiscaliz Electrica</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Jue, 31/07/08 17:29</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+         <tr id="f17" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Juan Pastor - Gerente de Planeamiento</div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de RR-HH/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Vie, 01/08/08 08:42</div></td>
+            <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+          </tr>
+		<tr id="f18" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Veronica Peralta - Jefe de RR-HH </div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Vie, 01/08/08 09:12</div></td>
+           <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+        </tr>
+        <tr id="f19" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Julio Puertas- Jefe de Sistemas</div></td>
+            <td ><div align="left"> Memorando dirigido a Jefe de Logistica y OAF/ 
+                          Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Vie, 01/08/08 14:18</div></td>
+            <td align="center" ><a href="../../plantilla/primerDocumento.xls" target="_blank"><img border="0" src="../../images/adjuntos.bmp"/></a></td>
+         </tr>
+		 <tr id="f20" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		    <td ><div align="left">Pedro Ruiz - Gerente de Fiscaliz Electrica</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Planeamiento/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Sab, 02/08/08 18:21</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+         <tr id="f21" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+            <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+			<td ><div align="left">Violeta Rodriguez- Jefe de Logistica</div></td>
+            <td ><div align="left"> Memorando dirigido a Gerente de General /Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Sab, 02/08/08 20:12</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+		<tr id="f22" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Guillermo Shinno- Gerente de Mineria</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Sistemas/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Lun, 04/08/08 08:54</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+           <tr id="f23" onClick="A('#e1f3ff',this.id,'../../pages/bandeja/pruebaArchMemo.html');" class="altRow2" style="cursor:hand" > 
+           <td><div align="center"><img src="../../images/bandera.gif" border="0"/></div></td>
+		   <td ><div align="left">Maria L.Sabogal- Jefe de AOF</div></td>
+            <td ><div align="left"> Memorando dirigida a Gerente de Mineria/Coordinaci&oacute;n</div></td>
+            <td ><div align="center">Lun, 04/08/08 11:37</div></td>
+            <td ><div align="center"></div></td>
+          </tr>
+	</table>
+	</div>
+	
+   </td>
+  </tr>
+  
+  
+  <!--   -->
+  <tr>
+     <td width="100%" align="center" height="2">
+				<a href="#" style="background-color: transparent">
+				<img src="../../images/arrastrar3.gif" name="MenuSwitch"
+				onclick="switchMenuNew()" border="0">
+				</a>
+	 </td>
+ </tr>
+ <!--   -->
+  
+	<!-- <tr> 
+	   <td height="4"  colspan="6"></td>
+	</tr>-->
+	
+</table>
+</td>
+ </tr>
+
+
+
+<table id="tablaMenuColapsado" style="display: none;" align="center" width="100%" height="10" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="100%" height="2" align="center">
+				<a href="#" style="background-color: transparent">
+				<img src="../../images/arrastrar2.gif" name="MenuSwitch" onclick="switchMenuNew()" border="0"></a>	 
+			</td>
+	   </tr>
+</table>
+</table>
+</form>
+
+<iframe src="../../blank.html" name="interno" align="center" frameborder="1" scrolling="yes" style="width:990; height:500;">
+ </iframe>
+
+</body>
+</html>

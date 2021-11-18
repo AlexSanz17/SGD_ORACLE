@@ -1,0 +1,14 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Auditoria;
+
+public interface AuditoriaDAO {
+
+   public Auditoria SaveAuditoria(Auditoria objAuditoria);
+
+   public List<Auditoria> findAvanced();
+
+   public List<Auditoria> filtrarAuditoria(String sNroExpediente, String sUsuario, String sModulo, String sNroDocumento, String sFechaDesde, String sFechaHasta);
+}

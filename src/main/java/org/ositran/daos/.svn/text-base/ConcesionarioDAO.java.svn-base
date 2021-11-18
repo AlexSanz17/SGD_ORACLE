@@ -1,0 +1,11 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Concesionario;
+
+public interface ConcesionarioDAO {
+   public Concesionario findByIdConcesionario(Integer iId);
+   public Concesionario findByRUC(String strRUC);
+   public List<Concesionario> findAll();
+}

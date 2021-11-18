@@ -1,0 +1,213 @@
+package org.osinerg.services;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.osinerg.daos.ReporteAPNDAO;
+import org.osinerg.dojo.BusquedaAvanzada;
+
+import com.btg.osinergmin.siged.domain.FilaHojaRuta;
+import com.btg.osinergmin.siged.domain.FilaReporteAPN2;
+import com.btg.osinergmin.siged.domain.NodoDocReporteAPN3;
+import com.btg.osinergmin.siged.domain.NodoExpReporteAPN3;
+import com.btg.osinergmin.siged.domain.ReporteAPN1;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+
+public class ReporteAPNServiceImpl implements ReporteAPNService {
+	
+	private static Logger log = Logger.getLogger(ReporteAPNServiceImpl.class);
+	
+	private DocumentoService documentoService;
+	private TrazabilidaddocumentoService trazabilidadService;
+	private TrazabilidadapoyoService trazabilidadApoyoService;
+	
+	private ReporteAPNDAO reporteAPNDAO;
+	
+	/**REN Metodo Antiguo*/
+	//TODO Borrar cuando se compruebe que la hoja de ruta esta bien
+	/*
+	public Map<String, String> generarHojaRuta(Integer idDocumento){
+		List<Trazabilidaddocumento> lstTraza = trazabilidadService.findByIdDocumento(idDocumento);
+		Map<String, String> map = new HashMap<String, String>(); 
+		
+		if(lstTraza != null && !lstTraza.isEmpty()){
+			for(Trazabilidaddocumento traza : lstTraza){
+				Unidad unidad = traza.getDestinatario().getUnidad();
+				int term = 0;
+				
+				while(unidad.getDependencia() != null && term < 10){
+					unidad = unidad.getDependencia();
+					term++;
+				}
+				if(term >= 10){
+					log.error("No se pudo encontrar el area funcional para \""+unidad.getDescripcion()+"\"");
+					break;
+				}else{
+					/**REN Creamos el contenido para cada celda (HTML) ---------------------------------------------------------------------*/
+	/*									
+					SimpleDateFormat fechita = new SimpleDateFormat("dd - MM - yyyy");
+					SimpleDateFormat horita = new SimpleDateFormat("hh:mm");
+					String html = "";
+					
+					if(traza.getAccion().getNombre().equals(Constantes.ACCION_REGISTRAR)){
+						html += "El expediente fue <strong>registrado</strong> en esta &aacute;rea el "+fechita.format(traza.getFechacreacion());
+						html += " a las "+horita.format(traza.getFechacreacion());
+						html += " por el usuario " + traza.getRemitente().getNombreCompleto()+". ";
+					}else{
+						html += "El expediente fue <strong>transferido</strong> a esta &aacute;rea el "+fechita.format(traza.getFechacreacion());
+						html += " a las "+horita.format(traza.getFechacreacion());
+						html += " por el usuario " + traza.getRemitente().getNombreCompleto()+". ";
+						/*if(traza.getProveidos() != null && !traza.getProveidos().isEmpty()){
+							html += "Se especificaron los siguientes proveidos: <br /><ul>";
+							
+							for(Proveido proveido : traza.getProveidos()){
+								html += "<li>"+proveido.getNombre()+"</li>";
+							}
+							
+							html += "</ul>";
+						}*/
+	/*				}
+									
+					html += "<p>";
+					html += traza.getContenido() != null? traza.getContenido() : "";					
+					html += "</p><hr />";
+					if(map.containsKey(unidad.getDescripcion())){
+						/**REN Ya existe en la Hoja de Ruta, debemos actualizar su contenido -----------------------------------------------*/
+	/*					html += map.get(unidad.getDescripcion());
+					}
+					map.put(unidad.getDescripcion(), html);
+					
+					List<Trazabilidadapoyo> remitidos = trazabilidadApoyoService.buscarPorOrigen(traza.getIdtrazabilidaddocumento());
+					
+					if(remitidos != null && !remitidos.isEmpty()){
+						for(Trazabilidadapoyo apoyo : remitidos){
+							html = "";
+							term = 0;
+							unidad = apoyo.getDestinatario().getUnidad();
+							
+							while(unidad.getDependencia() != null && term < 10){
+								unidad = unidad.getDependencia();
+								term++;
+							}
+							if(term >= 10){
+								log.error("No se pudo encontrar el area funcional para \""+unidad.getDescripcion()+"\"");
+								break;
+							}else{
+								html += "El expediente fue <strong>remitido</strong> a esta &aacute;rea el "+fechita.format(apoyo.getFechacreacion());
+								html += " a las "+horita.format(apoyo.getFechacreacion());
+								html += " por el usuario " + apoyo.getRemitente().getNombreCompleto()+". ";
+								
+								//TODO Agregar la rutina para añadir proveidos una vez estos se guarden en BD para el remitir
+								if(apoyo.getProveidos() != null && !apoyo.getProveidos().isEmpty()){
+									html += "Se especificaron los siguientes proveidos: <br /><ul>";
+									
+									for(Proveido proveido : apoyo.getProveidos()){
+										html += "<li>"+proveido.getNombre()+"</li>";
+									}
+									
+									html += "</ul>";
+								}
+								
+								html += "<br />";
+							
+								if(map.containsKey(unidad.getDescripcion())){
+									/**REN Ya existe en la Hoja de Ruta, debemos actualizar su contenido -----------------------------------------------*/
+	/*								html += map.get(unidad.getDescripcion());
+								}
+								map.put(unidad.getDescripcion(), html);
+								
+							}
+						}
+					}
+				}
+			}
+		}
+		return map;
+	}*/
+	
+	public List<FilaHojaRuta> generarHojaRuta(Integer idDocumento){
+		return reporteAPNDAO.getHojaRuta(idDocumento);
+	}
+	
+	public List<FilaHojaRuta> generarHojaRutaExpediente(Integer idExpediente){
+		return reporteAPNDAO.getHojaRutaExpediente(idExpediente);
+	}
+	
+	@Override
+	public List<ReporteAPN1> getListaReporteAPN1(String idAreaOrigen,
+			String idTipoDocumento, String idPrioridad,String fechaDesde, String fechaHasta) {
+        return  reporteAPNDAO.getListaReporteAPN1(idAreaOrigen, idTipoDocumento, idPrioridad, fechaDesde, fechaHasta);             
+	}
+
+	public List<FilaReporteAPN2> getListaReporteAPN2(BusquedaAvanzada objFiltro){
+		return reporteAPNDAO.getListaReporteAPN2(objFiltro);
+	}
+	
+	public List<NodoExpReporteAPN3> getListaReporteAPN3(BusquedaAvanzada objFiltro){
+		List<NodoExpReporteAPN3> lista = reporteAPNDAO.getListaNodosExpedienteReporteAPN3(objFiltro);
+		List<NodoExpReporteAPN3> salida = new ArrayList<NodoExpReporteAPN3>();
+		if(lista != null && !lista.isEmpty()){
+			for(NodoExpReporteAPN3 nodo : lista){
+				List<NodoDocReporteAPN3> documentos = reporteAPNDAO.getListaNodosDocumentoReporteAPN3(nodo.getIdExpediente());
+				if(documentos!= null && !documentos.isEmpty()){
+					nodo.setDocumentos(documentos);
+					salida.add(nodo);
+				}
+			}
+		}
+		
+		return salida;
+	}
+	
+	public Trazabilidaddocumento buscarUltimaTraza(Integer idDocumento){
+		return trazabilidadService.encontrarUltimaTrazabilidadPorDocumento(idDocumento);
+	}
+	
+	public ReporteAPNDAO getReporteAPNDAO() {
+		return reporteAPNDAO;
+	}
+
+	public void setReporteAPNDAO(ReporteAPNDAO reporteAPNDAO) {
+		this.reporteAPNDAO = reporteAPNDAO;
+	}
+
+	public static Logger getLog() {
+		return log;
+	}
+
+	public static void setLog(Logger log) {
+		ReporteAPNServiceImpl.log = log;
+	}
+
+	public TrazabilidaddocumentoService getTrazabilidadService() {
+		return trazabilidadService;
+	}
+
+	public void setTrazabilidadService(
+			TrazabilidaddocumentoService trazabilidadService) {
+		this.trazabilidadService = trazabilidadService;
+	}
+
+	public DocumentoService getDocumentoService() {
+		return documentoService;
+	}
+
+	public void setDocumentoService(DocumentoService documentoService) {
+		this.documentoService = documentoService;
+	}
+	
+	public TrazabilidadapoyoService getTrazabilidadApoyoService() {
+		return trazabilidadApoyoService;
+	}
+
+	public void setTrazabilidadApoyoService(
+			TrazabilidadapoyoService trazabilidadApoyoService) {
+		this.trazabilidadApoyoService = trazabilidadApoyoService;
+	}
+	
+	public ReporteAPNServiceImpl(ReporteAPNDAO reporteAPNDAO) {
+		this.reporteAPNDAO = reporteAPNDAO;
+	}
+	
+}

@@ -1,0 +1,27 @@
+package org.osinerg.services;
+
+import java.util.List;
+import org.osinerg.dojo.tree.Nodo;
+import org.osinerg.utils.Expedienfindadvance;
+
+import com.btg.osinergmin.siged.domain.CarpetaBusqueda;
+import com.btg.osinergmin.siged.domain.Documento;
+
+public interface CarpetabusquedaService {
+
+   public List<CarpetaBusqueda> ViewAll();
+
+   public CarpetaBusqueda ViewbyId(int IdCarpetabusqueda);
+
+   public List<Expedienfindadvance> findbyAllid(int Strid);
+
+   public void saveCarpetaBusqueda(CarpetaBusqueda objCB);
+
+   public void eliminarCarpetabusqueda(CarpetaBusqueda objCB);
+
+   public List<CarpetaBusqueda> buscarLstPor(Integer iIdUsuario);
+
+   public List<Nodo> getTreeCarpetaBusqueda(Integer iIdUsuario);
+
+   public List<Documento> findLstByFiltro(Integer iIdCarpetaBusqueda);
+}

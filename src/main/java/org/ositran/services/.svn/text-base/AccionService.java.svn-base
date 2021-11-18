@@ -1,0 +1,8 @@
+package org.osinerg.services;
+
+import com.btg.osinergmin.siged.domain.Accion;
+
+public interface AccionService {
+
+   public Accion findByNombre(String strA);
+}

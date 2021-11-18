@@ -1,0 +1,122 @@
+package org.osinerg.services;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.osinerg.daos.NotificacionDAO;
+import org.osinerg.daos.NotificacionxEnumerarDAO;
+import org.osinerg.daos.TrazabilidaddocumentoDAO;
+import org.osinerg.utils.Constantes;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.btg.osinergmin.siged.domain.Accion;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Etapa;
+import com.btg.osinergmin.siged.domain.Expediente;
+import com.btg.osinergmin.siged.domain.Notificacion;
+import com.btg.osinergmin.siged.domain.NotificacionxEnumerar;
+import com.btg.osinergmin.siged.domain.Trazabilidadcopia;
+import com.btg.osinergmin.siged.domain.Trazabilidaddocumento;
+import com.btg.osinergmin.siged.domain.Usuario;
+
+public class NotificacionxEnumerarServiceImpl implements NotificacionxEnumerarService{
+	
+	private static Logger log=Logger.getLogger(NotificacionxEnumerarServiceImpl.class);
+	private NotificacionxEnumerarDAO dao;
+    private TrazabilidaddocumentoService srvTrazDoc;
+	private TrazabilidaddocumentoDAO trazabilidaddocumentoDAO ;
+	private List<Usuario> listaUsuariosYaNotificados;
+	private List<Usuario> listaUsuariosYaNotificadosNoti;
+	private List<Usuario> listaUsuariosYaNotificadosMail;
+    private DocumentoService documentoService;
+   	private TrazabilidadcopiaService trazabilidadcopiaService;
+    private AccionService accionService;
+    private ManejoDeEmailService mailService;
+   	
+	// ////////////////////////////////
+	// Constructors //
+	// ////////////////////////////////
+	public NotificacionxEnumerarServiceImpl(NotificacionxEnumerarDAO dao){
+		this.dao=dao;
+	}
+
+	// ////////////////////////////////
+	// Methods //
+	// ////////////////////////////////
+
+   public List<NotificacionxEnumerar> buscarLastNotificacionesbyDocumento(Integer idDocumento, Integer tipoNotificacion) {
+		return dao.buscarLastNotificacionesbyDocumento(idDocumento, tipoNotificacion);
+	}
+	
+	
+   // ////////////////////////////////
+	// Getters and Setters //
+	// ////////////////////////////////
+	public NotificacionxEnumerarDAO getDao(){
+		return dao;
+	}
+
+	public void setDao(NotificacionxEnumerarDAO dao){
+		this.dao=dao;
+	}
+
+   public TrazabilidaddocumentoService getSrvTrazDoc() {
+      return srvTrazDoc;
+   }
+
+   public void setSrvTrazDoc(TrazabilidaddocumentoService srvTrazDoc) {
+      this.srvTrazDoc = srvTrazDoc;
+   }
+
+	public TrazabilidaddocumentoDAO getTrazabilidaddocumentoDAO() {
+		return trazabilidaddocumentoDAO;
+	}
+
+	public void setTrazabilidaddocumentoDAO(
+			TrazabilidaddocumentoDAO trazabilidaddocumentoDAO) {
+		this.trazabilidaddocumentoDAO = trazabilidaddocumentoDAO;
+	}
+
+   public DocumentoService getDocumentoService() {
+      return documentoService;
+   }
+
+   public void setDocumentoService(DocumentoService documentoService) {
+      this.documentoService = documentoService;
+   }
+
+public TrazabilidadcopiaService getTrazabilidadcopiaService() {
+	return trazabilidadcopiaService;
+}
+
+public void setTrazabilidadcopiaService(
+		TrazabilidadcopiaService trazabilidadcopiaService) {
+	this.trazabilidadcopiaService = trazabilidadcopiaService;
+}
+
+public AccionService getAccionService() {
+	return accionService;
+}
+
+public void setAccionService(AccionService accionService) {
+	this.accionService = accionService;
+}
+
+    /**
+     * @return the mailService
+     */
+    public ManejoDeEmailService getMailService() {
+        return mailService;
+    }
+
+    /**
+     * @param mailService the mailService to set
+     */
+    public void setMailService(ManejoDeEmailService mailService) {
+        this.mailService = mailService;
+    }
+
+
+}

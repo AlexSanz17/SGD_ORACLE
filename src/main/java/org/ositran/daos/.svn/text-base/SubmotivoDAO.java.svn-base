@@ -1,0 +1,12 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.Submotivo;
+
+public interface SubmotivoDAO {
+
+   public Submotivo findByIdSubmotivo(Integer iIdSubmotivo);
+   public List<Submotivo> findByMotivo(Integer iIdMotivo);
+   public Submotivo saveMotivo(Submotivo submotivo) ;
+}

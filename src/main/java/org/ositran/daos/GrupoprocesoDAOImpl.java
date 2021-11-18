@@ -1,0 +1,63 @@
+/*LICENCIA DE USO DEL SGD .TXT*/package org.ositran.daos;
+
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import com.btg.ositran.siged.domain.Grupoproceso;
+
+@Repository
+public class GrupoprocesoDAOImpl implements GrupoprocesoDAO {
+
+   private static Logger _log = Logger.getLogger(GrupoprocesoDAOImpl.class);
+   private EntityManager em;
+
+   //////////////////////////////////
+   // Methods                      //
+   //////////////////////////////////
+   public Grupoproceso buscarObjPor(String sCodigo) {
+      return (Grupoproceso) em.createNamedQuery("Grupoproceso.findByCodigo")
+                              .setParameter("codigo", sCodigo)
+                              .getSingleResult();
+
+   }
+
+   public Grupoproceso buscarObjPorId(Integer iIdGrupoproceso) {
+      return em.find(Grupoproceso.class, iIdGrupoproceso);
+   }
+
+   public Grupoproceso guardarObj(Grupoproceso objGrupoProceso) {
+      if (objGrupoProceso.getIdgrupoproceso() == null) {
+         em.persist(objGrupoProceso);
+         em.flush();
+         em.refresh(objGrupoProceso);
+      } else {
+         em.merge(objGrupoProceso);
+         em.flush();
+      }
+
+      return objGrupoProceso;
+   }
+
+   public List<Grupoproceso> findAll() {
+      List<Grupoproceso> lista = em.createNamedQuery("Grupoproceso.findAll").getResultList();
+      _log.debug("listaaaaaaaaa1: " + lista != null ? lista.size() : "nulll");
+
+      return lista;
+   }
+
+   //////////////////////////////////
+   // Getters and Setters          //
+   //////////////////////////////////
+   public EntityManager getEm() {
+      return em;
+   }
+
+   @PersistenceContext(unitName = "sigedPU")
+   public void setEm(EntityManager em) {
+      this.em = em;
+   }
+}

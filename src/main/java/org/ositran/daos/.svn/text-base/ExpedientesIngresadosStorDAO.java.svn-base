@@ -1,0 +1,12 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import com.btg.osinergmin.siged.domain.ExpedientesIngresadosStor;
+
+public interface ExpedientesIngresadosStorDAO {
+
+	public abstract List<ExpedientesIngresadosStor> listarTodo();
+	
+	public abstract List<ExpedientesIngresadosStor> generarLista(String fechaDesde, String fechaHasta);
+}

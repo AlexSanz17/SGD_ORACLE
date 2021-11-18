@@ -1,0 +1,16 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import org.osinerg.dojo.BusquedaAvanzada;
+
+import com.btg.osinergmin.siged.domain.ConsultaAPN3;
+import com.btg.osinergmin.siged.domain.ConsultaAPN4;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Expediente;
+
+public interface ConsultaDAO {
+	public List<ConsultaAPN3> documentosRecepcionados(String tipoDocumento, String areaOrigen,String fechaDesde, String fechaHasta,Integer idAreaDestino,String nroDocumento, String asuntoDocumento);
+	public List<ConsultaAPN4> documentosEmitidos(Integer remitente);
+	public List<Expediente> misExpedientes(Integer idAreaDestino, BusquedaAvanzada objFiltro); 
+}

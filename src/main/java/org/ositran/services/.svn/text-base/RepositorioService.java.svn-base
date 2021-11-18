@@ -1,0 +1,44 @@
+package org.osinerg.services;
+
+import java.util.List;
+import java.util.Map;
+import org.osinerg.repositorio.EnlaceDocumento;
+
+import com.btg.osinergmin.siged.domain.Archivo;
+import com.btg.osinergmin.siged.domain.Documento;
+import com.btg.osinergmin.siged.domain.Expediente;
+
+/**
+ * 
+ * @author armando
+ */
+public interface RepositorioService{
+
+	public List<EnlaceDocumento> listarDocumentos(Integer idexpediente);
+
+	public List<EnlaceDocumento> busquedaArchivos(String textoABuscar,Map<String,String> propiedades);
+
+	public List<Integer> busquedaIdDocumentos(String textoABuscar,Map<String,String> propiedades);
+
+	public boolean crearEstructuraExpediente(String sUsuario, String sPassword, Integer iIdExpediente);
+
+	public boolean eliminarEstructuraExpediente(Expediente objExpediente);
+
+	public int subirArchivosTransformadosARepositorio(Integer iddocumento,boolean versionar);
+
+	public Map<String,String> obtenerMetadata(Documento doc);
+
+   public boolean existeNodo(String sUsuario, String sPassword, String sRutaNodo) throws Exception;
+
+   public boolean crearFolder(String sUsuario, String sPassword, String sRuta, String sFolder);
+
+   public boolean moverNodo(String sUsuario, String sPassword, String sNodo, String sRutaOrigen, String sRutaDestino);
+
+   public String obtenerRutaExpediente(Expediente objExpediente);
+
+   public String obtenerRutaCompletaExpediente(Expediente objExpediente);
+
+   public boolean eliminarNodo(String usuario, String password, String rutaNodo);
+
+   void subirArchivosTransformadosARepositorio(Documento doc, List<Archivo> listaArchivos, boolean versionar) throws RuntimeException;
+}

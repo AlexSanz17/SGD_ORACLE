@@ -1,0 +1,13 @@
+package org.osinerg.services;
+
+
+
+import com.btg.osinergmin.siged.domain.Envio;
+
+
+public interface EnvioService {
+
+	public Envio saveDatos(String Strmensa,Envio objenvio);
+	
+	public Envio findkey(int Id);
+}

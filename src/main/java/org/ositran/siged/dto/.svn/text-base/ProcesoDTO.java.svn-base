@@ -1,0 +1,110 @@
+package org.osinerg.siged.dto;
+
+import java.io.Serializable;
+
+/**
+ *
+ * @author javier castillo
+ */
+public class ProcesoDTO implements Serializable {
+    private Integer idProceso;
+    private String nombre;
+    private String codigo;
+    private Character permiteSumilla;
+    private Character produccion;
+    private Integer unidadId;
+    private String unidadNombre;
+    private String responsableNombres;
+    private String responsableApellidos;
+    private Integer responsableIdUsuario;
+    private String tipoNombre;
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public Integer getIdProceso() {
+        return idProceso;
+    }
+
+    public void setIdProceso(Integer idProceso) {
+        this.idProceso = idProceso;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Character getPermiteSumilla() {
+        return permiteSumilla;
+    }
+
+    public void setPermiteSumilla(Character permiteSumilla) {
+        this.permiteSumilla = permiteSumilla;
+    }
+
+    public Character getProduccion() {
+        return produccion;
+    }
+
+    public void setProduccion(Character produccion) {
+        this.produccion = produccion;
+    }
+
+    public String getResponsableApellidos() {
+        return responsableApellidos;
+    }
+
+    public void setResponsableApellidos(String responsableApellidos) {
+        this.responsableApellidos = responsableApellidos;
+    }
+
+    public Integer getResponsableIdUsuario() {
+        return responsableIdUsuario;
+    }
+
+    public void setResponsableIdUsuario(Integer responsableIdUsuario) {
+        this.responsableIdUsuario = responsableIdUsuario;
+    }
+
+    public String getResponsableNombres() {
+        return responsableNombres;
+    }
+
+    public void setResponsableNombres(String responsableNombres) {
+        this.responsableNombres = responsableNombres;
+    }
+
+    public Integer getUnidadId() {
+        return unidadId;
+    }
+
+    public void setUnidadId(Integer unidadId) {
+        this.unidadId = unidadId;
+    }
+
+    public String getUnidadNombre() {
+        return unidadNombre;
+    }
+
+    public void setUnidadNombre(String unidadNombre) {
+        this.unidadNombre = unidadNombre;
+    }
+
+    public String getTipoNombre() {
+        return tipoNombre;
+    }
+
+    public void setTipoNombre(String tipoNombre) {
+        this.tipoNombre = tipoNombre;
+    }
+
+}

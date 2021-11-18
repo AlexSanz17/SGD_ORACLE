@@ -1,0 +1,26 @@
+package org.osinerg.daos;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.osinerg.dojo.BusquedaAvanzada;
+
+import com.btg.osinergmin.siged.domain.FilaHojaRuta;
+import com.btg.osinergmin.siged.domain.FilaReporteAPN2;
+import com.btg.osinergmin.siged.domain.NodoDocReporteAPN3;
+import com.btg.osinergmin.siged.domain.NodoExpReporteAPN3;
+import com.btg.osinergmin.siged.domain.ReporteAPN1;
+
+public interface ReporteAPNDAO {
+	@PersistenceContext(unitName = "sigedPU")
+	public abstract void setEm(EntityManager em);
+	public abstract List<ReporteAPN1> getListaReporteAPN1(String idareaorigen,String idtipodocumento,String idprioridad,String fechaDesde, String fechaHasta);
+	List<FilaHojaRuta> getHojaRuta(Integer idDocumento);
+	List<FilaHojaRuta> getHojaRutaExpediente(Integer idExpediente);
+	List<FilaReporteAPN2> getListaReporteAPN2(BusquedaAvanzada objFiltro);
+	List<NodoExpReporteAPN3> getListaNodosExpedienteReporteAPN3(BusquedaAvanzada objFiltro);
+	List<NodoDocReporteAPN3> getListaNodosDocumentoReporteAPN3(Integer idExpediente);
+	
+}
