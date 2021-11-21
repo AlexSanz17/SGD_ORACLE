@@ -1075,7 +1075,6 @@ var showGridInbox = function(sTipoGrid) {
          structure        : objJSON.structure
       }, document.createElement("div"));
 
-        alert("esto es una alerta de tipo documento    "+objTipoDocumento);
 
       //ESTO DEBERIA IR EN GETALLSTRUCTURES(), MEJORAR ESTO!!!tipoalerta
 

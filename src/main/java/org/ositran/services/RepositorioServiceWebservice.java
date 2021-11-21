@@ -96,13 +96,31 @@ public class RepositorioServiceWebservice implements RepositorioService{
       log.info("RepositorioServiceWebService :: crearEstructuraDocumento");
      
       try {
+    	  //rutaSite = ""
+    	  log.info("RepositorioServiceWebService :: COMPLETE_PATH_PADRE_EXPEDIENTE:"+COMPLETE_PATH_PADRE_EXPEDIENTE);
+    	  log.info("RepositorioServiceWebService :: RUTA_PADRE_EXPEDIENTE:"+RUTA_PADRE_EXPEDIENTE);
+    	  
          Documento doc=getDocumentoDAO().findByIdDocumento(iIdDocumento);
          String sYear = new SimpleDateFormat("yyyy").format(doc.getFechaDocumento());
          StringBuilder  sbRutaSite = new StringBuilder(COMPLETE_PATH_PADRE_EXPEDIENTE).append(rutaSite).append(Constantes.GENERAL_SLASH);
+         log.info("RepositorioServiceWebService :: sbRutaSite:"+sbRutaSite);
+         log.info("RepositorioServiceWebService :: sYear:"+sYear);
+         
          StringBuilder  sbRutaYear = new StringBuilder(sbRutaSite.toString()).append(sYear).append(Constantes.GENERAL_SLASH);
+         log.info("RepositorioServiceWebService :: sbRutaYear:"+sbRutaYear);
+         
          StringBuilder  sbRutaTipoDocumento =  new StringBuilder(sbRutaYear.toString()).append(tipoDocumento).append(Constantes.GENERAL_SLASH);
+         log.info("RepositorioServiceWebService :: sbRutaTipoDocumento:"+sbRutaTipoDocumento);
+         
+         log.info("RepositorioServiceWebService :: sUsuario:"+sUsuario);
+         log.info("RepositorioServiceWebService :: sPassword:"+sPassword);
+         log.info("RepositorioServiceWebService :: desencriptar:"+seguridadService.desencriptar(sUsuario, sPassword));
+         
+         log.info("RepositorioServiceWebService :: alfrescoConnector:"+alfrescoConnector);
+         
          boolean existeNodo = alfrescoConnector.nodeExists(sUsuario, seguridadService.desencriptar(sUsuario, sPassword), sbRutaTipoDocumento.toString());
        
+         log.info("RepositorioServiceWebService :: existeNodo:"+existeNodo);
          if (!existeNodo){ 
            
             if (!this.crearFolder(sUsuario, sPassword, sbRutaSite.toString(), sYear)) {
