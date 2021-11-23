@@ -743,7 +743,7 @@ public class DocumentoServiceImpl implements DocumentoService {
         
        
 	public Documento findByIdDocumento(Integer iIdDocumento) {
-		log.debug("-> [Service] DocumentoService - findByIdDocumento():Documento ");
+		log.debug("-> [Service] DocumentoService - findByIdDocumento():iIdDocumento: "+iIdDocumento);
 
 		return documentoDao.findByIdDocumento(iIdDocumento);
 	}

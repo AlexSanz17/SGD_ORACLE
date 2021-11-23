@@ -747,18 +747,18 @@ public class ReporteAPNDAOImpl implements ReporteAPNDAO {
 		 sql.append("                                                             AS destinatario,    ");
 		 sql.append("                   (SELECT ac.descripcion                                        ");
 		 sql.append("                      FROM accion ac                                             ");
-		 sql.append("                     WHERE ac.idaccion = td.accion) AS accion, td.contenido,     ");
+		 sql.append("                     WHERE ac.idaccion = td.accion) AS accion, TO_CHAR(td.contenido) as contenido,    ");
 		 sql.append("                   td.documento, 'Transferencia' AS tipo,                        ");
 		// sql.append("                   td.nombrepc AS nombrepc,                                      ");
-                 sql.append("nvl((select p.nombre from proveido p where p.idproveido = td.idproveido),'') proveido,");        
+         sql.append("nvl((select p.nombre from proveido p where p.idproveido = td.idproveido),'') proveido,");        
 		 sql.append("                   (SELECT CASE (d.estado)                                       ");
 		 sql.append("                              WHEN 'A'                                           ");
 		 sql.append("                                 THEN 'Registrado'                               ");
 		 sql.append("                              WHEN 'C'                                           ");
 		 sql.append("                                 THEN 'Archivado'                                ");
-                 sql.append("                              WHEN 'P'                                           ");
+         sql.append("                              WHEN 'P'                                           ");
 		 sql.append("                                 THEN 'Pendiente'                                ");
-                 sql.append("                              WHEN 'T'                                           ");
+         sql.append("                              WHEN 'T'                                           ");
 		 sql.append("                                 THEN 'Atendido'                                ");
 		 sql.append("                              WHEN 'N'                                           ");
 		 sql.append("                                 THEN 'Anulado'                                  ");
@@ -791,7 +791,7 @@ public class ReporteAPNDAOImpl implements ReporteAPNDAO {
 		 sql.append("                          FROM usuario us                                        ");
 		 sql.append("                         WHERE us.idusuario = ta.remitente) || ' [' ||           ");
                  
-                 sql.append("                       (SELECT us.USUARIO                                        ");
+          sql.append("                       (SELECT us.USUARIO                                        ");
 		 sql.append("                          FROM usuario us                                        ");
 		 sql.append("                         WHERE us.idusuario = ta.usuariocreacion)) ||    '] '     ");
                  
@@ -818,7 +818,7 @@ public class ReporteAPNDAOImpl implements ReporteAPNDAO {
 		 sql.append("                      FROM documento d                                           ");
 		 sql.append("                     WHERE d.iddocumento = ta.documento),                        ");
 		 sql.append("                   'Envio Multiple' AS tipo,                                     ");
-                 sql.append("nvl((select p.nombre from proveido p where p.idproveido= ta.idproveido),'') proveido,");                    
+         sql.append("nvl((select p.nombre from proveido p where p.idproveido= ta.idproveido),'') proveido,");                    
 		 sql.append("                   (SELECT e.descripcion                                         ");
 		 sql.append("                      FROM estado e                                              ");
 		 sql.append("                     WHERE e.idestado = ta.estado) AS estado, 2 ,ta.remitente as idremitente,  ta.unidadremitente as idunidadremitente ");
@@ -840,7 +840,7 @@ public class ReporteAPNDAOImpl implements ReporteAPNDAO {
 		 sql.append("                         WHERE us.idusuario = tc.remitente) || ' [' ||           ");
                  
                  
-                 sql.append("                       (SELECT us.USUARIO                                        ");
+         sql.append("                       (SELECT us.USUARIO                                        ");
 		 sql.append("                          FROM usuario us                                        ");
 		 sql.append("                         WHERE us.idusuario = tc.usuariocreacion)) ||    '] '     ");
                  
@@ -959,8 +959,9 @@ public class ReporteAPNDAOImpl implements ReporteAPNDAO {
 		 sql.append(idDocumento);
 		 sql.append(" and estado not in ('Inactivo')");
 		 sql.append("  ORDER BY fechacreacion, opcion");
+		 
                  
-                 Query q=em.createNativeQuery(sql.toString());
+         Query q=em.createNativeQuery(sql.toString());
 		 List data=q.getResultList();
 		 List<FilaHojaRuta> dataforward=new ArrayList<FilaHojaRuta>();
                  
@@ -969,18 +970,18 @@ public class ReporteAPNDAOImpl implements ReporteAPNDAO {
 			Object obj[]=(Object[])data.get(i);
 		        Integer id=Integer.parseInt(obj[0].toString());
 		        String nroDocumento = 	String.valueOf(obj[1]);
-                        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			Date fechaCreacion = formato.parse(obj[2].toString());
+                SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date fechaCreacion = formato.parse(obj[2].toString());
 		        String remitente = String.valueOf(obj[3]);
 		        String destinatario =  String.valueOf(obj[4]);
 		        String accion = String.valueOf(obj[5]);
-		        String contenido = String.valueOf(obj[6]);
+		        String contenido = String.valueOf(obj[6] == null?"":obj[6]);
 		        String documento = String.valueOf(obj[7]);
 		        String tipo = String.valueOf(obj[8]);
-		        String proveido = String.valueOf(obj[9]);
+		        String proveido = String.valueOf(obj[9] == null?"":obj[9]);
 		        String estado = String.valueOf(obj[10]);
-                        String idremitente = String.valueOf(obj[11]);
-                        String idunidadremitente = String.valueOf(obj[12]);
+                String idremitente = String.valueOf(obj[11]);
+                String idunidadremitente = String.valueOf(obj[12]);
                         
 		        FilaHojaRuta f = new FilaHojaRuta();
 		        FilaHojaRutaPK pk = new FilaHojaRutaPK();
