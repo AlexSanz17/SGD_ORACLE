@@ -890,7 +890,7 @@ public class DocumentoServiceImpl implements DocumentoService {
 		
 		objDD.setFechacreacion(objD.getFechaCreacion());
 		
-                int tiempoProceso = 100;//procesoService.findByIdProceso(objD.getExpediente().getProceso().getIdproceso()).getTiempoatencion().intValue();
+        int tiempoProceso = 100;//procesoService.findByIdProceso(objD.getExpediente().getProceso().getIdproceso()).getTiempoatencion().intValue();
 		Date dNuevaFechaLimiteAtencion = fechaLimite.calcularFechaLimite(tiempoProceso, 0);
 		objDD.setDateFechaLimiteAtencion(dNuevaFechaLimiteAtencion);
 		objDD.setPropietario(objD.getPropietario());

@@ -1149,6 +1149,7 @@ public class DojoAction {
                 }
                 
                 rutaJasper = path + "ReporteDocumentosFiltros.jasper";
+                log.info("rutaJasper:"+rutaJasper);
                 File f = new File(rutaJasper);
                 JasperReport jasperReport = (JasperReport) JRLoader.loadObject(f);
                 HashMap map = new HashMap();

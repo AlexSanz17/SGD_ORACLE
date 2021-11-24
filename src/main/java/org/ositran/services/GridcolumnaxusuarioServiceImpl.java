@@ -1580,18 +1580,18 @@ public class GridcolumnaxusuarioServiceImpl implements GridcolumnaxusuarioServic
 				item.setArea(propietario.getUnidad().getNombre());
 			}
 
-                        if(documento.getPrioridad() != null){
-			   item.setPrioridad("images/Prioridad_"+documento.getPrioridad()+".png");
-                        }else{
-                           item.setPrioridad("images/ed_blank.gif");
-                        }
-                        
-                        if (documento.getCliente()!=null){
-                          item.setCliente(documento.getCliente().getNombreRazon());
-                        }else
-                          item.setCliente("");
-			
-                        item.setFechalimite(documento.getFechaLimiteAtencion());
+            if(documento.getPrioridad() != null){
+            	item.setPrioridad("images/Prioridad_"+documento.getPrioridad()+".png");
+            }else{
+               item.setPrioridad("images/ed_blank.gif");
+            }
+            
+            if (documento.getCliente()!=null){
+            	item.setCliente(documento.getCliente().getNombreRazon());
+            }else
+            	item.setCliente("");
+
+            item.setFechalimite(documento.getFechaLimiteAtencion());
 			items.add(item);
 		}
 		return items;

@@ -2216,7 +2216,19 @@ public class DocumentoDAOImpl implements DocumentoDAO {
                 operador = " " + operador + " ";
 		boolean encontrado = false;
 		StringBuilder sql = new StringBuilder(
-				"SELECT DISTINCT D.* FROM EXPEDIENTESTOR ES ");
+				"SELECT DISTINCT D.IDDOCUMENTO, D.ID_CLIENTE, D.ID_CODIGO, D.ID_EXTERNO, D.ANIOFISCAL, D.ASUNTO, D.BANDEJA,"+
+				"D.CARGOPROPIETARIO, D.CODCARGOREMITENTE, D.CODINFRAESTRUCTURA, D.CODMATERIA, D.CODREMITENTE, D.CODTIPOINSTITUCION, D.CONFIDENCIAL,"+
+				"TO_CHAR(D.CONTENIDO) AS CONTENIDO,D.CREAEXPEDIENTE, D.DELEXPEDIENTE, D.DESCARGOREMITENTE, D.DESREMITENTE,"+
+				"D.DESUNIDADREMITENTE, D.DESPACHADO, D.DOCUMENTOASOCIADO, D.DOCUMENTOREFERENCIA, D.ENUMERADO, D.ESTAENFLUJO,"+
+				"D.ESTADO, D.ESTADOALARMA, D.ESTADOPLAZO, D.FECHAACCION, D.FECHACARGO, D.FECHACREACION,"+
+				"D.FECHACREACIONMONTH, D.FECHACREACIONYEAR, D.FECHADOCUMENTO, D.FECHALECTURADOCUMENTO, D.FECHALIMITEATENCION, D.FECHAMODIFICACION,"+ 
+				"D.FECHAREUNION, D.FIRMADO, D.FLAGMULTIPLE, D.FLAGATENDIDO, D.FLAGINICIOFLUJO, D.FLAGSIDECO, D.IDCONCESIONARIO, D.IMAGENESDIGITALIZADAS,"+ 
+				"D.LEIDO, D.LUGAR, D.NOMBREPCLECTURADOCUMENTO, D.NROVIRTUAL, D.NROCAJA, D.NRODOCUMENTO, D.NROFOLIOS, D.NROFOLIOSCOPIAS, D.NROFOLIOSORIGINALES,"+ 
+				"D.NROFOLIOSPIDE, D.NROMESAPARTES, D.OBJETIVO, TO_CHAR(D.OBSERVACION) AS OBSERVACION, D.OBSERVACIONDIGITALIZADOR, D.OBSERVACIONRECHAZO, D.ORIGEN,"+ 
+				"D.PLAZO, D.PRINCIPAL, D.PRIORIDAD, D.PROYECTO, D.RECEPCIONADO, D.REFERENCIADOS, D.REMITENTE, D.ULTIMOASUNTO, D.UNIDADAUTOR, D.UNIDADENUMERA,"+ 
+				"D.UNIDADPROPIETARIO, D.USUARIOMODIFICACION, D.USUARIOCREACION, D.ACCION, D.AUTOR, D.ENUMERADOR, D.EXPEDIENTE, D.FIRMANTE, D.PROPIETARIO, "+
+				"D.TIPODOCUMENTO, D.NROMESAVIRTUAL "
+				+ "FROM EXPEDIENTESTOR ES ");
 		sql.append("RIGHT JOIN EXPEDIENTE E ON ES.IDEXPEDIENTE=E.IDEXPEDIENTE ");
 		sql.append("RIGHT JOIN DOCUMENTO D ON E.IDEXPEDIENTE=D.EXPEDIENTE ");
 		sql.append("LEFT JOIN CLIENTE CL ON D.ID_CLIENTE=CL.IDCLIENTE ");
@@ -2551,25 +2563,25 @@ public class DocumentoDAOImpl implements DocumentoDAO {
 			sqlQueryDinamico[0] = sql.toString();
 			Query q = em.createNativeQuery(sql.toString(), Documento.class);
                         
-                        if (nroLegajo != null){
-                            q.setParameter("nroLegajo", nroLegajo);
-                            sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":nroLegajo", nroLegajo);
-                        }
-                        
-                         if (tipoLegajo != null){
-                            q.setParameter("idTipoLegajo", new Integer(tipoLegajo));
-                            sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":idTipoLegajo", tipoLegajo);
-                        }
-                        
-                        if (nroHT != null){
-                            q.setParameter("nroHT", new Integer(nroHT));
-                            sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":nroHT", nroHT);
-                        }
-                        
-                        if (nroRS != null){
-                           q.setParameter("nroRS", new Integer(nroRS)); 
-                           sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":nroRS", nroRS);
-                        }
+            if (nroLegajo != null){
+                q.setParameter("nroLegajo", nroLegajo);
+                sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":nroLegajo", nroLegajo);
+            }
+            
+             if (tipoLegajo != null){
+                q.setParameter("idTipoLegajo", new Integer(tipoLegajo));
+                sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":idTipoLegajo", tipoLegajo);
+            }
+            
+            if (nroHT != null){
+                q.setParameter("nroHT", new Integer(nroHT));
+                sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":nroHT", nroHT);
+            }
+            
+            if (nroRS != null){
+               q.setParameter("nroRS", new Integer(nroRS)); 
+               sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":nroRS", nroRS);
+            }
 
 			if (numeroDocumento != null) {
 				q.setParameter("numeroDocumento", numeroDocumento);
@@ -2596,13 +2608,13 @@ public class DocumentoDAOImpl implements DocumentoDAO {
 				q.setParameter("estadoExpediente", estadoExpediente);
 				sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":estadoExpediente", "'" + estadoExpediente) + "'";
 			}*/
-                        if (estadoExpediente != null) {
-                            if(tipoConsulta.equals("busqueda"))
-                            {
-                                q.setParameter("estadoExpediente", estadoExpediente);
-                                sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":estadoExpediente", "'" + estadoExpediente) + "'";
-                            }
-                        }
+            if (estadoExpediente != null) {
+                if(tipoConsulta.equals("busqueda"))
+                {
+                    q.setParameter("estadoExpediente", estadoExpediente);
+                    sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":estadoExpediente", "'" + estadoExpediente) + "'";
+                }
+            }
 			if (concesionario != null) {
 				q.setParameter("concesionario", concesionario);
 				sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":concesionario", concesionario);
@@ -2616,13 +2628,13 @@ public class DocumentoDAOImpl implements DocumentoDAO {
 				sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":proceso", proceso);
 			}
 			if (propietario != null) {
-                            q.setParameter("propietario", new Integer(propietario));
-                            sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":propietario", propietario);
-                        }
-                        if (autor != null) {
-                            q.setParameter("autor", new Integer(autor));
-                            sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":autor", autor);
-                        }
+                q.setParameter("propietario", new Integer(propietario));
+                sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":propietario", propietario);
+            }
+            if (autor != null) {
+                q.setParameter("autor", new Integer(autor));
+                sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":autor", autor);
+            }
 			if (areaDestino != null) {
 				q.setParameter("unidad", new Integer(areaDestino));
 				sqlQueryDinamico[0] = sqlQueryDinamico[0].replace(":unidad", areaDestino);
