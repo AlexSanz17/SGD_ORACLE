@@ -91,7 +91,7 @@ public class FechaLimite {
 		   mapSession = ActionContext.getContext().getSession();
 		   Usuario usuario = (Usuario) mapSession.get(Constantes.SESSION_USUARIO);
 		   
-                   String horaInicio = (unidadService.buscarObjPor(usuario.getIdUnidadPerfil().intValue())).getInicioEnvio();
+           String horaInicio = (unidadService.buscarObjPor(usuario.getIdUnidadPerfil().intValue())).getInicioEnvio();
 		   String horaFin = (unidadService.buscarObjPor(usuario.getIdUnidadPerfil().intValue())).getFinEnvio();
 		   
 		   int horaInicioHoras=Integer.parseInt(horaInicio.substring(0,horaInicio.indexOf(':')));
