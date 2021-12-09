@@ -66,24 +66,31 @@ public class FavoritoDAOImpl implements FavoritoDAO {
                         "                  uu.ESTADO = 'A' and " +
                         "                  uu.USUARIOFINAL IN ('S') and " +
                         "                  f1.idfuncion = uu.idfuncion       " +
-                        "          ) x , favorito f " +
-                        "       WHERE f.idcontacto = x.idusuario and f.idunidadcontacto = x.idunidad  and F.IDCARGOCONTACTO = x.idfuncion AND f.tipocontacto = 'U' " +
-                        "       AND f.idpropietario = :idpropietario AND f.estado = :idestado ");
+                        "          ) x ");
+                        //"     , favorito f " +
+                        //"       WHERE f.idcontacto = x.idusuario and f.idunidadcontacto = x.idunidad  and F.IDCARGOCONTACTO = x.idfuncion AND f.tipocontacto = 'U' " +
+                        //"       AND f.idpropietario = :idpropietario AND f.estado = :idestado ");
 
          
 
          sbQuery.append(" ");
          sbQuery.append("ORDER BY LOWER(label) ASC ");
          
+         
+         log.info("findLstBy(Favoritos):"+sbQuery);
+         log.info("findLstBy(Favoritos)idunidad:"+idunidad+",idPropietario:"+idPropietario+",estado:"+estado+",jefe:"+jefe+",idfuncion:"+idfuncion);
+         
          Query query = em.createNativeQuery(sbQuery.toString(), "favoritoResult")
                          .setParameter("idunidad", idunidad)
-                         .setParameter("idpropietario", idPropietario)
-                         .setParameter("idestado", estado)
+                         //.setParameter("idpropietario", idPropietario)
+                         //.setParameter("idestado", estado)
                          .setParameter("idjefe", jefe)
                          .setParameter("idfuncion", idfuncion)   ;
 
         
          List<Object[]> result = query.getResultList();
+         
+         //log.info("findLstBy(result):"+result.size());
        
          for (Object[] o : result) {
             int idx = 0;
@@ -93,7 +100,8 @@ public class FavoritoDAOImpl implements FavoritoDAO {
          }
 
          return lstFavorito;
-      } catch (NoResultException e) {
+         
+      } catch (Exception e) {
          e.printStackTrace();
          log.warn("No se encontraron favoritos del propietario [" + idPropietario + "] estado [" + estado + "]");
 

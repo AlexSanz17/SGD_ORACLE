@@ -9,6 +9,8 @@ import com.btg.ositran.siged.domain.DocumentoDerivacion;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import org.jfree.util.Log;
 /**
  *
  * @author consultor_jti15
@@ -35,6 +37,7 @@ public class DocumentoDerivacionDAOImpl implements DocumentoDerivacionDAO{
      }
      
       public List<DocumentoDerivacion> getUsuarioDerivacion(DocumentoDerivacion objDocumentoDerivacion){
+    	 System.out.println("(getUsuarioDerivacion): iddocumento:"+objDocumentoDerivacion.getIddocumento()+",tipo:"+objDocumentoDerivacion.getTipo());
          String sql = "SELECT f FROM DocumentoDerivacion f WHERE f.iddocumento =" + objDocumentoDerivacion.getIddocumento() + " and f.estado = 'A' and f.tipo=:tipo";   
          
          return  em.createQuery(sql).setParameter("tipo", objDocumentoDerivacion.getTipo()).getResultList();

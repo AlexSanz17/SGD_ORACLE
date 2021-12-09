@@ -2788,6 +2788,7 @@ public class DocumentoAction {
                                  documentoDerivacion.setTipo("P");
                                  documentoDerivacion.setIddocumento(iIdDoc);
                                  List<DocumentoDerivacion> lista = documentoDerivacionDAO.getUsuarioDerivacion(documentoDerivacion);
+                                 log.info("(goderivaruser) Tipo P:"+(lista == null?0:lista.size()));
                         
                                  if (lista!=null && lista.size()>0){
                                     listaDerivacionPara = new ArrayList<UsuarioDerivacion>();
@@ -2807,6 +2808,7 @@ public class DocumentoAction {
                                  
                                 documentoDerivacion.setTipo("C");
                                 lista = documentoDerivacionDAO.getUsuarioDerivacion(documentoDerivacion);
+                                log.info("(goderivaruser) Tipo C:"+(lista == null?0:lista.size()));
                                 if (lista!=null && lista.size()>0){
                                     listaDerivacionCC = new ArrayList<UsuarioDerivacion>();
                                     for(int i=0;i<lista.size();i++){

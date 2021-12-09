@@ -5229,6 +5229,9 @@ public class DocumentoServiceImpl implements DocumentoService {
                                             listDocReferenciados =  objDD.getListReferenciados().trim().equals("")?null:StringUtil.stringToArrayPersonalizado(objDD.getListReferenciados().trim(),'|');
                                         if (listDocReferenciados!=null && listDocReferenciados.length>0){
                                             for (int i=0;i<listDocReferenciados.length;i++){
+                                            	log.info("(DocumentoReferencia)IdDocumento:"+objD.getIdDocumento());
+                                            	log.info("(DocumentoReferencia)IdDocumentoReferencia:"+listDocReferenciados[i]);
+                                            	log.info("(DocumentoReferencia)VerDocumento:"+verDocumento(new Integer(listDocReferenciados[i]),objUsuarioSession));
                                                 DocumentoReferencia docReferencia  = new DocumentoReferencia();
                                                 docReferencia.setIdDocumento(objD.getIdDocumento()); 
                                                 docReferencia.setIdDocumentoReferencia(new Integer(listDocReferenciados[i]));
@@ -5236,6 +5239,7 @@ public class DocumentoServiceImpl implements DocumentoService {
                                                 docReferencia.setFechaCreacion(fecha);
                                                 docReferencia.setVerDocumento(verDocumento(new Integer(listDocReferenciados[i]),objUsuarioSession));
                                                 docReferencia.setEstado("A");
+                                                log.info("(DocumentoReferencia)docReferencia:"+docReferencia.toString());
                                                 documentoReferenciaDAO.saveDocumentoReferencia(docReferencia);
                                                 
                                                 if (objD.getTipoDocumento().getExternoQR()!= null && objD.getTipoDocumento().getExternoQR().equals("1")){

@@ -150,8 +150,11 @@ public class DocumentoEnviadoDAOImpl implements DocumentoEnviadoDAO{
 	@Override
 	public List<FilaBandejaEnviados> buscarEnviadosPorUsuario(Usuario objUsuario) {
                 
-                String sql = "SELECT e FROM FilaBandejaEnviados e WHERE e.idPropietario = :idusuario and e.unidadPropietario = :idunidadpropietario and e.cargoPropietario  =:idcargopropietario " +
-					 " AND e.fechaRecepcion >= :fechaDesde AND e.fechaRecepcion <= :fechaHasta ORDER BY e.fechaRecepcion DESC";
+        /*String sql = "SELECT e FROM FilaBandejaEnviados e WHERE e.idPropietario = :idusuario and e.unidadPropietario = :idunidadpropietario and e.cargoPropietario  =:idcargopropietario " +
+					 " AND e.fechaRecepcion >= :fechaDesde AND e.fechaRecepcion <= :fechaHasta ORDER BY e.fechaRecepcion DESC";*/
+        
+        String sql = "SELECT e FROM FilaBandejaEnviados e WHERE e.idPropietario = :idusuario and e.unidadPropietario = :idunidadpropietario and e.cargoPropietario  =:idcargopropietario " +
+					 " order by e.id desc ";
 
 		Calendar fechaDesde = Calendar.getInstance();
 		fechaDesde.setTimeInMillis(fechaDesde.getTimeInMillis() - 90*Constantes.MILISEGUNDOS_DIA);
@@ -163,12 +166,16 @@ public class DocumentoEnviadoDAOImpl implements DocumentoEnviadoDAO{
 		fechaHasta.set(Calendar.HOUR_OF_DAY, 23);
 		fechaHasta.set(Calendar.MINUTE, 59);
 		fechaHasta.set(Calendar.SECOND, 59);
+		
+		
+		log.info("buscarEnviadosPorUsuario:idusuario"+objUsuario.getIdUsuarioPerfil()+",idunidadpropietario:"+objUsuario.getIdUnidadPerfil()
+		+",idcargopropietario:"+objUsuario.getIdFuncionPerfil()+",fechaDesde:"+fechaDesde.getTime()+",fechaHasta:"+fechaHasta.getTime());
 
 		return em.createQuery(sql).setParameter("idusuario", objUsuario.getIdUsuarioPerfil())
-                                                                  .setParameter("idunidadpropietario", objUsuario.getIdUnidadPerfil())
-                                                                  .setParameter("idcargopropietario", objUsuario.getIdFuncionPerfil())
-                                                                  .setParameter("fechaDesde", fechaDesde.getTime())
-								  .setParameter("fechaHasta", fechaHasta.getTime())
+                                  .setParameter("idunidadpropietario", objUsuario.getIdUnidadPerfil())
+                                  .setParameter("idcargopropietario", objUsuario.getIdFuncionPerfil())
+                                  //.setParameter("fechaDesde", fechaDesde.getTime())
+								  //.setParameter("fechaHasta", fechaHasta.getTime())
 								  .getResultList();
 	}
 
@@ -206,6 +213,7 @@ public class DocumentoEnviadoDAOImpl implements DocumentoEnviadoDAO{
 			sql += "AND LOWER(e.idDestinatario) = :idDestinatario ";
 		}
 		//8
+		/*
 		if(!StringUtils.isEmpty(objFiltro.getFechaDesde())){
                        sql += "AND e.fechaRecepcion >= :fechaDesde ";
 		}
@@ -213,17 +221,25 @@ public class DocumentoEnviadoDAOImpl implements DocumentoEnviadoDAO{
 		if(!StringUtils.isEmpty(objFiltro.getFechaHasta())){
 			sql += "AND e.fechaRecepcion <= :fechaHasta ";
 		}
+		*/
                 
                 if(!StringUtils.isEmpty(objFiltro.getNroHT())){
 			sql += " AND e.nroTramite = :nroHT ";
 		}
 
-		sql += "  ORDER BY e.fechaRecepcion DESC ";
+		//sql += "  ORDER BY e.fechaRecepcion DESC ";
+		sql += "  ORDER BY e.id DESC ";
+		
+		log.info("buscarEnviadosFiltrados:sql"+sql);
+		
+		log.info("buscarEnviadosFiltrados:idusuario:"+objUsuario.getIdUsuarioPerfil()+",idunidadpropietario:"+objUsuario.getIdUnidadPerfil()
+		+",idcargopropietario:"+objUsuario.getIdFuncionPerfil()+",idcargopropietario:"+objUsuario.getIdFuncionPerfil()+
+		", FechaDesde:"+objFiltro.getFechaDesde()+", FechaHasta:"+objFiltro.getFechaHasta());
 
 		Query q = em.createQuery(sql);
 		q.setParameter("idusuario", objUsuario.getIdUsuarioPerfil())
-                .setParameter("idunidadpropietario", objUsuario.getIdUnidadPerfil())
-                .setParameter("idcargopropietario", objUsuario.getIdFuncionPerfil());
+        .setParameter("idunidadpropietario", objUsuario.getIdUnidadPerfil())
+        .setParameter("idcargopropietario", objUsuario.getIdFuncionPerfil());
 
 		//1
 		if(!StringUtils.isEmpty(objFiltro.getNumeroExpediente())){
@@ -254,11 +270,12 @@ public class DocumentoEnviadoDAOImpl implements DocumentoEnviadoDAO{
 			q.setParameter("idDestinatario", Integer.parseInt(objFiltro.getUsuarioDestinatario()));
 		}
                 
-                if(!StringUtils.isEmpty(objFiltro.getNroHT())){
-                        q.setParameter("nroHT", Integer.parseInt(objFiltro.getNroHT()));
-                }
+        if(!StringUtils.isEmpty(objFiltro.getNroHT())){
+                q.setParameter("nroHT", Integer.parseInt(objFiltro.getNroHT()));
+        }
                 
 		//8
+        /*
 		if(!StringUtils.isEmpty(objFiltro.getFechaDesde())){
                     	SimpleDateFormat fechita = new SimpleDateFormat("dd/MM/yyyy");
 			Calendar fecha = Calendar.getInstance();
@@ -271,6 +288,8 @@ public class DocumentoEnviadoDAOImpl implements DocumentoEnviadoDAO{
 				e.printStackTrace();
 			}
 			q.setParameter("fechaDesde", fecha.getTime());
+			
+			log.info("buscarEnviadosFiltrados:fechaDesde:"+fecha.getTime());
 		}
 		//9
 		if(!StringUtils.isEmpty(objFiltro.getFechaHasta())){
@@ -285,7 +304,11 @@ public class DocumentoEnviadoDAOImpl implements DocumentoEnviadoDAO{
 				e.printStackTrace();
 			}
 			q.setParameter("fechaHasta", fecha.getTime());
+			
+			log.info("buscarEnviadosFiltrados:fechaHasta:"+fecha.getTime());
 		}
+		*/
+		
 
 		return q.getResultList();
 	}

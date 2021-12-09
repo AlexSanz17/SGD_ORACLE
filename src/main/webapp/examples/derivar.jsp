@@ -374,11 +374,11 @@ input.file {
                                                                                  </s:else></td>
 								<td colspan="1">
 									<s:if test=" !paraAprobar && (iddestinatario == null || iddestinatario == 0) ">
-                                                                                <s:hidden name="objDD.strAccion" value="reenviar" />
+                                         <s:hidden name="objDD.strAccion" value="reenviar" />
 										<div id="fsPara"></div>
 									</s:if>
 									<s:else>
-                                                                               <s:if test="objDD.iIdAccion == 4">
+                                         <s:if test="objDD.iIdAccion == 4">
 											<s:hidden name="objDD.strAccion" value="rechazar" />
 										</s:if>
 										
